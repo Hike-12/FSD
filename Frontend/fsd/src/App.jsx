@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./components/Login/Registration/Login";
+import Register from "./components/Login/Registration/Register";
+import Logout from "./components/Login/Registration/Logout";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
-    const [data, setData] = useState("");
-
-    useEffect(() => {
-        fetch("http://127.0.0.1:8000/api/data/")
-            .then(res => res.json())
-            .then(data => setData(data.message))
-            .catch(err => console.error(err));
-    }, []);
-
-    return <h1>{data}</h1>;
+    return (
+        <BrowserRouter>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/logout" element={<Logout />} />
+                </Routes>
+            </AuthProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;
