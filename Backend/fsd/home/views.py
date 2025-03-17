@@ -52,6 +52,7 @@ def custom_login(request):
     if user:
         refresh = RefreshToken.for_user(user)
         return JsonResponse({
+            'message': 'Login successful',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'csrfToken': get_token(request),
@@ -75,9 +76,6 @@ def refresh_token(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=401)
 
-
-# Add this to your views.py file:
-
 @csrf_exempt
 @api_view(['POST'])
 def logout(request):
@@ -90,7 +88,7 @@ def logout(request):
         token = RefreshToken(refresh_token)
         token.blacklist()
         
-        return JsonResponse({'success': 'User logged out successfully'})
+        return JsonResponse({'message': 'User logged out successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     

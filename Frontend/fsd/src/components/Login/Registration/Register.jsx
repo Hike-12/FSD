@@ -11,6 +11,8 @@ const Register = () => {
   const navigate = useNavigate();
   const { csrfToken } = useAuth();
 
+  const handleButtonClick = () => { navigate('/'); };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -38,7 +40,7 @@ const Register = () => {
     //   navigate(data.role === 'ADMIN' ? '/admin-dashboard' : '/dashboard');
       
       // Or simply navigate to login page without storing tokens
-      navigate('/login');
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
@@ -71,7 +73,6 @@ const Register = () => {
           <option value="STUDENT">Student</option>
           <option value="ADMIN">Admin</option>
           <option value="MENTOR">Mentor</option>
-          <option value="MANAGEMENT">Management</option>
         </select>
         <input
           type="password"
@@ -83,6 +84,7 @@ const Register = () => {
         <button type="submit">Register</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      <p>Already have an account? <button onClick={handleButtonClick}>Login here</button></p>
     </div>
   );
 };

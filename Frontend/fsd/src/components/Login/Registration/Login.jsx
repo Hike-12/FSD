@@ -9,12 +9,17 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth(); // Get login function from context
 
+  const handleButtonClick = () => {
+    navigate('/register');
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const success = await login({ username, password });
       
       if (success) {
+        alert('Login successful');
         // Get role from localStorage since it was set in the login function
         const role = localStorage.getItem('role');
         switch (role) {
@@ -42,6 +47,8 @@ const Login = () => {
   };
 
   return (
+    <>
+    <h2>Login</h2>
     <form onSubmit={handleLogin}>
       <input
         type="text"
@@ -49,7 +56,7 @@ const Login = () => {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         required
-      />
+        />
       <input
         type="password"
         placeholder="Password"
@@ -59,7 +66,9 @@ const Login = () => {
       />
       <button type="submit">Login</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      <p>Dont have an account? <button onClick={handleButtonClick}>Sign up here</button></p>
     </form>
+    </>
   );
 };
 
