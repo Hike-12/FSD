@@ -48,7 +48,7 @@ const Login = () => {
 
   return (
     <>
-    <h2>Login</h2>
+    <h2 className='bg-red-500'>Login</h2>
     <form onSubmit={handleLogin}>
       <input
         type="text"
