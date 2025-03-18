@@ -28,7 +28,19 @@ const Register = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Registration failed');
+        const errorMsg = errorData.error || 'Registration failed';
+  
+        // Check for UNIQUE constraint on email and customize message
+        if (errorMsg.includes('home_customuser.email')) {
+          alert('Email needs to be unique');
+          throw new Error('Email needs to be unique');
+        } else if (errorMsg.includes('home_customuser.username')) {
+          alert('Username already taken');
+          throw new Error('Username already taken');
+        }
+  
+        alert(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -83,7 +95,6 @@ const Register = () => {
         />
         <button type="submit">Register</button>
       </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
       <p>Already have an account? <button onClick={handleButtonClick}>Login here</button></p>
     </div>
   );

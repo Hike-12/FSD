@@ -9,6 +9,7 @@ from home.models import CustomUser
 import json
 from rest_framework import status
 from rest_framework.views import APIView
+from django.db.utils import IntegrityError
 
 def get_token(request):
     return request.META.get('CSRF_COOKIE', None)
@@ -18,15 +19,25 @@ def get_csrf_token(request):
 
 class UserCreate(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         try:
             data = request.data
+
+            # Validate required fields
+            required_fields = ['username', 'password', 'role', 'email']
+            for field in required_fields:
+                if field not in data:
+                    return Response({'error': f'Missing field: {field}'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create user
             user = CustomUser.objects.create_user(
                 username=data['username'],
+                email=data['email'],  # Save email
                 password=data['password'],
                 role=data['role']
             )
+
             refresh = RefreshToken.for_user(user)
             return Response({
                 'message': 'User created successfully',
@@ -35,10 +46,15 @@ class UserCreate(APIView):
                 'csrfToken': get_token(request),
                 'role': user.role
             }, status=status.HTTP_201_CREATED)
-        except KeyError as e:
-            return Response({'error': f'Missing field: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except IntegrityError as e:
+            if 'home_customuser.email' in str(e):
+                return Response({'error': 'email needs to be unique'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Integrity error: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @csrf_exempt
 @api_view(['POST'])
