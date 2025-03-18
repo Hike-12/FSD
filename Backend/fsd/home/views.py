@@ -117,3 +117,84 @@ def role_required(allowed_roles):
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+
+####################################################################################################################################################
+#                       MENTOR PROFILE VIEWS
+
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from .models import MentorProfile, Skill, CompetitionType
+from .serializers import MentorProfileSerializer, SkillSerializer, CompetitionTypeSerializer
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of a profile to edit it.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowed to the owner of the profile
+        return obj.user == request.user
+
+
+class MentorProfileViewSet(viewsets.ModelViewSet):
+    queryset = MentorProfile.objects.all()
+    serializer_class = MentorProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        """
+        This view should return a list of all profiles
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        if user.is_staff:
+            return MentorProfile.objects.all()
+        return MentorProfile.objects.filter(user=user)
+
+    @action(detail=False, methods=['get'])
+    def my_profile(self, request):
+        """
+        Returns the mentor profile for the current user or returns 404 if not found
+        """
+        try:
+            profile = MentorProfile.objects.get(user=request.user)
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except MentorProfile.DoesNotExist:
+            return Response(
+                {"detail": "Mentor profile not found for this user."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=False, methods=['post'])
+    def create_profile(self, request):
+        """
+        Creates or updates a profile for the current user
+        """
+        profile, created = MentorProfile.objects.get_or_create(user=request.user)
+        
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)
+
+
+class SkillViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class CompetitionTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CompetitionType.objects.all()
+    serializer_class = CompetitionTypeSerializer
+    permission_classes = [permissions.IsAuthenticated]
