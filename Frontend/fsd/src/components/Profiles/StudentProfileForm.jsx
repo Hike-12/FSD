@@ -19,7 +19,6 @@ const StudentProfileForm = () => {
     city: '',
     postal_code: '',
     education_level: '',
-    student_id: '',
     department: '',
     year_of_study: '',
     gpa: '',
@@ -445,17 +444,6 @@ const StudentProfileForm = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Student ID</label>
-              <input
-                type="text"
-                name="student_id"
-                value={formData.student_id || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
               <label className="block text-sm font-medium mb-1">Department</label>
               <input
                 type="text"
@@ -725,7 +713,12 @@ const StudentProfileForm = () => {
             />
             {existingProfile && existingProfile.profile_picture && (
               <div className="mt-2">
-                <p className="text-sm text-gray-500">Current profile picture: {existingProfile.profile_picture.split('/').pop()}</p>
+                <p className="text-sm text-gray-500">Current profile picture:</p>
+                <img
+                  src={existingProfile.profile_picture}
+                  alt="Profile"
+                  className="mt-1 h-32 w-32 rounded-full object-cover border"
+                />
               </div>
             )}
           </div>

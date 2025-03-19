@@ -124,7 +124,6 @@ class MentorProfile(models.Model):
 
     
 
-# Enhanced StudentProfile
 class StudentProfile(models.Model):
     GENDER_CHOICES = [
         ('male', 'Male'),
@@ -154,68 +153,72 @@ class StudentProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
-        related_name='student_profile'
+        related_name='student_profile',
+        null=True, 
+        blank=True
     )
     
     # Basic Info
-    full_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=100, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='prefer_not_to_say')
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='prefer_not_to_say', null=True, blank=True)
     phone_number = models.CharField(
         max_length=15,
-        validators=[RegexValidator(r'^\+?1?\d{9,15}$', message="Phone number must be entered in format: '+999999999'")]
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$', message="Phone number must be entered in format: '+999999999'")],
+        null=True,
+        blank=True
     )
     
     # Location
-    address = models.TextField(blank=True)
-    country = models.CharField(max_length=50)
-    state = models.CharField(max_length=50, blank=True)
-    city = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=10, blank=True)
+    address = models.TextField(blank=True, null=True)
+    country = models.CharField(max_length=50, null=True, blank=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
+    city = models.CharField(max_length=50, null=True, blank=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
     
     # Academic Details
-    education_level = models.CharField(max_length=15, choices=EDUCATION_LEVEL_CHOICES)
-    student_id = models.CharField(max_length=20, unique=True)
-    department = models.CharField(max_length=100)
-    year_of_study = models.CharField(max_length=10, choices=YEAR_CHOICES)
+    education_level = models.CharField(max_length=15, choices=EDUCATION_LEVEL_CHOICES, null=True, blank=True)
+    student_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    department = models.CharField(max_length=100, null=True, blank=True)
+    year_of_study = models.CharField(max_length=10, choices=YEAR_CHOICES, null=True, blank=True)
     gpa = models.FloatField(
         null=True, 
         blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(4.0)]
+        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)]
     )
     
     # Skills and Experience
     skills = models.ManyToManyField('Skill', related_name='students', blank=True)
-    extracurricular_activities = models.TextField(blank=True)
-    achievements = models.TextField(blank=True)
+    extracurricular_activities = models.TextField(blank=True, null=True)
+    achievements = models.TextField(blank=True, null=True)
     
     # Competition Preferences
     preferred_competition_types = models.ManyToManyField('CompetitionType', related_name='interested_students', blank=True)
-    preferred_team_roles = models.CharField(max_length=200, blank=True, help_text="E.g., Team Lead, Designer, Developer")
+    preferred_team_roles = models.CharField(max_length=200, blank=True, null=True, help_text="E.g., Team Lead, Designer, Developer")
     past_competitions = models.ManyToManyField('Competition', related_name='past_participants', blank=True)
     
     # Contact Info
-    emergency_contact_name = models.CharField(max_length=100, blank=True)
-    emergency_contact_number = models.CharField(max_length=15, blank=True)
+    emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
+    emergency_contact_number = models.CharField(max_length=15, blank=True, null=True)
     
     # Interests & Goals
-    hobbies = models.CharField(max_length=200, help_text="Comma separated hobbies", blank=True)
-    career_goal = models.TextField(blank=True)
-    languages_spoken = models.CharField(max_length=200, help_text="Comma separated languages", blank=True)
-    learning_style = models.CharField(max_length=100, blank=True, help_text="E.g., Visual, Auditory, Kinesthetic")
+    hobbies = models.CharField(max_length=200, help_text="Comma separated hobbies", blank=True, null=True)
+    career_goal = models.TextField(blank=True, null=True)
+    languages_spoken = models.CharField(max_length=200, help_text="Comma separated languages", blank=True, null=True)
+    learning_style = models.CharField(max_length=100, blank=True, null=True, help_text="E.g., Visual, Auditory, Kinesthetic")
     
     # Profile Picture
     profile_picture = models.ImageField(upload_to='student_profiles/', null=True, blank=True)
     
     # Online Presence
-    linkedin = models.URLField(blank=True)
-    github = models.URLField(blank=True)
-    portfolio = models.URLField(blank=True)
+    linkedin = models.URLField(blank=True, null=True)
+    github = models.URLField(blank=True, null=True)
+    portfolio = models.URLField(blank=True, null=True)
     
     # Metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_active = models.BooleanField(default=True, null=True, blank=True)
     
     class Meta:
         verbose_name = "Student Profile"
@@ -223,7 +226,8 @@ class StudentProfile(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Student: {self.full_name}"
+        return f"Student: {self.full_name or 'Unnamed'}"
+
 
 # New Models
 
