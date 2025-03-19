@@ -139,21 +139,58 @@ from .models import MentorProfile, Skill, CompetitionType
 import json
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.http import QueryDict
 
 @api_token_required
 def my_profile(request):
     print("User ID:", request.user.id)
     print("User:", request.user)
+
     if request.method == 'GET':
         try:
             profile = MentorProfile.objects.get(user=request.user)
+
             data = {
                 'id': profile.id,
-                'bio': profile.bio,
+                'full_name': profile.full_name,
+                'date_of_birth': profile.date_of_birth,
+                'gender': profile.gender,
+                'phone_number': profile.phone_number,
+                'address': profile.address,
+                'country': profile.country,
+                'state': profile.state,
+                'city': profile.city,
+                'postal_code': profile.postal_code,
+                'mentor_type': profile.mentor_type,
+                'department': profile.department,
+                'expertise': profile.expertise,
+                'years_of_experience': profile.years_of_experience,
+                'current_company': profile.current_company,
+                'current_position': profile.current_position,
                 'skills': [skill.name for skill in profile.skills.all()],
-                'competition_types': [ct.name for ct in profile.competition_types.all()]
+                'competition_types': [ct.name for ct in profile.competition_types.all()],
+                'past_mentorship_count': profile.past_mentorship_count,
+                'linkedin': profile.linkedin,
+                'github': profile.github,
+                'website': profile.website,
+                'bio': profile.bio,
+                'certifications': profile.certifications,
+                'achievements': profile.achievements,
+                'languages_spoken': profile.languages_spoken,
+                'availability_status': profile.availability_status,
+                'available_days': profile.available_days,
+                'available_times': profile.available_times,
+                'max_teams': profile.max_teams,
+                'current_teams_count': profile.current_teams_count,
+                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'created_at': profile.created_at.isoformat() if profile.created_at else None,
+                'updated_at': profile.updated_at.isoformat() if profile.updated_at else None,
+                'is_verified': profile.is_verified,
+                'average_rating': float(profile.average_rating) if profile.average_rating is not None else None,
             }
-            return JsonResponse(data)
+
+            return JsonResponse(data, status=200)
+
         except MentorProfile.DoesNotExist:
             return JsonResponse({'error': 'Mentor profile not found for this user.'}, status=404)
 
@@ -192,38 +229,94 @@ def create_or_update_profile(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 @api_token_required
-@require_http_methods(["PUT"])
-@csrf_exempt  # Required only for PUT/multipart; you can handle CSRF manually if needed
+@require_http_methods(["POST"])
+@csrf_exempt
 def update_mentor_profile(request, mentor_id):
     print("Request content type:", request.content_type)
     print("Mentor ID:", mentor_id)
-    print("Put Data:", request.POST)
-    print("Files Data:", request.FILES)
+    
     try:
-        if request.content_type.startswith('multipart/form-data'):
-            put_data = request.POST
-            files_data = request.FILES
-        else:
-            return JsonResponse({'error': 'Unsupported content type'}, status=400)
-
+        # For PUT requests with multipart/form-data, Django has quirks
+        # In Django, request.POST only gets populated for POST requests
+        # For PUT requests with multipart/form-data, we need to access request.body
+        # but Django has already consumed the stream to check for POST data
+        
+        # Let's see what we have available
+        print("PUT data keys:", list(request.POST.keys()))
+        print("FILES keys:", list(request.FILES.keys()))
+        
+        # Create a data dictionary that combines POST and body data
+        put_data = request.POST.copy()  # Start with any data Django managed to parse
+        files_data = request.FILES
+        
+        # Add debugging to see exactly what's coming in
+        for key in put_data:
+            print(f"Field {key}: {put_data[key]}")
+        
+        # Get the profile or return 404
         try:
             profile = MentorProfile.objects.get(id=mentor_id)
         except MentorProfile.DoesNotExist:
             return JsonResponse({'error': 'Mentor profile not found'}, status=404)
+        
+        # Track which fields we update
+        fields_updated = []
+        
+        # Define all fields that can be updated
+        fields = [
+            'full_name', 'date_of_birth', 'gender', 'phone_number', 
+            'address', 'country', 'state', 'city', 'postal_code',
+            'mentor_type', 'department', 'expertise', 'years_of_experience',
+            'current_company', 'current_position', 'linkedin', 'github',
+            'website', 'bio', 'certifications', 'achievements',
+            'languages_spoken', 'availability_status', 'available_days',
+            'available_times', 'max_teams'
+        ]
 
-        profile.full_name = put_data.get('full_name', profile.full_name)
-        profile.years_of_experience = put_data.get('years_of_experience', profile.years_of_experience)
-        profile.bio = put_data.get('bio', profile.bio)
-
+        
+        # Loop through each field and update if present
+        for field in fields:
+            if field in put_data:
+                print(f"Updating {field} to: {put_data[field]}")
+                # Use setattr to dynamically set the attribute
+                setattr(profile, field, put_data[field])
+                fields_updated.append(field)
+        
+        # Handle arrays - skill_ids and competition_type_ids
+        # Assuming you have many-to-many relationships
+        if 'skill_ids' in put_data:
+            skill_ids = put_data.getlist('skill_ids')  # Use getlist to get all values
+            if skill_ids:
+                profile.skills.clear()  # Clear existing
+                profile.skills.add(*skill_ids)  # Add new ones
+                fields_updated.append('skills')
+        
+        if 'competition_type_ids' in put_data:
+            competition_ids = put_data.getlist('competition_type_ids')
+            if competition_ids:
+                profile.competition_types.clear()
+                profile.competition_types.add(*competition_ids)
+                fields_updated.append('competition_types')
+        
+        # Handle file upload
         if 'profile_picture' in files_data:
             profile.profile_picture = files_data['profile_picture']
-
+            fields_updated.append('profile_picture')
+        
+        # Save the updated profile
         profile.save()
-
-        return JsonResponse({'message': 'Profile updated successfully!'})
+        
+        print(f"Updated fields: {fields_updated}")
+        return JsonResponse({
+            'message': 'Profile updated successfully!',
+            'updated_fields': fields_updated
+        })
 
     except Exception as e:
-        return JsonResponse({'error': 'Error updating profile: ' + str(e)}, status=500)
+        print(f"Error updating profile: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': f'Error updating profile: {str(e)}'}, status=500)
 
 @api_token_required
 def list_skills(request):

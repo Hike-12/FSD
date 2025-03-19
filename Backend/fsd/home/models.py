@@ -15,6 +15,10 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
 
 # Enhanced MentorProfile
+from django.db import models
+from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
 class MentorProfile(models.Model):
     GENDER_CHOICES = [
         ('male', 'Male'),
@@ -41,59 +45,60 @@ class MentorProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
-        related_name='mentor_profile'
+        related_name='mentor_profile',
+        null=True, blank=True
     )
     
     # Basic Info
-    full_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=100, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='prefer_not_to_say')
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default='prefer_not_to_say', null=True, blank=True)
     phone_number = models.CharField(
         max_length=15,
-        validators=[RegexValidator(r'^\+?1?\d{9,15}$', message="Phone number must be entered in format: '+999999999'")]
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$', message="Phone number must be entered in format: '+999999999'")],
+        null=True, blank=True
     )
     
     # Location
-    address = models.TextField(blank=True)
-    country = models.CharField(max_length=50)
-    state = models.CharField(max_length=50, blank=True)
-    city = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=10, blank=True)
+    address = models.TextField(blank=True, null=True)
+    country = models.CharField(max_length=50, null=True, blank=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
+    city = models.CharField(max_length=50, null=True, blank=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
     
     # Professional Details
-    mentor_type = models.CharField(max_length=20, choices=MENTOR_TYPES, default='faculty')
-    department = models.CharField(max_length=100)
-    expertise = models.CharField(max_length=200)
+    mentor_type = models.CharField(max_length=20, choices=MENTOR_TYPES, default='faculty', null=True, blank=True)
+    department = models.CharField(max_length=100, null=True, blank=True)
+    expertise = models.CharField(max_length=200, null=True, blank=True)
     years_of_experience = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(70)],
-        null=True,  # Allow null in the database
-        blank=True  # Allow empty form input
+        null=True, blank=True
     )
-    current_company = models.CharField(max_length=100, blank=True)
-    current_position = models.CharField(max_length=100)
+    current_company = models.CharField(max_length=100, blank=True, null=True)
+    current_position = models.CharField(max_length=100, null=True, blank=True)
     
     # Skills and Competition Expertise
-    skills = models.ManyToManyField('Skill', related_name='mentors')
-    competition_types = models.ManyToManyField('CompetitionType', related_name='mentors')
-    past_mentorship_count = models.PositiveIntegerField(default=0)
+    skills = models.ManyToManyField('Skill', related_name='mentors', blank=True)
+    competition_types = models.ManyToManyField('CompetitionType', related_name='mentors', blank=True)
+    past_mentorship_count = models.PositiveIntegerField(default=0, null=True, blank=True)
     
     # Online Presence
-    linkedin = models.URLField(blank=True)
-    github = models.URLField(blank=True)
-    website = models.URLField(blank=True)
+    linkedin = models.URLField(blank=True, null=True)
+    github = models.URLField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
     
     # Bio and Additional Info
-    bio = models.TextField()
-    certifications = models.TextField(help_text="List of certifications", blank=True)
-    achievements = models.TextField(blank=True)
-    languages_spoken = models.CharField(max_length=200, help_text="Comma separated languages")
+    bio = models.TextField(blank=True, null=True)
+    certifications = models.TextField(help_text="List of certifications", blank=True, null=True)
+    achievements = models.TextField(blank=True, null=True)
+    languages_spoken = models.CharField(max_length=200, help_text="Comma separated languages", blank=True, null=True)
     
     # Mentorship Availability
-    availability_status = models.CharField(max_length=15, choices=AVAILABILITY_STATUS, default='available')
-    available_days = models.CharField(max_length=100, help_text="E.g., Monday, Wednesday")
-    available_times = models.CharField(max_length=100, help_text="E.g., 10am - 2pm")
-    max_teams = models.PositiveIntegerField(default=3, help_text="Maximum number of teams to mentor simultaneously")
-    current_teams_count = models.PositiveIntegerField(default=0)
+    availability_status = models.CharField(max_length=15, choices=AVAILABILITY_STATUS, default='available', null=True, blank=True)
+    available_days = models.CharField(max_length=100, help_text="E.g., Monday, Wednesday", blank=True, null=True)
+    available_times = models.CharField(max_length=100, help_text="E.g., 10am - 2pm", blank=True, null=True)
+    max_teams = models.PositiveIntegerField(default=3, help_text="Maximum number of teams to mentor simultaneously", null=True, blank=True)
+    current_teams_count = models.PositiveIntegerField(default=0, null=True, blank=True)
     
     # Profile Picture
     profile_picture = models.ImageField(upload_to='mentor_profiles/', null=True, blank=True)
@@ -101,13 +106,12 @@ class MentorProfile(models.Model):
     # Metadata and Ratings
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False, null=True, blank=True)
     average_rating = models.DecimalField(
         max_digits=3, 
         decimal_places=2,
         validators=[MinValueValidator(0), MaxValueValidator(5)],
-        null=True,
-        blank=True
+        null=True, blank=True
     )
     
     class Meta:
@@ -116,7 +120,8 @@ class MentorProfile(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Mentor: {self.full_name}"
+        return f"Mentor: {self.full_name or 'Unnamed Mentor'}"
+
     
 
 # Enhanced StudentProfile

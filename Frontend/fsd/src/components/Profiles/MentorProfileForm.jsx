@@ -48,8 +48,8 @@ const MentorProfileForm = () => {
         setLoading(true);
     
         // Get CSRF token
-        await fetch('csrf/', { credentials: 'include' });
-        console.log('CSRF token fetched successfully');
+        // await fetch('csrf/', { credentials: 'include' });
+        // console.log('CSRF token fetched successfully');
     
         // Fetch skills
         try {
@@ -61,7 +61,13 @@ const MentorProfileForm = () => {
             credentials: 'include',
           });
           const skillsData = await skillsResponse.json();
-          setSkills(skillsData);
+          console.log('Skills data:', skillsData);
+          if (skillsData.skills) {
+            console.log('Skills array found');
+            setSkills(skillsData.skills); // Extract the skills array
+          } else {
+            setSkills(skillsData); // Use the entire response if it's already an array
+          }
           console.log('Skills fetched successfully');
         } catch (error) {
           console.error('Error fetching skills data:', error);
@@ -78,7 +84,14 @@ const MentorProfileForm = () => {
             credentials: 'include',
           });
           const competitionTypesData = await competitionTypesResponse.json();
-          setCompetitionTypes(competitionTypesData);
+          console.log('Competition types data:', competitionTypesData);
+          if(competitionTypesData.competition_types) {
+            console.log('Competition types array found');
+            setCompetitionTypes(competitionTypesData.competition_types); // Extract the competition types array
+          }
+          else {
+            setCompetitionTypes(competitionTypesData); // Use the entire response if it's already an array
+          }
           console.log('Competition types fetched successfully');
         } catch (error) {
           console.error('Error fetching competition types data:', error);
@@ -98,6 +111,7 @@ const MentorProfileForm = () => {
           if (!profileResponse.ok) throw new Error('No profile found');
     
           const profileData = await profileResponse.json();
+          console.log('Existing profile data:', profileData);
           setExistingProfile(profileData);
     
           // Pre-fill form...
@@ -157,50 +171,81 @@ const MentorProfileForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log('Form data:', formData);
     e.preventDefault();
+    console.log('Original form data object:', formData);
     setErrors({});
     setSubmitMessage('');
   
     try {
-  
       const formDataToSend = new FormData();
 
-Object.keys(formData).forEach(key => {
-  // Handle arrays specifically
-  if ((key === 'skill_ids' || key === 'competition_type_ids') && Array.isArray(formData[key])) {
-    if (formData[key].length > 0) {
-      formData[key].forEach(id => formDataToSend.append(key, id));
-    }
-  } 
-  // Handle file upload
-  else if (key === 'profile_picture' && formData[key]) {
-    formDataToSend.append(key, formData[key]);
-  } 
-  // Handle all other fields that aren't null
-  else if (formData[key] !== null) {
-    formDataToSend.append(key, formData[key].toString());
-  }
-});
+// Append simple string/number fields
+formDataToSend.append('full_name', formData.full_name);
+formDataToSend.append('date_of_birth', formData.date_of_birth);
+formDataToSend.append('gender', formData.gender);
+formDataToSend.append('phone_number', formData.phone_number);
+formDataToSend.append('address', formData.address);
+formDataToSend.append('country', formData.country);
+formDataToSend.append('state', formData.state);
+formDataToSend.append('city', formData.city);
+formDataToSend.append('postal_code', formData.postal_code);
+formDataToSend.append('mentor_type', formData.mentor_type);
+formDataToSend.append('department', formData.department);
+formDataToSend.append('expertise', formData.expertise);
+formDataToSend.append('years_of_experience', formData.years_of_experience);
+formDataToSend.append('current_company', formData.current_company);
+formDataToSend.append('current_position', formData.current_position);
+formDataToSend.append('linkedin', formData.linkedin);
+formDataToSend.append('github', formData.github);
+formDataToSend.append('website', formData.website);
+formDataToSend.append('bio', formData.bio);
+formDataToSend.append('certifications', formData.certifications);
+formDataToSend.append('achievements', formData.achievements);
+formDataToSend.append('languages_spoken', formData.languages_spoken);
+formDataToSend.append('availability_status', formData.availability_status);
+formDataToSend.append('available_days', formData.available_days);
+formDataToSend.append('available_times', formData.available_times);
+formDataToSend.append('max_teams', formData.max_teams);
 
-// Debug: Log what's actually in the FormData
-console.log("FormData entries:");
+// Append arrays
+if (Array.isArray(formData.skill_ids)) {
+  formData.skill_ids.forEach(id => formDataToSend.append('skill_ids', id));
+}
+
+if (Array.isArray(formData.competition_type_ids)) {
+  formData.competition_type_ids.forEach(id => formDataToSend.append('competition_type_ids', id));
+}
+
+// Append file
+if (formData.profile_picture) {
+  formDataToSend.append('profile_picture', formData.profile_picture);
+}
+
+// Debug: Show all FormData entries
+console.log("Final FormData entries:");
 for (let [key, value] of formDataToSend.entries()) {
   console.log(`${key}: ${value}`);
 }
+
       
+      // For PUT requests with FormData, we may need to use the fetch API differently
       let response;
-      console.log('Form data to send:', existingProfile ? 'PUT' : 'POST', formDataToSend);
       if (existingProfile) {
+        console.log(`Sending PUT request to /api/mentor-profiles/${existingProfile.id}/`);
+        
+        // Important: For PUT requests with FormData, some APIs require special handling
         response = await fetch(`/api/mentor-profiles/${existingProfile.id}/`, {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Authorization': `Token ${localStorage.getItem('authToken')}`,
+            // Note: Do NOT set Content-Type header when sending FormData
+            // browser will set the correct multipart/form-data with boundary
           },
           credentials: 'include',
           body: formDataToSend,
         });
       } else {
+        console.log('Sending POST request to /api/mentor-profiles/create_or_update/');
         response = await fetch('/api/mentor-profiles/create_or_update/', {
           method: 'POST',
           headers: {
@@ -211,9 +256,21 @@ for (let [key, value] of formDataToSend.entries()) {
         });
       }
   
+      // Log response status
+      console.log(`Response status: ${response.status}`);
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+        console.log('Parsed response data:', responseData);
+      } catch (e) {
+        console.log('Could not parse response as JSON');
+      }
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw { response: { data: errorData } };
+        throw { response: { data: responseData || responseText } };
       }
   
       setSubmitMessage(existingProfile 
@@ -267,7 +324,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="full_name"
-                value={formData.full_name}
+                value={formData.full_name || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 required
@@ -280,7 +337,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="date"
                 name="date_of_birth"
-                value={formData.date_of_birth}
+                value={formData.date_of_birth || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -291,7 +348,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <label className="block text-sm font-medium mb-1">Gender</label>
               <select
                 name="gender"
-                value={formData.gender}
+                value={formData.gender || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               >
@@ -308,7 +365,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="tel"
                 name="phone_number"
-                value={formData.phone_number}
+                value={formData.phone_number || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -321,7 +378,7 @@ for (let [key, value] of formDataToSend.entries()) {
             <input
               type="text"
               name="address"
-              value={formData.address}
+              value={formData.address || ''}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
@@ -333,7 +390,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="country"
-                value={formData.country}
+                value={formData.country || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -344,7 +401,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="state"
-                value={formData.state}
+                value={formData.state || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -355,7 +412,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="city"
-                value={formData.city}
+                value={formData.city || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -366,7 +423,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="postal_code"
-                value={formData.postal_code}
+                value={formData.postal_code || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -382,7 +439,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <label className="block text-sm font-medium mb-1">Mentor Type*</label>
               <select
                 name="mentor_type"
-                value={formData.mentor_type}
+                value={formData.mentor_type || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 required
@@ -402,7 +459,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="department"
-                value={formData.department}
+                value={formData.department || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -413,7 +470,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="expertise"
-                value={formData.expertise}
+                value={formData.expertise || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 required
@@ -426,7 +483,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="number"
                 name="years_of_experience"
-                value={formData.years_of_experience}
+                value={formData.years_of_experience || ''}
                 onChange={handleChange}
                 min="0"
                 className="w-full border border-gray-300 rounded px-3 py-2"
@@ -438,7 +495,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="current_company"
-                value={formData.current_company}
+                value={formData.current_company || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -449,7 +506,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="current_position"
-                value={formData.current_position}
+                value={formData.current_position || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
@@ -459,17 +516,16 @@ for (let [key, value] of formDataToSend.entries()) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm font-medium mb-1">Skills</label>
-              <select
-                name="skill_ids"
-                multiple
-                value={formData.skill_ids}
-                onChange={handleMultiSelectChange}
+              <select 
+                name="skill_ids" 
+                multiple 
+                value={formData.skill_ids || []} 
+                onChange={handleMultiSelectChange} 
                 className="w-full border border-gray-300 rounded px-3 py-2 h-32"
               >
                 {Array.isArray(skills) && skills.map(skill => (
-    <div key={skill}>{skill}</div>
-))}
-
+                  <option key={skill.id} value={skill.id}>{skill.name}</option>
+                ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple skills</p>
             </div>
@@ -479,13 +535,14 @@ for (let [key, value] of formDataToSend.entries()) {
               <select
                 name="competition_type_ids"
                 multiple
-                value={formData.competition_type_ids}
+                value={formData.competition_type_ids || ''}
                 onChange={handleMultiSelectChange}
                 className="w-full border border-gray-300 rounded px-3 py-2 h-32"
               >
                 {Array.isArray(competitionTypes) && competitionTypes.map(type => (
-  <option key={type.id} value={type.id}>{type.name}</option>
-))}
+                  <option key={type.id} value={type.id}>{type.name}</option>
+                ))}
+
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple types</p>
             </div>
@@ -501,7 +558,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="url"
                 name="linkedin"
-                value={formData.linkedin}
+                value={formData.linkedin || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="https://linkedin.com/in/username"
@@ -513,7 +570,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="url"
                 name="github"
-                value={formData.github}
+                value={formData.github || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="https://github.com/username"
@@ -525,7 +582,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="url"
                 name="website"
-                value={formData.website}
+                value={formData.website || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="https://yourwebsite.com"
@@ -537,7 +594,7 @@ for (let [key, value] of formDataToSend.entries()) {
             <label className="block text-sm font-medium mb-1">Bio</label>
             <textarea
               name="bio"
-              value={formData.bio}
+              value={formData.bio || ''}
               onChange={handleChange}
               rows="4"
               className="w-full border border-gray-300 rounded px-3 py-2"
@@ -550,7 +607,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <label className="block text-sm font-medium mb-1">Certifications</label>
               <textarea
                 name="certifications"
-                value={formData.certifications}
+                value={formData.certifications || ''}
                 onChange={handleChange}
                 rows="3"
                 className="w-full border border-gray-300 rounded px-3 py-2"
@@ -562,7 +619,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <label className="block text-sm font-medium mb-1">Achievements</label>
               <textarea
                 name="achievements"
-                value={formData.achievements}
+                value={formData.achievements || ''}
                 onChange={handleChange}
                 rows="3"
                 className="w-full border border-gray-300 rounded px-3 py-2"
@@ -576,7 +633,7 @@ for (let [key, value] of formDataToSend.entries()) {
             <input
               type="text"
               name="languages_spoken"
-              value={formData.languages_spoken}
+              value={formData.languages_spoken || ''}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
               placeholder="English, Spanish, etc."
@@ -592,7 +649,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <label className="block text-sm font-medium mb-1">Availability Status</label>
               <select
                 name="availability_status"
-                value={formData.availability_status}
+                value={formData.availability_status || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               >
@@ -607,7 +664,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="number"
                 name="max_teams"
-                value={formData.max_teams}
+                value={formData.max_teams || ''}
                 onChange={handleChange}
                 min="1"
                 className="w-full border border-gray-300 rounded px-3 py-2"
@@ -619,7 +676,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="available_days"
-                value={formData.available_days}
+                value={formData.available_days || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="Mon, Wed, Fri"
@@ -631,7 +688,7 @@ for (let [key, value] of formDataToSend.entries()) {
               <input
                 type="text"
                 name="available_times"
-                value={formData.available_times}
+                value={formData.available_times || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="6pm-9pm EST"
