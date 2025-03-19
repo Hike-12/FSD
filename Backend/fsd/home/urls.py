@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
     # Auth-related
     # path('csrf/', views.get_csrf_token, name='get_csrf_token'),
@@ -19,4 +20,11 @@ urlpatterns = [
     path('api/competition-types/', views.list_competition_types, name='list_competition_types'),
     
     path('api/user/', views.get_user_info, name='get_user_info'),
+    
+    # Student Profile
+    path('student/profile/', views.student_profile, name='student_profile'),
+    path('student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
+    path('student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
 ]
+
+

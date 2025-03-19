@@ -4,7 +4,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
-    CustomUser, MentorProfile, StudentProfile, Skill, StudentSkill,
+    CustomUser, MentorProfile, StudentProfile, Skill,
     SDG, CompetitionType, Competition
 )
 
@@ -48,11 +48,11 @@ class SkillAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 # StudentSkill Admin
-@admin.register(StudentSkill)
-class StudentSkillAdmin(admin.ModelAdmin):
-    list_display = ('student', 'skill', 'proficiency_level', 'years_of_experience', 'projects_completed')
-    list_filter = ('proficiency_level',)
-    search_fields = ('student__full_name', 'skill__name')
+# @admin.register(StudentSkill)
+# class StudentSkillAdmin(admin.ModelAdmin):
+#     list_display = ('student', 'skill', 'proficiency_level', 'years_of_experience', 'projects_completed')
+#     list_filter = ('proficiency_level',)
+#     search_fields = ('student__full_name', 'skill__name')
 
 # SDG Admin
 @admin.register(SDG)

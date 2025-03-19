@@ -185,7 +185,7 @@ class StudentProfile(models.Model):
     )
     
     # Skills and Experience
-    skills = models.ManyToManyField('Skill', through='StudentSkill', related_name='students')
+    skills = models.ManyToManyField('Skill', related_name='students', blank=True)
     extracurricular_activities = models.TextField(blank=True)
     achievements = models.TextField(blank=True)
     
@@ -247,25 +247,25 @@ class Skill(models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
 
-class StudentSkill(models.Model):
-    PROFICIENCY_LEVELS = [
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced'),
-        ('expert', 'Expert'),
-    ]
+# class StudentSkill(models.Model):
+#     PROFICIENCY_LEVELS = [
+#         ('beginner', 'Beginner'),
+#         ('intermediate', 'Intermediate'),
+#         ('advanced', 'Advanced'),
+#         ('expert', 'Expert'),
+#     ]
     
-    student = models.ForeignKey('StudentProfile', on_delete=models.CASCADE)
-    skill = models.ForeignKey('Skill', on_delete=models.CASCADE)
-    proficiency_level = models.CharField(max_length=15, choices=PROFICIENCY_LEVELS)
-    years_of_experience = models.FloatField(default=0)
-    projects_completed = models.PositiveIntegerField(default=0)
+#     student = models.ForeignKey('StudentProfile', on_delete=models.CASCADE)
+#     skill = models.ForeignKey('Skill', on_delete=models.CASCADE)
+#     proficiency_level = models.CharField(max_length=15, choices=PROFICIENCY_LEVELS)
+#     years_of_experience = models.FloatField(default=0)
+#     projects_completed = models.PositiveIntegerField(default=0)
     
-    class Meta:
-        unique_together = ['student', 'skill']
+#     class Meta:
+#         unique_together = ['student', 'skill']
     
-    def __str__(self):
-        return f"{self.student.full_name} - {self.skill.name} ({self.proficiency_level})"
+#     def __str__(self):
+#         return f"{self.student.full_name} - {self.skill.name} ({self.proficiency_level})"
 
 class SDG(models.Model):
     number = models.PositiveIntegerField(unique=True)

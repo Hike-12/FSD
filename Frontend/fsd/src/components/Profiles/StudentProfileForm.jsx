@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const MentorProfileForm = () => {
+const StudentProfileForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [skills, setSkills] = useState([]);
   const [competitionTypes, setCompetitionTypes] = useState([]);
+  const [pastCompetitions, setPastCompetitions] = useState([]);
   const [existingProfile, setExistingProfile] = useState(null);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -17,111 +18,129 @@ const MentorProfileForm = () => {
     state: '',
     city: '',
     postal_code: '',
-    mentor_type: '',
+    education_level: '',
+    student_id: '',
     department: '',
-    expertise: '',
-    years_of_experience: '',
-    current_company: '',
-    current_position: '',
+    year_of_study: '',
+    gpa: '',
     skill_ids: [],
+    extracurricular_activities: '',
+    achievements: '',
     competition_type_ids: [],
+    preferred_team_roles: '',
+    past_competition_ids: [],
+    emergency_contact_name: '',
+    emergency_contact_number: '',
+    hobbies: '',
+    career_goal: '',
+    languages_spoken: '',
+    learning_style: '',
     linkedin: '',
     github: '',
-    website: '',
-    bio: '',
-    certifications: '',
-    achievements: '',
-    languages_spoken: '',
-    availability_status: 'Available',
-    available_days: '',
-    available_times: '',
-    max_teams: 1,
-    profile_picture: null
+    portfolio: '',
+    profile_picture: null,
+    is_active: true
   });
   const [errors, setErrors] = useState({});
   const [submitMessage, setSubmitMessage] = useState('');
-  const getAccessToken = () => localStorage.getItem('access');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-    
-        // Get CSRF token
-        // await fetch('csrf/', { credentials: 'include' });
-        // console.log('CSRF token fetched successfully');
-    
+        
         // Fetch skills
         try {
-          const skillsResponse = await fetch('/api/skills/', {
+          const skillsResponse = await fetch('http://127.0.0.1:8000/api/skills/', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json',
+            headers: { 
+              'Content-Type': 'application/json',
               'Authorization': `Token ${localStorage.getItem('authToken')}`,
-             },
+            },
             credentials: 'include',
           });
           const skillsData = await skillsResponse.json();
-          console.log('Skills data:', skillsData);
           if (skillsData.skills) {
-            console.log('Skills array found');
-            setSkills(skillsData.skills); // Extract the skills array
+            setSkills(skillsData.skills);
           } else {
-            setSkills(skillsData); // Use the entire response if it's already an array
+            setSkills(skillsData);
           }
-          console.log('Skills fetched successfully');
         } catch (error) {
           console.error('Error fetching skills data:', error);
           setErrors({ general: 'Failed to load skills. Please try again later.' });
         }
-    
+        
         // Fetch competition types
         try {
-          const competitionTypesResponse = await fetch('http://localhost:8000/api/competition-types/', {
+          const competitionTypesResponse = await fetch('http://127.0.0.1:8000/api/competition-types/', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json',
+            headers: { 
+              'Content-Type': 'application/json',
               'Authorization': `Token ${localStorage.getItem('authToken')}`,
-             },
+            },
             credentials: 'include',
           });
           const competitionTypesData = await competitionTypesResponse.json();
-          console.log('Competition types data:', competitionTypesData);
-          if(competitionTypesData.competition_types) {
-            console.log('Competition types array found');
-            setCompetitionTypes(competitionTypesData.competition_types); // Extract the competition types array
+          if (competitionTypesData.competition_types) {
+            setCompetitionTypes(competitionTypesData.competition_types);
+          } else {
+            setCompetitionTypes(competitionTypesData);
           }
-          else {
-            setCompetitionTypes(competitionTypesData); // Use the entire response if it's already an array
-          }
-          console.log('Competition types fetched successfully');
         } catch (error) {
           console.error('Error fetching competition types data:', error);
           setErrors({ general: 'Failed to load competition types.' });
         }
-    
-        // Fetch existing profile
+        
+        // Fetch past competitions
         try {
-          const profileResponse = await fetch('http://localhost:8000/api/mentor-profiles/my_profile/', {
+          const pastCompetitionsResponse = await fetch('http://127.0.0.1:8000/api/competitions/', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json',
+            headers: { 
+              'Content-Type': 'application/json',
               'Authorization': `Token ${localStorage.getItem('authToken')}`,
-             },
+            },
             credentials: 'include',
           });
-    
-          if (!profileResponse.ok) throw new Error('No profile found');
-    
-          const profileData = await profileResponse.json();
-          console.log('Existing profile data:', profileData);
-          setExistingProfile(profileData);
-    
-          // Pre-fill form...
-          setFormData({
-            ...formData,
-            ...profileData,
-            skill_ids: profileData.skills.map(skill => skill.id) || [],
-            competition_type_ids: profileData.competition_types.map(type => type.id) || [],
-            profile_picture: null,
+          const pastCompetitionsData = await pastCompetitionsResponse.json();
+          if (pastCompetitionsData.competitions) {
+            setPastCompetitions(pastCompetitionsData.competitions);
+          } else {
+            setPastCompetitions(pastCompetitionsData);
+          }
+        } catch (error) {
+          console.error('Error fetching past competitions data:', error);
+          setErrors({ general: 'Failed to load past competitions.' });
+        }
+        
+        // Fetch existing profile
+        try {
+          const profileResponse = await fetch('http://127.0.0.1:8000/api/student/profile/', {
+            method: 'GET',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${localStorage.getItem('authToken')}`,
+            },
+            credentials: 'include',
           });
+          console.log('Profile response:', profileResponse);
+          if (!profileResponse.ok) throw new Error('No profile found');
+          
+          const profileData = await profileResponse.json();
+          setExistingProfile(profileData);
+          
+          // Pre-fill form with existing data
+          const prefilledData = {
+            ...profileData,
+            skill_ids: profileData.skills ? 
+              skills.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id) : [],
+            competition_type_ids: profileData.preferred_competition_types ? 
+              competitionTypes.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id) : [],
+            past_competition_ids: profileData.past_competitions ? 
+              pastCompetitions.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id) : [],
+            profile_picture: null
+          };
+          
+          setFormData(prefilledData);
         } catch (error) {
           console.log('No existing profile found');
         }
@@ -133,7 +152,6 @@ const MentorProfileForm = () => {
       }
     };
     
-
     fetchData();
   }, []);
 
@@ -164,89 +182,62 @@ const MentorProfileForm = () => {
     });
   };
 
-  const getCsrfToken = async () => {
-    const response = await fetch('csrf/');
-    const data = await response.json();
-    return data.csrfToken; // Assuming the token is returned in this format
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Original form data object:', formData);
     setErrors({});
     setSubmitMessage('');
   
     try {
       const formDataToSend = new FormData();
-
-// Append simple string/number fields
-formDataToSend.append('full_name', formData.full_name);
-formDataToSend.append('date_of_birth', formData.date_of_birth);
-formDataToSend.append('gender', formData.gender);
-formDataToSend.append('phone_number', formData.phone_number);
-formDataToSend.append('address', formData.address);
-formDataToSend.append('country', formData.country);
-formDataToSend.append('state', formData.state);
-formDataToSend.append('city', formData.city);
-formDataToSend.append('postal_code', formData.postal_code);
-formDataToSend.append('mentor_type', formData.mentor_type);
-formDataToSend.append('department', formData.department);
-formDataToSend.append('expertise', formData.expertise);
-formDataToSend.append('years_of_experience', formData.years_of_experience);
-formDataToSend.append('current_company', formData.current_company);
-formDataToSend.append('current_position', formData.current_position);
-formDataToSend.append('linkedin', formData.linkedin);
-formDataToSend.append('github', formData.github);
-formDataToSend.append('website', formData.website);
-formDataToSend.append('bio', formData.bio);
-formDataToSend.append('certifications', formData.certifications);
-formDataToSend.append('achievements', formData.achievements);
-formDataToSend.append('languages_spoken', formData.languages_spoken);
-formDataToSend.append('availability_status', formData.availability_status);
-formDataToSend.append('available_days', formData.available_days);
-formDataToSend.append('available_times', formData.available_times);
-formDataToSend.append('max_teams', formData.max_teams);
-
-// Append arrays
-if (Array.isArray(formData.skill_ids)) {
-  formData.skill_ids.forEach(id => formDataToSend.append('skill_ids', id));
-}
-
-if (Array.isArray(formData.competition_type_ids)) {
-  formData.competition_type_ids.forEach(id => formDataToSend.append('competition_type_ids', id));
-}
-
-// Append file
-if (formData.profile_picture) {
-  formDataToSend.append('profile_picture', formData.profile_picture);
-}
-
-// Debug: Show all FormData entries
-console.log("Final FormData entries:");
-for (let [key, value] of formDataToSend.entries()) {
-  console.log(`${key}: ${value}`);
-}
-
       
-      // For PUT requests with FormData, we may need to use the fetch API differently
+      // Append simple string/number fields
+      Object.entries(formData).forEach(([key, value]) => {
+        // Skip arrays and files, they will be handled separately
+        if (!Array.isArray(value) && key !== 'profile_picture' && value !== null && value !== undefined) {
+          formDataToSend.append(key, value);
+        }
+      });
+      
+      // Append arrays
+      if (Array.isArray(formData.skill_ids)) {
+        formData.skill_ids.forEach(id => formDataToSend.append('skill_ids', id));
+      }
+      
+      if (Array.isArray(formData.competition_type_ids)) {
+        formData.competition_type_ids.forEach(id => formDataToSend.append('competition_type_ids', id));
+      }
+      
+      if (Array.isArray(formData.past_competition_ids)) {
+        formData.past_competition_ids.forEach(id => formDataToSend.append('past_competition_ids', id));
+      }
+      
+      // Append file
+      if (formData.profile_picture) {
+        formDataToSend.append('profile_picture', formData.profile_picture);
+      }
+      
+      // Debug: Show all FormData entries
+      console.log("Final FormData entries:");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+      
+      // Send the request
       let response;
       if (existingProfile) {
-        console.log(`Sending PUT request to /api/mentor-profiles/${existingProfile.id}/`);
+        console.log(`Sending POST request to /api/student/profile/${existingProfile.id}/update/`);
         
-        // Important: For PUT requests with FormData, some APIs require special handling
-        response = await fetch(`/api/mentor-profiles/${existingProfile.id}/`, {
+        response = await fetch(`http://127.0.0.1:8000/api/student/profile/${existingProfile.id}/update/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${localStorage.getItem('authToken')}`,
-            // Note: Do NOT set Content-Type header when sending FormData
-            // browser will set the correct multipart/form-data with boundary
           },
           credentials: 'include',
           body: formDataToSend,
         });
       } else {
-        console.log('Sending POST request to /api/mentor-profiles/create_or_update/');
-        response = await fetch('/api/mentor-profiles/create_or_update/', {
+        console.log('Sending POST request to /api/student/profile/update/');
+        response = await fetch('http://127.0.0.1:8000/api/student/profile/update/', {
           method: 'POST',
           headers: {
             'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -255,7 +246,7 @@ for (let [key, value] of formDataToSend.entries()) {
           body: formDataToSend,
         });
       }
-  
+      
       // Log response status
       console.log(`Response status: ${response.status}`);
       const responseText = await response.text();
@@ -268,19 +259,19 @@ for (let [key, value] of formDataToSend.entries()) {
       } catch (e) {
         console.log('Could not parse response as JSON');
       }
-  
+      
       if (!response.ok) {
         throw { response: { data: responseData || responseText } };
       }
-  
+      
       setSubmitMessage(existingProfile 
         ? 'Profile updated successfully!' 
         : 'Profile created successfully!');
-  
+      
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
-  
+      
     } catch (error) {
       console.error('Error submitting form:', error);
       if (error.response && error.response.data) {
@@ -290,7 +281,6 @@ for (let [key, value] of formDataToSend.entries()) {
       }
     }
   };
-  
 
   if (loading) {
     return <div className="text-center p-8">Loading...</div>;
@@ -299,7 +289,7 @@ for (let [key, value] of formDataToSend.entries()) {
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">
-        {existingProfile ? 'Update Your Mentor Profile' : 'Create Your Mentor Profile'}
+        {existingProfile ? 'Update Your Student Profile' : 'Create Your Student Profile'}
       </h1>
       
       {submitMessage && (
@@ -431,27 +421,38 @@ for (let [key, value] of formDataToSend.entries()) {
           </div>
         </div>
         
-        {/* Professional Information Section */}
+        {/* Education Information Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Professional Information</h2>
+          <h2 className="text-xl font-semibold mb-4">Education Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Mentor Type*</label>
+              <label className="block text-sm font-medium mb-1">Education Level*</label>
               <select
-                name="mentor_type"
-                value={formData.mentor_type || ''}
+                name="education_level"
+                value={formData.education_level || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 required
               >
-                <option value="">Select Mentor Type</option>
-                <option value="Technical">Technical</option>
-                <option value="Business">Business</option>
-                <option value="Industry Expert">Industry Expert</option>
-                <option value="Academic">Academic</option>
-                <option value="Career Coach">Career Coach</option>
+                <option value="">Select Education Level</option>
+                <option value="High School">High School</option>
+                <option value="Bachelor's">Bachelor's</option>
+                <option value="Master's">Master's</option>
+                <option value="PhD">PhD</option>
+                <option value="Other">Other</option>
               </select>
-              {errors.mentor_type && <p className="text-red-500 text-xs mt-1">{errors.mentor_type}</p>}
+              {errors.education_level && <p className="text-red-500 text-xs mt-1">{errors.education_level}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Student ID</label>
+              <input
+                type="text"
+                name="student_id"
+                value={formData.student_id || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
             </div>
             
             <div>
@@ -466,50 +467,46 @@ for (let [key, value] of formDataToSend.entries()) {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Expertise*</label>
-              <input
-                type="text"
-                name="expertise"
-                value={formData.expertise || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-              {errors.expertise && <p className="text-red-500 text-xs mt-1">{errors.expertise}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Years of Experience</label>
+              <label className="block text-sm font-medium mb-1">Year of Study</label>
               <input
                 type="number"
-                name="years_of_experience"
-                value={formData.years_of_experience || ''}
+                name="year_of_study"
+                value={formData.year_of_study || ''}
+                onChange={handleChange}
+                min="1"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">GPA</label>
+              <input
+                type="number"
+                name="gpa"
+                value={formData.gpa || ''}
                 onChange={handleChange}
                 min="0"
+                max="4.0"
+                step="0.01"
                 className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="0.00 - 4.00"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Current Company</label>
-              <input
-                type="text"
-                name="current_company"
-                value={formData.current_company || ''}
+              <label className="block text-sm font-medium mb-1">Learning Style</label>
+              <select
+                name="learning_style"
+                value={formData.learning_style || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Current Position</label>
-              <input
-                type="text"
-                name="current_position"
-                value={formData.current_position || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
+              >
+                <option value="">Select Learning Style</option>
+                <option value="Visual">Visual</option>
+                <option value="Auditory">Auditory</option>
+                <option value="Reading/Writing">Reading/Writing</option>
+                <option value="Kinesthetic">Kinesthetic</option>
+              </select>
             </div>
           </div>
           
@@ -531,27 +528,150 @@ for (let [key, value] of formDataToSend.entries()) {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Competition Types</label>
+              <label className="block text-sm font-medium mb-1">Preferred Competition Types</label>
               <select
                 name="competition_type_ids"
                 multiple
-                value={formData.competition_type_ids || ''}
+                value={formData.competition_type_ids || []}
                 onChange={handleMultiSelectChange}
                 className="w-full border border-gray-300 rounded px-3 py-2 h-32"
               >
                 {Array.isArray(competitionTypes) && competitionTypes.map(type => (
                   <option key={type.id} value={type.id}>{type.name}</option>
                 ))}
-
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple types</p>
             </div>
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Preferred Team Roles</label>
+              <input
+                type="text"
+                name="preferred_team_roles"
+                value={formData.preferred_team_roles || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="Leader, Designer, Developer, etc."
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Past Competitions</label>
+              <select
+                name="past_competition_ids"
+                multiple
+                value={formData.past_competition_ids || []}
+                onChange={handleMultiSelectChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 h-32"
+              >
+                {Array.isArray(pastCompetitions) && pastCompetitions.map(comp => (
+                  <option key={comp.id} value={comp.id}>{comp.name}</option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple competitions</p>
+            </div>
+          </div>
         </div>
         
-        {/* Social & Bio Section */}
+        {/* Extra Information Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Social Media & Bio</h2>
+          <h2 className="text-xl font-semibold mb-4">Additional Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Extracurricular Activities</label>
+              <textarea
+                name="extracurricular_activities"
+                value={formData.extracurricular_activities || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your extracurricular activities..."
+              ></textarea>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Achievements</label>
+              <textarea
+                name="achievements"
+                value={formData.achievements || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your achievements..."
+              ></textarea>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Hobbies</label>
+              <textarea
+                name="hobbies"
+                value={formData.hobbies || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your hobbies..."
+              ></textarea>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Career Goal</label>
+              <textarea
+                name="career_goal"
+                value={formData.career_goal || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="Describe your career goals..."
+              ></textarea>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-1">Languages Spoken</label>
+            <input
+              type="text"
+              name="languages_spoken"
+              value={formData.languages_spoken || ''}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              placeholder="English, Spanish, etc."
+            />
+          </div>
+        </div>
+        
+        {/* Emergency Contact Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Emergency Contact</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Emergency Contact Name</label>
+              <input
+                type="text"
+                name="emergency_contact_name"
+                value={formData.emergency_contact_name || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Emergency Contact Number</label>
+              <input
+                type="tel"
+                name="emergency_contact_number"
+                value={formData.emergency_contact_number || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Social Media Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Social Media & Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">LinkedIn</label>
@@ -578,120 +698,14 @@ for (let [key, value] of formDataToSend.entries()) {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Website</label>
+              <label className="block text-sm font-medium mb-1">Portfolio</label>
               <input
                 type="url"
-                name="website"
-                value={formData.website || ''}
+                name="portfolio"
+                value={formData.portfolio || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="https://yourwebsite.com"
-              />
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Bio</label>
-            <textarea
-              name="bio"
-              value={formData.bio || ''}
-              onChange={handleChange}
-              rows="4"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="Tell us about yourself..."
-            ></textarea>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Certifications</label>
-              <textarea
-                name="certifications"
-                value={formData.certifications || ''}
-                onChange={handleChange}
-                rows="3"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="List your certifications..."
-              ></textarea>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Achievements</label>
-              <textarea
-                name="achievements"
-                value={formData.achievements || ''}
-                onChange={handleChange}
-                rows="3"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="List your achievements..."
-              ></textarea>
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Languages Spoken</label>
-            <input
-              type="text"
-              name="languages_spoken"
-              value={formData.languages_spoken || ''}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="English, Spanish, etc."
-            />
-          </div>
-        </div>
-        
-        {/* Availability Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Availability</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Availability Status</label>
-              <select
-                name="availability_status"
-                value={formData.availability_status || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="Available">Available</option>
-                <option value="Limited Availability">Limited Availability</option>
-                <option value="Unavailable">Unavailable</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Maximum Teams</label>
-              <input
-                type="number"
-                name="max_teams"
-                value={formData.max_teams || ''}
-                onChange={handleChange}
-                min="1"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Available Days</label>
-              <input
-                type="text"
-                name="available_days"
-                value={formData.available_days || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="Mon, Wed, Fri"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Available Times</label>
-              <input
-                type="text"
-                name="available_times"
-                value={formData.available_times || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="6pm-9pm EST"
+                placeholder="https://yourportfolio.com"
               />
             </div>
           </div>
@@ -711,12 +725,7 @@ for (let [key, value] of formDataToSend.entries()) {
             />
             {existingProfile && existingProfile.profile_picture && (
               <div className="mt-2">
-                <p className="text-sm text-gray-500">Current profile picture:</p>
-                <img
-                  src={existingProfile.profile_picture}
-                  alt="Profile"
-                  className="mt-1 h-32 w-32 rounded-full object-cover border"
-                />
+                <p className="text-sm text-gray-500">Current profile picture: {existingProfile.profile_picture.split('/').pop()}</p>
               </div>
             )}
           </div>
@@ -736,4 +745,4 @@ for (let [key, value] of formDataToSend.entries()) {
   );
 };
 
-export default MentorProfileForm;
+export default StudentProfileForm;

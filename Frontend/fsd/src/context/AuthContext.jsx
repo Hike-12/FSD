@@ -88,6 +88,7 @@ export const AuthProvider = ({ children }) => {
             console.log('Login data:', data);
             
             localStorage.setItem('authToken', data.token);
+            localStorage.setItem('role', data.role);
             await fetchUser();
             return true;
         } catch (error) {
