@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 const AuthContext = createContext();
 
@@ -6,119 +6,89 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [csrfToken, setCsrfToken] = useState('');
     const [loading, setLoading] = useState(true);
+    const initRef = useRef(false);
 
-    const fetchCsrfToken = async () => {
+    // const fetchCsrfToken = async () => {
+    //     try {
+    //         const response = await fetch('http://127.0.0.1:8000/csrf/', {
+    //             method: 'GET',
+    //             credentials: 'include',
+    //         });
+    //         console.log('Response:', response);
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch CSRF token');
+    //         }
+    //         const data = await response.json();
+    //         console.log('Fetched CSRF Token:', data.csrfToken);
+    //         setCsrfToken(data.csrfToken);
+    //         return data.csrfToken;
+    //     } catch (error) {
+    //         console.error('Error fetching CSRF token:', error);
+    //     }
+    // };
+
+    const fetchUser = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/csrf/', {
+            const response = await fetch('http://127.0.0.1:8000/api/user/', {
                 method: 'GET',
-                credentials: 'include' // Important for cookies
-            });
-            const data = await response.json();
-            setCsrfToken(data.csrfToken);
-        } catch (error) {
-            console.error('Failed to fetch CSRF token:', error);
-        }
-    };
-
-    const refreshAccessToken = async () => {
-        try {
-            const refreshToken = localStorage.getItem('refresh');
-            if (!refreshToken) {
-                throw new Error('No refresh token available');
-            }
-
-            const response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refresh: refreshToken }),
+                credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to refresh token');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('access', data.access);
-            return data.access;
-        } catch (err) {
-            console.error('Token refresh error:', err.message);
-            throw err;
-        }
-    };
-
-    const checkTokenValidity = async () => {
-        try {
-            const accessToken = localStorage.getItem('access');
-            const role = localStorage.getItem('role');
-            
-            if (!accessToken) {
-                setLoading(false);
-                return;
-            }
-            
-            // Restore user state from localStorage
-            setUser({
-                role,
-                accessToken
-            });
-            
-            // You could add additional validation here if needed
-            // For example, make a request to a protected endpoint
-            // If it fails, try refreshing the token
-            
-            setLoading(false);
-        } catch (error) {
-            console.error('Token validation error:', error);
-            // If validation fails, try refreshing the token
-            try {
-                await refreshAccessToken();
-                const role = localStorage.getItem('role');
-                setUser({
-                    role,
-                    accessToken: localStorage.getItem('access')
-                });
-            } catch (refreshError) {
-                // If refresh fails, log out
-                localStorage.clear();
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+            } else {
                 setUser(null);
             }
+        } catch (error) {
+            console.error('Failed to fetch user:', error);
+            setUser(null);
+        } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        // Initialize auth state
-        fetchCsrfToken();
-        checkTokenValidity();
+        // Only run initialization once
+        if (initRef.current === false) {
+            initRef.current = true;
+            
+            const initAuth = async () => {
+                // await fetchCsrfToken();
+                await fetchUser();
+            };
+            
+            initAuth();
+        }
     }, []);
 
     const login = async (credentials) => {
         try {
+            // Ensure we have a fresh CSRF token before login
+            // if (!token) {
+            //     const freshToken = await fetchCsrfToken();
+            //     token = freshToken;
+            // }
+            
             const response = await fetch('http://127.0.0.1:8000/api/login/', {
                 method: 'POST',
                 headers: {
+                    // 'Authorization': `Token ${localStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
                 },
-                credentials: 'include', // Important for sending cookies
+                credentials: 'include',
                 body: JSON.stringify(credentials)
             });
-
+            
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Login failed');
             }
-
             const data = await response.json();
-
-            setUser({
-                username: credentials.username,
-                role: data.role,
-                accessToken: data.access
-            });
-            localStorage.setItem('access', data.access);
-            localStorage.setItem('refresh', data.refresh);
-            localStorage.setItem('role', data.role);
+            console.log('Login data:', data);
+            
+            localStorage.setItem('authToken', data.token);
+            await fetchUser();
             return true;
         } catch (error) {
             console.error('Login error:', error);
@@ -128,32 +98,27 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            const refreshToken = localStorage.getItem('refresh');
             await fetch('http://127.0.0.1:8000/api/logout/', {
                 method: 'POST',
-                headers: { 
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken 
                 },
-                credentials: 'include',
-                body: JSON.stringify({ refresh: refreshToken })
+                credentials: 'include'
             });
         } catch (err) {
             console.error('Logout error:', err);
         } finally {
-            // Clear local storage and state even if the server request fails
-            localStorage.clear();
             setUser(null);
         }
     };
-    
+
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            login, 
-            logout, 
-            csrfToken, 
-            refreshAccessToken,
+        <AuthContext.Provider value={{
+            user,
+            login,
+            logout,
+            // csrfToken,
             loading
         }}>
             {children}

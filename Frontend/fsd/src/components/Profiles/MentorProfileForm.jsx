@@ -40,101 +40,85 @@ const MentorProfileForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [submitMessage, setSubmitMessage] = useState('');
+  const getAccessToken = () => localStorage.getItem('access');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+    
         // Get CSRF token
-        await fetch('/api/csrf/');
+        await fetch('csrf/', { credentials: 'include' });
         console.log('CSRF token fetched successfully');
+    
         // Fetch skills
-        try{
-
-            const skillsResponse = await fetch('/api/skills/');
-            const skillsData = await skillsResponse.json();
-            console.log(skillsData);
-            setSkills(skillsData);
-            console.log('Skills fetched successfully');
-        }
-        catch(error){
-            console.error('Error fetching skills data:', error);
-            setErrors({ general: 'Failed to load necessary data. Please try again later.' });
-        }
-        
-        // Fetch competition types
-        try{
-
-            const competitionTypesResponse = await fetch('/api/competition-types/');
-            const competitionTypesData = await competitionTypesResponse.json();
-            console.log(competitionTypesData);
-            setCompetitionTypes(competitionTypesData);
-            console.log('Competition types fetched successfully');
-        }
-        catch(error){
-            console.error('Error fetching competition types data:', error);
-            setErrors({ general: 'Failed to load necessary data. Please try again later.' });
-        }
-        
-        // Try to fetch existing profile
         try {
-          const profileResponse = await fetch('/api/mentor-profiles/my_profile/', {
-            headers: {
-              'Content-Type': 'application/json',
-            },
+          const skillsResponse = await fetch('/api/skills/', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json',
+              'Authorization': `Token ${localStorage.getItem('authToken')}`,
+             },
+            credentials: 'include',
           });
-          console.log(profileResponse);
-          if (!profileResponse.ok) {
-            throw new Error('No profile found');
-          }
-          
+          const skillsData = await skillsResponse.json();
+          setSkills(skillsData);
+          console.log('Skills fetched successfully');
+        } catch (error) {
+          console.error('Error fetching skills data:', error);
+          setErrors({ general: 'Failed to load skills. Please try again later.' });
+        }
+    
+        // Fetch competition types
+        try {
+          const competitionTypesResponse = await fetch('http://localhost:8000/api/competition-types/', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json',
+              'Authorization': `Token ${localStorage.getItem('authToken')}`,
+             },
+            credentials: 'include',
+          });
+          const competitionTypesData = await competitionTypesResponse.json();
+          setCompetitionTypes(competitionTypesData);
+          console.log('Competition types fetched successfully');
+        } catch (error) {
+          console.error('Error fetching competition types data:', error);
+          setErrors({ general: 'Failed to load competition types.' });
+        }
+    
+        // Fetch existing profile
+        try {
+          const profileResponse = await fetch('http://localhost:8000/api/mentor-profiles/my_profile/', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json',
+              'Authorization': `Token ${localStorage.getItem('authToken')}`,
+             },
+            credentials: 'include',
+          });
+    
+          if (!profileResponse.ok) throw new Error('No profile found');
+    
           const profileData = await profileResponse.json();
           setExistingProfile(profileData);
-          
-          // Pre-fill form with existing data
+    
+          // Pre-fill form...
           setFormData({
-            full_name: profileData.full_name || '',
-            date_of_birth: profileData.date_of_birth || '',
-            gender: profileData.gender || '',
-            phone_number: profileData.phone_number || '',
-            address: profileData.address || '',
-            country: profileData.country || '',
-            state: profileData.state || '',
-            city: profileData.city || '',
-            postal_code: profileData.postal_code || '',
-            mentor_type: profileData.mentor_type || '',
-            department: profileData.department || '',
-            expertise: profileData.expertise || '',
-            years_of_experience: profileData.years_of_experience || '',
-            current_company: profileData.current_company || '',
-            current_position: profileData.current_position || '',
+            ...formData,
+            ...profileData,
             skill_ids: profileData.skills.map(skill => skill.id) || [],
             competition_type_ids: profileData.competition_types.map(type => type.id) || [],
-            linkedin: profileData.linkedin || '',
-            github: profileData.github || '',
-            website: profileData.website || '',
-            bio: profileData.bio || '',
-            certifications: profileData.certifications || '',
-            achievements: profileData.achievements || '',
-            languages_spoken: profileData.languages_spoken || '',
-            availability_status: profileData.availability_status || 'Available',
-            available_days: profileData.available_days || '',
-            available_times: profileData.available_times || '',
-            max_teams: profileData.max_teams || 1,
-            profile_picture: null // Can't pre-fill file input
+            profile_picture: null,
           });
         } catch (error) {
-          // No existing profile - that's okay
           console.log('No existing profile found');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setErrors({ general: 'Failed to load necessary data. Please try again later.' });
+        setErrors({ general: 'Failed to load necessary data.' });
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchData();
   }, []);
@@ -167,73 +151,79 @@ const MentorProfileForm = () => {
   };
 
   const getCsrfToken = async () => {
-    const response = await fetch('/api/csrf/');
+    const response = await fetch('csrf/');
     const data = await response.json();
     return data.csrfToken; // Assuming the token is returned in this format
   };
 
   const handleSubmit = async (e) => {
+    console.log('Form data:', formData);
     e.preventDefault();
     setErrors({});
     setSubmitMessage('');
-    
+  
     try {
-      // Get CSRF token
-      const csrfToken = await getCsrfToken();
-      
-      // Create FormData object for file upload
+  
       const formDataToSend = new FormData();
-      
-      // Add all form fields to FormData
-      Object.keys(formData).forEach(key => {
-        if (key === 'skill_ids' || key === 'competition_type_ids') {
-          formData[key].forEach(id => {
-            formDataToSend.append(`${key}`, id);
-          });
-        } else if (key === 'profile_picture' && formData[key]) {
-          formDataToSend.append(key, formData[key]);
-        } else if (formData[key] !== null && formData[key] !== '') {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
 
+Object.keys(formData).forEach(key => {
+  // Handle arrays specifically
+  if ((key === 'skill_ids' || key === 'competition_type_ids') && Array.isArray(formData[key])) {
+    if (formData[key].length > 0) {
+      formData[key].forEach(id => formDataToSend.append(key, id));
+    }
+  } 
+  // Handle file upload
+  else if (key === 'profile_picture' && formData[key]) {
+    formDataToSend.append(key, formData[key]);
+  } 
+  // Handle all other fields that aren't null
+  else if (formData[key] !== null) {
+    formDataToSend.append(key, formData[key].toString());
+  }
+});
+
+// Debug: Log what's actually in the FormData
+console.log("FormData entries:");
+for (let [key, value] of formDataToSend.entries()) {
+  console.log(`${key}: ${value}`);
+}
+      
       let response;
+      console.log('Form data to send:', existingProfile ? 'PUT' : 'POST', formDataToSend);
       if (existingProfile) {
-        // Update existing profile
         response = await fetch(`/api/mentor-profiles/${existingProfile.id}/`, {
           method: 'PUT',
           headers: {
-            'X-CSRFToken': csrfToken,
-            // No Content-Type header when using FormData
+            'Authorization': `Token ${localStorage.getItem('authToken')}`,
           },
+          credentials: 'include',
           body: formDataToSend,
         });
       } else {
-        // Create new profile
-        response = await fetch('/api/mentor-profiles/create_profile/', {
+        response = await fetch('/api/mentor-profiles/create_or_update/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': csrfToken,
-            // No Content-Type header when using FormData
+            'Authorization': `Token ${localStorage.getItem('authToken')}`,
           },
+          credentials: 'include',
           body: formDataToSend,
         });
       }
-      
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw { response: { data: errorData } };
       }
-      
+  
       setSubmitMessage(existingProfile 
         ? 'Profile updated successfully!' 
         : 'Profile created successfully!');
-      
-      // Redirect to profile view or dashboard
+  
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
-      
+  
     } catch (error) {
       console.error('Error submitting form:', error);
       if (error.response && error.response.data) {
@@ -243,6 +233,7 @@ const MentorProfileForm = () => {
       }
     }
   };
+  
 
   if (loading) {
     return <div className="text-center p-8">Loading...</div>;
@@ -475,9 +466,10 @@ const MentorProfileForm = () => {
                 onChange={handleMultiSelectChange}
                 className="w-full border border-gray-300 rounded px-3 py-2 h-32"
               >
-                {skills.map(skill => (
-                  <option key={skill.id} value={skill.id}>{skill.name}</option>
-                ))}
+                {Array.isArray(skills) && skills.map(skill => (
+    <div key={skill}>{skill}</div>
+))}
+
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple skills</p>
             </div>
@@ -491,9 +483,9 @@ const MentorProfileForm = () => {
                 onChange={handleMultiSelectChange}
                 className="w-full border border-gray-300 rounded px-3 py-2 h-32"
               >
-                {competitionTypes.map(type => (
-                  <option key={type.id} value={type.id}>{type.name}</option>
-                ))}
+                {Array.isArray(competitionTypes) && competitionTypes.map(type => (
+  <option key={type.id} value={type.id}>{type.name}</option>
+))}
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple types</p>
             </div>

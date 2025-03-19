@@ -39,19 +39,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
+    # 'rest_framework',
+    # 'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'home.CustomUser'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     )
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -137,19 +137,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-CORS_ALLOW_ALL_ORIGINS = True  # This allows all frontend domains to access backend
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React's default Vite server
-]
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-}
-
+# CORS settings
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
+# CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]  # Uncomment for production
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript access
+CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
+CSRF_COOKIE_SAMESITE = 'None'  # Use 'None' for cross-origin in production with Secure=True
+
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_SECURE = True  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None'  # Use 'None' for cross-origin in production with Secure=True
+SESSION_COOKIE_AGE = 1209600  # Two weeks in seconds
+
+# For development, you may need these explicitly set if running on non-standard ports
+SESSION_COOKIE_DOMAIN = None  # Default, uses current domain
+CSRF_COOKIE_DOMAIN = None     # Default, uses current domain

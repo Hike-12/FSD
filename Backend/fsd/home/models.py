@@ -65,7 +65,9 @@ class MentorProfile(models.Model):
     department = models.CharField(max_length=100)
     expertise = models.CharField(max_length=200)
     years_of_experience = models.PositiveIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(70)]
+        validators=[MinValueValidator(0), MaxValueValidator(70)],
+        null=True,  # Allow null in the database
+        blank=True  # Allow empty form input
     )
     current_company = models.CharField(max_length=100, blank=True)
     current_position = models.CharField(max_length=100)

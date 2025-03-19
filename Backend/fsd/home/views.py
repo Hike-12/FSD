@@ -1,200 +1,253 @@
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from django.views.decorators.csrf import ensure_csrf_cookie, get_token
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth import authenticate, login, logout as django_logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
+from django.db.utils import IntegrityError
 from home.models import CustomUser
 import json
-from rest_framework import status
-from rest_framework.views import APIView
-from django.db.utils import IntegrityError
+from django.views.decorators.csrf import csrf_exempt
+from functools import wraps
+from django.core.cache import cache
+import random
+import string
 
-def get_token(request):
-    return request.META.get('CSRF_COOKIE', None)
 
-def get_csrf_token(request):
-    return JsonResponse({'csrfToken': get_token(request)})
+# Modified decorator for token auth
+def api_token_required(view_func):
+    @wraps(view_func)
+    def wrapped(request, *args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Token '):
+            print("Authorization Header:", auth_header)
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+        token = auth_header.split(' ')[1]
+        user_id = cache.get(f'auth_token_{token}')
 
-class UserCreate(APIView):
-    permission_classes = [AllowAny]
+        print("Authorization Header:", auth_header)
+        print("Token:", token)
+        print("User ID from cache:", user_id)
 
-    def post(self, request):
+        if not user_id:
+            return JsonResponse({'error': 'Invalid or expired token'}, status=401)
+
         try:
-            data = request.data
+            request.user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
 
-            # Validate required fields
-            required_fields = ['username', 'password', 'role', 'email']
-            for field in required_fields:
-                if field not in data:
-                    return Response({'error': f'Missing field: {field}'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Create user
-            user = CustomUser.objects.create_user(
-                username=data['username'],
-                email=data['email'],  # Save email
-                password=data['password'],
-                role=data['role']
-            )
-
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'message': 'User created successfully',
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-                'csrfToken': get_token(request),
-                'role': user.role
-            }, status=status.HTTP_201_CREATED)
-
-        except IntegrityError as e:
-            if 'home_customuser.email' in str(e):
-                return Response({'error': 'email needs to be unique'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': 'Integrity error: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return view_func(request, *args, **kwargs)
+    return wrapped
 
 
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def custom_login(request):
-    data = json.loads(request.body)
-    username = data.get('username')
-    password = data.get('password')
-
-    user = authenticate(username=username, password=password)
-    if user:
-        refresh = RefreshToken.for_user(user)
-        return JsonResponse({
-            'message': 'Login successful',
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'csrfToken': get_token(request),
-            'role': user.role
-        })
-    return JsonResponse({'error': 'Invalid credentials'}, status=400)
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def refresh_token(request):
-    data = json.loads(request.body)
-    refresh_token = data.get('refresh')
+@require_http_methods(["POST"])
+def create_user(request):
     try:
-        token = RefreshToken(refresh_token)
-        access_token = str(token.access_token)
+        data = json.loads(request.body)
+        print(data)
+
+        required_fields = ['username', 'password', 'role', 'email']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'Missing field: {field}'}, status=400)
+
+        user = CustomUser.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            password=data['password'],
+            role=data['role']
+        )
+
+        # Auto-login user after registration (optional)
+        # login(request, user)
+
         return JsonResponse({
-            'access': access_token,
-            'csrfToken': get_token(request)
-        })
+            'message': 'User created successfully',
+            'role': user.role,
+            'username': user.username
+        }, status=201)
+
+    except IntegrityError as e:
+        if 'home_customuser.email' in str(e):
+            return JsonResponse({'error': 'Email must be unique'}, status=400)
+        return JsonResponse({'error': 'Integrity error: ' + str(e)}, status=400)
+
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=401)
+        return JsonResponse({'error': str(e)}, status=400)
 
 @csrf_exempt
-@api_view(['POST'])
-def logout(request):
+@require_http_methods(["POST"])
+def custom_login(request):
     try:
-        refresh_token = request.data.get('refresh') or json.loads(request.body).get('refresh')
-        
-        if not refresh_token:
-            return JsonResponse({'error': 'Refresh token is required'}, status=400)
+        print("At start of login", request.body)
+        data = json.loads(request.body)
+        print("Data", data)
+        username = data.get('username')
+        password = data.get('password')
+
+        user = authenticate(username=username, password=password)
+        print(user)
+        if user:
+            login(request, user)
+            token = ''.join(random.choices(string.ascii_letters + string.digits, k=40))
             
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        
+            # Store token in database or cache
+            cache.set(f'auth_token_{token}', user.id, timeout=3600*24)
+            print("Session ID after login:", request.session.session_key)
+            print("Session contents:", dict(request.session))
+            print("Is user authenticated after login:", request.user.is_authenticated)
+            response = JsonResponse({
+                'message': 'Login successful',
+                'role': user.role,
+                'username': user.username,
+                'token':token,
+            })
+            print("Cookies being set:", response.cookies)
+            return response
+        return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@require_http_methods(["POST"])
+def custom_logout(request):
+    try:
+        django_logout(request)
         return JsonResponse({'message': 'User logged out successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
-    
-    
+
+# Utility decorator for role-based access
 def role_required(allowed_roles):
     def decorator(view_func):
         def wrapper(request, *args, **kwargs):
-            if request.user.role not in allowed_roles:
-                return JsonResponse({'error': 'Forbidden'}, status=403)
-            return view_func(request, *args, **kwargs)
+            if request.user.is_authenticated and request.user.role in allowed_roles:
+                return view_func(request, *args, **kwargs)
+            return JsonResponse({'error': 'Forbidden'}, status=403)
         return wrapper
     return decorator
 
 
+##############################################################################################################################################
+##############################################################################################################################################
 
-####################################################################################################################################################
-#                       MENTOR PROFILE VIEWS
-
-from rest_framework import viewsets, permissions, status
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import MentorProfile, Skill, CompetitionType
-from .serializers import MentorProfileSerializer, SkillSerializer, CompetitionTypeSerializer
+import json
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Custom permission to only allow owners of a profile to edit it.
-    """
-    def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        # Write permissions are only allowed to the owner of the profile
-        return obj.user == request.user
-
-
-class MentorProfileViewSet(viewsets.ModelViewSet):
-    queryset = MentorProfile.objects.all()
-    serializer_class = MentorProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-
-    def get_queryset(self):
-        """
-        This view should return a list of all profiles
-        for the currently authenticated user.
-        """
-        user = self.request.user
-        if user.is_staff:
-            return MentorProfile.objects.all()
-        return MentorProfile.objects.filter(user=user)
-
-    @action(detail=False, methods=['get'])
-    def my_profile(self, request):
-        """
-        Returns the mentor profile for the current user or returns 404 if not found
-        """
+@api_token_required
+def my_profile(request):
+    print("User ID:", request.user.id)
+    print("User:", request.user)
+    if request.method == 'GET':
         try:
             profile = MentorProfile.objects.get(user=request.user)
-            serializer = self.get_serializer(profile)
-            return Response(serializer.data)
+            data = {
+                'id': profile.id,
+                'bio': profile.bio,
+                'skills': [skill.name for skill in profile.skills.all()],
+                'competition_types': [ct.name for ct in profile.competition_types.all()]
+            }
+            return JsonResponse(data)
         except MentorProfile.DoesNotExist:
-            return Response(
-                {"detail": "Mentor profile not found for this user."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({'error': 'Mentor profile not found for this user.'}, status=404)
 
-    @action(detail=False, methods=['post'])
-    def create_profile(self, request):
-        """
-        Creates or updates a profile for the current user
-        """
+    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
+
+@api_token_required
+@require_http_methods(["POST"])
+def create_or_update_profile(request):
+    try:
+        data = json.loads(request.body)
         profile, created = MentorProfile.objects.get_or_create(user=request.user)
-        
-        serializer = self.get_serializer(profile, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(serializer.data, status=status_code)
 
+        profile.bio = data.get('bio', profile.bio)
+        profile.save()
 
-class SkillViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
-    permission_classes = [permissions.IsAuthenticated]
+        if 'skills' in data:
+            skill_names = data['skills']
+            skills = Skill.objects.filter(name__in=skill_names)
+            profile.skills.set(skills)
 
+        if 'competition_types' in data:
+            comp_names = data['competition_types']
+            comps = CompetitionType.objects.filter(name__in=comp_names)
+            profile.competition_types.set(comps)
 
-class CompetitionTypeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = CompetitionType.objects.all()
-    serializer_class = CompetitionTypeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+        result = {
+            'id': profile.id,
+            'bio': profile.bio,
+            'skills': [skill.name for skill in profile.skills.all()],
+            'competition_types': [ct.name for ct in profile.competition_types.all()]
+        }
+
+        return JsonResponse(result, status=201 if created else 200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@api_token_required
+@require_http_methods(["PUT"])
+@csrf_exempt  # Required only for PUT/multipart; you can handle CSRF manually if needed
+def update_mentor_profile(request, mentor_id):
+    print("Request content type:", request.content_type)
+    print("Mentor ID:", mentor_id)
+    print("Put Data:", request.POST)
+    print("Files Data:", request.FILES)
+    try:
+        if request.content_type.startswith('multipart/form-data'):
+            put_data = request.POST
+            files_data = request.FILES
+        else:
+            return JsonResponse({'error': 'Unsupported content type'}, status=400)
+
+        try:
+            profile = MentorProfile.objects.get(id=mentor_id)
+        except MentorProfile.DoesNotExist:
+            return JsonResponse({'error': 'Mentor profile not found'}, status=404)
+
+        profile.full_name = put_data.get('full_name', profile.full_name)
+        profile.years_of_experience = put_data.get('years_of_experience', profile.years_of_experience)
+        profile.bio = put_data.get('bio', profile.bio)
+
+        if 'profile_picture' in files_data:
+            profile.profile_picture = files_data['profile_picture']
+
+        profile.save()
+
+        return JsonResponse({'message': 'Profile updated successfully!'})
+
+    except Exception as e:
+        return JsonResponse({'error': 'Error updating profile: ' + str(e)}, status=500)
+
+@api_token_required
+def list_skills(request):
+    if request.method == 'GET':
+        skills = Skill.objects.all()
+        data = [{'id': skill.id, 'name': skill.name} for skill in skills]
+        return JsonResponse({'skills': data})
+
+    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
+
+@api_token_required
+def list_competition_types(request):
+    if request.method == 'GET':
+        comps = CompetitionType.objects.all()
+        data = [{'id': comp.id, 'name': comp.name} for comp in comps]
+        return JsonResponse({'competition_types': data})
+
+    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
+
+@api_token_required
+@require_http_methods(["GET"])
+def get_user_info(request):
+    return JsonResponse({
+        'username': request.user.username,
+        'email': request.user.email,
+        'role': request.user.role
+    })
