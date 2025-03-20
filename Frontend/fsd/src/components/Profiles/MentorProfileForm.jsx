@@ -297,442 +297,441 @@ for (let [key, value] of formDataToSend.entries()) {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">
-        {existingProfile ? 'Update Your Mentor Profile' : 'Create Your Mentor Profile'}
-      </h1>
-      
-      {submitMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {submitMessage}
-        </div>
-      )}
-      
-      {errors.general && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {errors.general}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Information Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Full Name*</label>
-              <input
-                type="text"
-                name="full_name"
-                value={formData.full_name || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-              {errors.full_name && <p className="text-red-500 text-xs mt-1">{errors.full_name}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Date of Birth</label>
-              <input
-                type="date"
-                name="date_of_birth"
-                value={formData.date_of_birth || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-              {errors.date_of_birth && <p className="text-red-500 text-xs mt-1">{errors.date_of_birth}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Gender</label>
-              <select
-                name="gender"
-                value={formData.gender || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Non-binary">Non-binary</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone Number</label>
-              <input
-                type="tel"
-                name="phone_number"
-                value={formData.phone_number || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-              {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Address</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address || ''}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Country</label>
-              <input
-                type="text"
-                name="country"
-                value={formData.country || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">State/Province</label>
-              <input
-                type="text"
-                name="state"
-                value={formData.state || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">City</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Postal Code</label>
-              <input
-                type="text"
-                name="postal_code"
-                value={formData.postal_code || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Professional Information Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Professional Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Mentor Type*</label>
-              <select
-                name="mentor_type"
-                value={formData.mentor_type || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              >
-                <option value="">Select Mentor Type</option>
-                <option value="Technical">Technical</option>
-                <option value="Business">Business</option>
-                <option value="Industry Expert">Industry Expert</option>
-                <option value="Academic">Academic</option>
-                <option value="Career Coach">Career Coach</option>
-              </select>
-              {errors.mentor_type && <p className="text-red-500 text-xs mt-1">{errors.mentor_type}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Department</label>
-              <input
-                type="text"
-                name="department"
-                value={formData.department || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Expertise*</label>
-              <input
-                type="text"
-                name="expertise"
-                value={formData.expertise || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-              {errors.expertise && <p className="text-red-500 text-xs mt-1">{errors.expertise}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Years of Experience</label>
-              <input
-                type="number"
-                name="years_of_experience"
-                value={formData.years_of_experience || ''}
-                onChange={handleChange}
-                min="0"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Current Company</label>
-              <input
-                type="text"
-                name="current_company"
-                value={formData.current_company || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Current Position</label>
-              <input
-                type="text"
-                name="current_position"
-                value={formData.current_position || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Skills</label>
-              <select 
-                name="skill_ids" 
-                multiple 
-                value={formData.skill_ids || []} 
-                onChange={handleMultiSelectChange} 
-                className="w-full border border-gray-300 rounded px-3 py-2 h-32"
-              >
-                {Array.isArray(skills) && skills.map(skill => (
-                  <option key={skill.id} value={skill.id}>{skill.name}</option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple skills</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Competition Types</label>
-              <select
-                name="competition_type_ids"
-                multiple
-                value={formData.competition_type_ids || ''}
-                onChange={handleMultiSelectChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 h-32"
-              >
-                {Array.isArray(competitionTypes) && competitionTypes.map(type => (
-                  <option key={type.id} value={type.id}>{type.name}</option>
-                ))}
-
-              </select>
-              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple types</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Social & Bio Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Social Media & Bio</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">LinkedIn</label>
-              <input
-                type="url"
-                name="linkedin"
-                value={formData.linkedin || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="https://linkedin.com/in/username"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">GitHub</label>
-              <input
-                type="url"
-                name="github"
-                value={formData.github || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="https://github.com/username"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Website</label>
-              <input
-                type="url"
-                name="website"
-                value={formData.website || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="https://yourwebsite.com"
-              />
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Bio</label>
-            <textarea
-              name="bio"
-              value={formData.bio || ''}
-              onChange={handleChange}
-              rows="4"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="Tell us about yourself..."
-            ></textarea>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Certifications</label>
-              <textarea
-                name="certifications"
-                value={formData.certifications || ''}
-                onChange={handleChange}
-                rows="3"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="List your certifications..."
-              ></textarea>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Achievements</label>
-              <textarea
-                name="achievements"
-                value={formData.achievements || ''}
-                onChange={handleChange}
-                rows="3"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="List your achievements..."
-              ></textarea>
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Languages Spoken</label>
-            <input
-              type="text"
-              name="languages_spoken"
-              value={formData.languages_spoken || ''}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="English, Spanish, etc."
-            />
-          </div>
-        </div>
-        
-        {/* Availability Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Availability</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Availability Status</label>
-              <select
-                name="availability_status"
-                value={formData.availability_status || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="Available">Available</option>
-                <option value="Limited Availability">Limited Availability</option>
-                <option value="Unavailable">Unavailable</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Maximum Teams</label>
-              <input
-                type="number"
-                name="max_teams"
-                value={formData.max_teams || ''}
-                onChange={handleChange}
-                min="1"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Available Days</label>
-              <input
-                type="text"
-                name="available_days"
-                value={formData.available_days || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="Mon, Wed, Fri"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Available Times</label>
-              <input
-                type="text"
-                name="available_times"
-                value={formData.available_times || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="6pm-9pm EST"
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Profile Picture Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Profile Picture</h2>
-          <div>
-            <label className="block text-sm font-medium mb-1">Upload Profile Picture</label>
-            <input
-              type="file"
-              name="profile_picture"
-              onChange={handleFileChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              accept="image/*"
-            />
-            {existingProfile && existingProfile.profile_picture && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">Current profile picture:</p>
-                <img
-                  src={existingProfile.profile_picture}
-                  alt="Profile"
-                  className="mt-1 h-32 w-32 rounded-full object-cover border"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {existingProfile ? 'Update Profile' : 'Create Profile'}
-          </button>
-        </div>
-      </form>
+<div className="container mx-auto p-4 max-w-4xl bg-[#f7f6f1]">
+  <h1 className="text-2xl font-bold mb-6 text-[#36454f]">
+    {existingProfile ? 'Update Your Mentor Profile' : 'Create Your Mentor Profile'}
+  </h1>
+  
+  {submitMessage && (
+    <div className="bg-[#e8f0e8] border border-[#509c52] text-[#2b602d] px-4 py-3 rounded mb-4">
+      {submitMessage}
     </div>
+  )}
+  
+  {errors.general && (
+    <div className="bg-[#fdeded] border border-[#d97471] text-[#b13f3c] px-4 py-3 rounded mb-4">
+      {errors.general}
+    </div>
+  )}
+  
+  <form onSubmit={handleSubmit} className="space-y-6">
+    {/* Personal Information Section */}
+    <div className="bg-[#f5f3e8] p-6 rounded-lg shadow-md border border-[#e6e2d3]">
+      <h2 className="text-xl font-semibold mb-4 text-[#36454f]">Personal Information</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Full Name*</label>
+          <input
+            type="text"
+            name="full_name"
+            value={formData.full_name || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            required
+          />
+          {errors.full_name && <p className="text-[#b13f3c] text-xs mt-1">{errors.full_name}</p>}
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Date of Birth</label>
+          <input
+            type="date"
+            name="date_of_birth"
+            value={formData.date_of_birth || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+          {errors.date_of_birth && <p className="text-[#b13f3c] text-xs mt-1">{errors.date_of_birth}</p>}
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Gender</label>
+          <select
+            name="gender"
+            value={formData.gender || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          >
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Phone Number</label>
+          <input
+            type="tel"
+            name="phone_number"
+            value={formData.phone_number || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+          {errors.phone_number && <p className="text-[#b13f3c] text-xs mt-1">{errors.phone_number}</p>}
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <label className="block text-sm font-medium mb-1 text-[#36454f]">Address</label>
+        <input
+          type="text"
+          name="address"
+          value={formData.address || ''}
+          onChange={handleChange}
+          className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Country</label>
+          <input
+            type="text"
+            name="country"
+            value={formData.country || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">State/Province</label>
+          <input
+            type="text"
+            name="state"
+            value={formData.state || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">City</label>
+          <input
+            type="text"
+            name="city"
+            value={formData.city || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Postal Code</label>
+          <input
+            type="text"
+            name="postal_code"
+            value={formData.postal_code || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* Professional Information Section */}
+    <div className="bg-[#f5f3e8] p-6 rounded-lg shadow-md border border-[#e6e2d3]">
+      <h2 className="text-xl font-semibold mb-4 text-[#36454f]">Professional Information</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Mentor Type*</label>
+          <select
+            name="mentor_type"
+            value={formData.mentor_type || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            required
+          >
+            <option value="">Select Mentor Type</option>
+            <option value="Technical">Technical</option>
+            <option value="Business">Business</option>
+            <option value="Industry Expert">Industry Expert</option>
+            <option value="Academic">Academic</option>
+            <option value="Career Coach">Career Coach</option>
+          </select>
+          {errors.mentor_type && <p className="text-[#b13f3c] text-xs mt-1">{errors.mentor_type}</p>}
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Department</label>
+          <input
+            type="text"
+            name="department"
+            value={formData.department || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Expertise*</label>
+          <input
+            type="text"
+            name="expertise"
+            value={formData.expertise || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            required
+          />
+          {errors.expertise && <p className="text-[#b13f3c] text-xs mt-1">{errors.expertise}</p>}
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Years of Experience</label>
+          <input
+            type="number"
+            name="years_of_experience"
+            value={formData.years_of_experience || ''}
+            onChange={handleChange}
+            min="0"
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Current Company</label>
+          <input
+            type="text"
+            name="current_company"
+            value={formData.current_company || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Current Position</label>
+          <input
+            type="text"
+            name="current_position"
+            value={formData.current_position || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Skills</label>
+          <select 
+            name="skill_ids" 
+            multiple 
+            value={formData.skill_ids || []} 
+            onChange={handleMultiSelectChange} 
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 h-32 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          >
+            {Array.isArray(skills) && skills.map(skill => (
+              <option key={skill.id} value={skill.id}>{skill.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-[#5d5d5d] mt-1">Hold Ctrl/Cmd to select multiple skills</p>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Competition Types</label>
+          <select
+            name="competition_type_ids"
+            multiple
+            value={formData.competition_type_ids || ''}
+            onChange={handleMultiSelectChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 h-32 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          >
+            {Array.isArray(competitionTypes) && competitionTypes.map(type => (
+              <option key={type.id} value={type.id}>{type.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-[#5d5d5d] mt-1">Hold Ctrl/Cmd to select multiple types</p>
+        </div>
+      </div>
+    </div>
+    
+    {/* Social & Bio Section */}
+    <div className="bg-[#f5f3e8] p-6 rounded-lg shadow-md border border-[#e6e2d3]">
+      <h2 className="text-xl font-semibold mb-4 text-[#36454f]">Social Media & Bio</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">LinkedIn</label>
+          <input
+            type="url"
+            name="linkedin"
+            value={formData.linkedin || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="https://linkedin.com/in/username"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">GitHub</label>
+          <input
+            type="url"
+            name="github"
+            value={formData.github || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="https://github.com/username"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Website</label>
+          <input
+            type="url"
+            name="website"
+            value={formData.website || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="https://yourwebsite.com"
+          />
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <label className="block text-sm font-medium mb-1 text-[#36454f]">Bio</label>
+        <textarea
+          name="bio"
+          value={formData.bio || ''}
+          onChange={handleChange}
+          rows="4"
+          className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          placeholder="Tell us about yourself..."
+        ></textarea>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Certifications</label>
+          <textarea
+            name="certifications"
+            value={formData.certifications || ''}
+            onChange={handleChange}
+            rows="3"
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="List your certifications..."
+          ></textarea>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Achievements</label>
+          <textarea
+            name="achievements"
+            value={formData.achievements || ''}
+            onChange={handleChange}
+            rows="3"
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="List your achievements..."
+          ></textarea>
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <label className="block text-sm font-medium mb-1 text-[#36454f]">Languages Spoken</label>
+        <input
+          type="text"
+          name="languages_spoken"
+          value={formData.languages_spoken || ''}
+          onChange={handleChange}
+          className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          placeholder="English, Spanish, etc."
+        />
+      </div>
+    </div>
+    
+    {/* Availability Section */}
+    <div className="bg-[#f5f3e8] p-6 rounded-lg shadow-md border border-[#e6e2d3]">
+      <h2 className="text-xl font-semibold mb-4 text-[#36454f]">Availability</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Availability Status</label>
+          <select
+            name="availability_status"
+            value={formData.availability_status || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          >
+            <option value="Available">Available</option>
+            <option value="Limited Availability">Limited Availability</option>
+            <option value="Unavailable">Unavailable</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Maximum Teams</label>
+          <input
+            type="number"
+            name="max_teams"
+            value={formData.max_teams || ''}
+            onChange={handleChange}
+            min="1"
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Available Days</label>
+          <input
+            type="text"
+            name="available_days"
+            value={formData.available_days || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="Mon, Wed, Fri"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-[#36454f]">Available Times</label>
+          <input
+            type="text"
+            name="available_times"
+            value={formData.available_times || ''}
+            onChange={handleChange}
+            className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+            placeholder="6pm-9pm EST"
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* Profile Picture Section */}
+    <div className="bg-[#f5f3e8] p-6 rounded-lg shadow-md border border-[#e6e2d3]">
+      <h2 className="text-xl font-semibold mb-4 text-[#36454f]">Profile Picture</h2>
+      <div>
+        <label className="block text-sm font-medium mb-1 text-[#36454f]">Upload Profile Picture</label>
+        <input
+          type="file"
+          name="profile_picture"
+          onChange={handleFileChange}
+          className="w-full border border-[#d6d1bc] rounded px-3 py-2 focus:ring-2 focus:ring-[#bfbaa6] focus:border-[#bfbaa6] bg-white"
+          accept="image/*"
+        />
+        {existingProfile && existingProfile.profile_picture && (
+          <div className="mt-2">
+            <p className="text-sm text-[#5d5d5d]">Current profile picture:</p>
+            <img
+              src={existingProfile.profile_picture}
+              alt="Profile"
+              className="mt-1 h-32 w-32 rounded-full object-cover border border-[#d6d1bc]"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Submit Button */}
+    <div className="flex justify-end">
+      <button
+        type="submit"
+        className="bg-[#36454f] text-[#f5f3e8] px-6 py-2 rounded hover:bg-[#293741] focus:outline-none focus:ring-2 focus:ring-[#5a6e79] transition-colors duration-200"
+      >
+        {existingProfile ? 'Update Profile' : 'Create Profile'}
+      </button>
+    </div>
+  </form>
+</div>
   );
 };
 
