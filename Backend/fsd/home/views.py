@@ -183,7 +183,7 @@ def my_profile(request):
                 'available_times': profile.available_times,
                 'max_teams': profile.max_teams,
                 'current_teams_count': profile.current_teams_count,
-                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'profile_picture': request.build_absolute_uri(profile.profile_picture.url) if profile.profile_picture else None,
                 'created_at': profile.created_at.isoformat() if profile.created_at else None,
                 'updated_at': profile.updated_at.isoformat() if profile.updated_at else None,
                 'is_verified': profile.is_verified,
@@ -235,88 +235,71 @@ def create_or_update_profile(request):
 def update_mentor_profile(request, mentor_id):
     print("Request content type:", request.content_type)
     print("Mentor ID:", mentor_id)
-    
+
     try:
-        # For PUT requests with multipart/form-data, Django has quirks
-        # In Django, request.POST only gets populated for POST requests
-        # For PUT requests with multipart/form-data, we need to access request.body
-        # but Django has already consumed the stream to check for POST data
-        
-        # Let's see what we have available
-        print("PUT data keys:", list(request.POST.keys()))
-        print("FILES keys:", list(request.FILES.keys()))
-        # Create a data dictionary that combines POST and body data
-        put_data = request.POST.copy()  # Start with any data Django managed to parse
+        put_data = request.POST.copy()
         files_data = request.FILES
-        
+
         for key in put_data:
             print(f"Field {key}: {put_data[key]}")
 
-        if 'id' in put_data:
-            print(f"Received ID (should not be here!): {put_data['id']}")
-        # Add debugging to see exactly what's coming in
-        for key in put_data:
-            print(f"Field {key}: {put_data[key]}")
-        
-        # Get the profile or return 404
         try:
             profile = MentorProfile.objects.get(id=mentor_id)
         except MentorProfile.DoesNotExist:
             return JsonResponse({'error': 'Mentor profile not found'}, status=404)
-        
-        # Track which fields we update
-        fields_updated = []
-        
-        # Define all fields that can be updated
-        fields = [
-            'full_name', 'date_of_birth', 'gender', 'phone_number', 
-            'address', 'country', 'state', 'city', 'postal_code',
-            'mentor_type', 'department', 'expertise', 'years_of_experience',
-            'current_company', 'current_position', 'linkedin', 'github',
-            'website', 'bio', 'certifications', 'achievements',
-            'languages_spoken', 'availability_status', 'available_days',
-            'available_times', 'max_teams'
-        ]
 
-        
-        # Loop through each field and update if present
-        for field in fields:
-            if field in put_data:
-                print(f"Updating {field} to: {put_data[field]}")
-                # Use setattr to dynamically set the attribute
-                setattr(profile, field, put_data[field])
-                fields_updated.append(field)
-        
-        # Handle arrays - skill_ids and competition_type_ids
-        # Assuming you have many-to-many relationships
+        fields_updated = []
+
+        # 🔥 NEW CLEANER FUNCTION
+        def clean_and_assign_profile_data(profile, data, int_fields=None):
+            int_fields = int_fields or []
+            for key, value in data.items():
+                if value in ['', None, 'null']:
+                    cleaned_value = None
+                elif key in int_fields:
+                    try:
+                        cleaned_value = int(value)
+                    except (ValueError, TypeError):
+                        cleaned_value = None
+                else:
+                    cleaned_value = value
+                if hasattr(profile, key):
+                    setattr(profile, key, cleaned_value)
+                    fields_updated.append(key)
+
+        # All integer fields for safe casting
+        int_fields = ['years_of_experience', 'max_teams']
+
+        # 🎯 Clean and assign everything
+        clean_and_assign_profile_data(profile, put_data, int_fields)
+
+        # 🔄 Handle M2M: skill_ids
         if 'skill_ids' in put_data:
-            skill_ids = put_data.getlist('skill_ids')  # Use getlist to get all values
+            skill_ids = put_data.getlist('skill_ids')
             if skill_ids:
-                profile.skills.clear()  # Clear existing
-                profile.skills.add(*skill_ids)  # Add new ones
+                profile.skills.clear()
+                profile.skills.add(*skill_ids)
                 fields_updated.append('skills')
-        
+
+        # 🔄 Handle M2M: competition_type_ids
         if 'competition_type_ids' in put_data:
             competition_ids = put_data.getlist('competition_type_ids')
             if competition_ids:
                 profile.competition_types.clear()
                 profile.competition_types.add(*competition_ids)
                 fields_updated.append('competition_types')
-        
-        # Handle file upload
+
+        # 📸 File upload: profile_picture
         if 'profile_picture' in files_data:
-    # Delete the old image if it exists
             if profile.profile_picture and os.path.isfile(profile.profile_picture.path):
                 print(f"Deleting old image: {profile.profile_picture.path}")
                 os.remove(profile.profile_picture.path)
 
-            # Assign the new image
             profile.profile_picture = files_data['profile_picture']
             fields_updated.append('profile_picture')
-        
-        # Save the updated profile
+
         profile.save()
-        
+
         print(f"Updated fields: {fields_updated}")
         return JsonResponse({
             'message': 'Profile updated successfully!',
@@ -328,6 +311,7 @@ def update_mentor_profile(request, mentor_id):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': f'Error updating profile: {str(e)}'}, status=500)
+
 
 @api_token_required
 def list_skills(request):
@@ -356,6 +340,9 @@ def get_user_info(request):
         'role': request.user.role
     })
 
+##############################################################################################################################################
+##############################################################################################################################################
+
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -365,6 +352,66 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict
 import os
+
+
+def clean_field_value(field_name, value):
+    boolean_fields = ['is_active']
+    float_fields = ['gpa']
+
+    if field_name in boolean_fields:
+        # Convert to boolean from string
+        return str(value).lower() == 'true'
+    elif field_name in float_fields:
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return None
+    return value  # Default: return as-is
+
+def update_student_profile_fields(profile, data, files=None):
+    fields_updated = []
+    simple_fields = [
+        'full_name', 'date_of_birth', 'gender', 'phone_number', 
+        'address', 'country', 'state', 'city', 'postal_code',
+        'education_level', 'student_id', 'department', 'year_of_study',
+        'gpa', 'extracurricular_activities', 'achievements',
+        'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
+        'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
+        'linkedin', 'github', 'portfolio', 'is_active'
+    ]
+
+    for field in simple_fields:
+        if field in data:
+            cleaned_value = clean_field_value(field, data[field])
+            setattr(profile, field, cleaned_value)
+            fields_updated.append(field)
+
+    # Handle many-to-many relationships
+    if 'skill_ids' in data:
+        skill_ids = data.getlist('skill_ids')
+        profile.skills.set(Skill.objects.filter(id__in=skill_ids))
+        fields_updated.append('skills')
+
+    if 'competition_type_ids' in data:
+        comp_ids = data.getlist('competition_type_ids')
+        profile.preferred_competition_types.set(CompetitionType.objects.filter(id__in=comp_ids))
+        fields_updated.append('preferred_competition_types')
+
+    if 'past_competition_ids' in data:
+        past_comp_ids = data.getlist('past_competition_ids')
+        profile.past_competitions.set(Competition.objects.filter(id__in=past_comp_ids))
+        fields_updated.append('past_competitions')
+
+    # Handle profile picture upload
+    if files and 'profile_picture' in files:
+        if profile.profile_picture and os.path.isfile(profile.profile_picture.path):
+            os.remove(profile.profile_picture.path)
+        profile.profile_picture = files['profile_picture']
+        fields_updated.append('profile_picture')
+
+    profile.save()
+    return fields_updated
+
 
 @api_token_required
 def student_profile(request):
@@ -407,7 +454,7 @@ def student_profile(request):
                 'linkedin': profile.linkedin,
                 'github': profile.github,
                 'portfolio': profile.portfolio,
-                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'profile_picture': request.build_absolute_uri(profile.profile_picture.url) if profile.profile_picture else None,
                 'created_at': profile.created_at.isoformat() if profile.created_at else None,
                 'updated_at': profile.updated_at.isoformat() if profile.updated_at else None,
                 'is_active': profile.is_active,
@@ -416,6 +463,7 @@ def student_profile(request):
             return JsonResponse(data, status=200)
 
         except StudentProfile.DoesNotExist:
+            print("Student profile not found for this user.")
             return JsonResponse({'error': 'Student profile not found for this user.'}, status=404)
 
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
@@ -472,89 +520,101 @@ def create_or_update_student_profile(request):
 def update_student_profile(request, student_id):
     print("Request content type:", request.content_type)
     print("Student ID:", student_id)
-    
+
     try:
-        # For handling multipart/form-data in PUT requests
-        print("PUT data keys:", list(request.POST.keys()))
-        print("FILES keys:", list(request.FILES.keys()))
         put_data = request.POST.copy()
         files_data = request.FILES
-        
-        for key in put_data:
-            print(f"Field {key}: {put_data[key]}")
-        
-        # Get the profile or return 404
-        try:
-            profile = StudentProfile.objects.get(id=student_id)
-        except StudentProfile.DoesNotExist:
-            return JsonResponse({'error': 'Student profile not found'}, status=404)
-        
-        # Track which fields we update
-        fields_updated = []
-        
-        # Define all fields that can be updated
-        fields = [
-            'full_name', 'date_of_birth', 'gender', 'phone_number', 
-            'address', 'country', 'state', 'city', 'postal_code',
-            'education_level', 'student_id', 'department', 'year_of_study',
-            'gpa', 'extracurricular_activities', 'achievements',
-            'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
-            'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
-            'linkedin', 'github', 'portfolio', 'is_active'
-        ]
-        
-        # Loop through each field and update if present
-        for field in fields:
-            if field in put_data:
-                print(f"Updating {field} to: {put_data[field]}")
-                # Use setattr to dynamically set the attribute
-                setattr(profile, field, put_data[field])
-                fields_updated.append(field)
-        
-        # Handle arrays - skills, preferred_competition_types, and past_competitions
-        if 'skill_ids' in put_data:
-            skill_ids = put_data.getlist('skill_ids')
-            if skill_ids:
-                profile.skills.clear()
-                profile.skills.add(*Skill.objects.filter(id__in=skill_ids))
-                fields_updated.append('skills')
-        
-        if 'competition_type_ids' in put_data:
-            competition_ids = put_data.getlist('competition_type_ids')
-            if competition_ids:
-                profile.preferred_competition_types.clear()
-                profile.preferred_competition_types.add(*CompetitionType.objects.filter(id__in=competition_ids))
-                fields_updated.append('preferred_competition_types')
-                
-        if 'past_competition_ids' in put_data:
-            past_comp_ids = put_data.getlist('past_competition_ids')
-            if past_comp_ids:
-                profile.past_competitions.clear()
-                profile.past_competitions.add(*Competition.objects.filter(id__in=past_comp_ids))
-                fields_updated.append('past_competitions')
-        
-        # Handle file upload
-        if 'profile_picture' in files_data:
-            # Delete the old image if it exists
-            if profile.profile_picture and os.path.isfile(profile.profile_picture.path):
-                print(f"Deleting old image: {profile.profile_picture.path}")
-                os.remove(profile.profile_picture.path)
 
-            # Assign the new image
-            profile.profile_picture = files_data['profile_picture']
-            fields_updated.append('profile_picture')
-        
-        # Save the updated profile
-        profile.save()
-        
-        print(f"Updated fields: {fields_updated}")
+        # Log incoming data
+        print("PUT data keys:", list(put_data.keys()))
+        print("FILES keys:", list(files_data.keys()))
+
+        profile = StudentProfile.objects.get(id=student_id)
+
+        updated_fields = update_student_profile_fields(profile, put_data, files_data)
+
+        print(f"Updated fields: {updated_fields}")
         return JsonResponse({
             'message': 'Student profile updated successfully!',
-            'updated_fields': fields_updated
+            'updated_fields': updated_fields
         })
 
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
     except Exception as e:
         print(f"Error updating profile: {str(e)}")
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': f'Error updating student profile: {str(e)}'}, status=500)
+
+    
+    
+##############################################################################################################################################
+##############################################################################################################################################
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import Competition
+
+@api_token_required
+@csrf_exempt
+def competitions_list(request):
+    """
+    List all competitions.
+    """
+    competitions = Competition.objects.all()
+    
+    # Build the response data manually
+    result = []
+    for comp in competitions:
+        competition_data = {
+            'id': comp.id,
+            'name': comp.name,
+            'description': comp.description,
+            'start_date': comp.start_date.isoformat() if comp.start_date else None,
+            'end_date': comp.end_date.isoformat() if comp.end_date else None,
+            'registration_deadline': comp.registration_deadline.isoformat() if comp.registration_deadline else None,
+            'min_team_size': comp.min_team_size,
+            'max_team_size': comp.max_team_size,
+            'status': comp.status,
+            'organizer': comp.organizer,
+            'venue': comp.venue,
+            'website': comp.website,
+            'competition_type_id': comp.competition_type_id,
+            'competition_type_name': comp.competition_type.name if comp.competition_type else "",
+        }
+        result.append(competition_data)
+    
+    return JsonResponse(result, safe=False)
+
+@api_token_required
+@csrf_exempt
+def competition_detail(request, competition_id):
+    """
+    Get details for a specific competition.
+    """
+    try:
+        comp = Competition.objects.get(id=competition_id)
+        
+        # Build the response data manually
+        competition_data = {
+            'id': comp.id,
+            'name': comp.name,
+            'description': comp.description,
+            'start_date': comp.start_date.isoformat() if comp.start_date else None,
+            'end_date': comp.end_date.isoformat() if comp.end_date else None,
+            'registration_deadline': comp.registration_deadline.isoformat() if comp.registration_deadline else None,
+            'min_team_size': comp.min_team_size,
+            'max_team_size': comp.max_team_size,
+            'status': comp.status,
+            'organizer': comp.organizer,
+            'venue': comp.venue,
+            'website': comp.website,
+            'competition_type_id': comp.competition_type_id,
+            'competition_type_name': comp.competition_type.name if comp.competition_type else "",
+        }
+        
+        return JsonResponse(competition_data, safe=False)
+        
+    except Competition.DoesNotExist:
+        return JsonResponse({'error': 'Competition not found'}, status=404)

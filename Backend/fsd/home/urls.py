@@ -22,9 +22,13 @@ urlpatterns = [
     path('api/user/', views.get_user_info, name='get_user_info'),
     
     # Student Profile
-    path('student/profile/', views.student_profile, name='student_profile'),
-    path('student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
-    path('student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
+    path('api/student/profile/', views.student_profile, name='student_profile'),
+    path('api/student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
+    path('api/student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
+    
+    # Competitions
+    path('api/competitions/', views.competitions_list, name='competitions-list'),
+    path('api/competitions/<int:competition_id>/', views.competition_detail, name='competition-detail'),
 ]
 
 
