@@ -5,7 +5,8 @@ import Logout from "./components/Login/Registration/Logout";
 import { AuthProvider } from "./context/AuthContext";
 import MentorProfileForm from "./components/Profiles/MentorProfileForm";
 import StudentProfileForm from "./components/Profiles/StudentProfileForm";
-
+// In your App.jsx
+import LoginRegister from "./components/Login/Registration/LoginRegister";
 function App() {
     return (
         <BrowserRouter>
@@ -16,6 +17,8 @@ function App() {
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
+                    <Route path="/login" element={<LoginRegister />} />
+
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
