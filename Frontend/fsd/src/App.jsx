@@ -7,6 +7,7 @@ import MentorProfileForm from "./components/Profiles/MentorProfileForm";
 import StudentProfileForm from "./components/Profiles/StudentProfileForm";
 // In your App.jsx
 import LoginRegister from "./components/Login/Registration/LoginRegister";
+import ProductGrid from "./components/Cart/ProductGrid";
 function App() {
     return (
         <BrowserRouter>
@@ -18,6 +19,7 @@ function App() {
                     <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
+                    <Route path="/products" element={<ProductGrid />} />
 
                 </Routes>
             </AuthProvider>
