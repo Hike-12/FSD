@@ -405,7 +405,7 @@ def get_user_info(request):
 
 ##############################################################################################################################################
 ##############################################################################################################################################
-
+                                                # STUDENTS KA PART
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -475,6 +475,63 @@ def update_student_profile_fields(profile, data, files=None):
     profile.save()
     return fields_updated
 
+@api_token_required
+@csrf_exempt
+def get_all_students(request):
+    if request.method == "GET":
+        students = StudentProfile.objects.all().values(
+            'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
+            'address', 'country', 'state', 'city', 'postal_code',
+            'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
+            'extracurricular_activities', 'achievements',
+            'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
+            'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
+            'profile_picture', 'linkedin', 'github', 'portfolio',
+            'created_at', 'updated_at', 'is_active'
+        )
+        return JsonResponse(list(students), safe=False)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+@api_token_required
+@csrf_exempt
+def get_student_detail(request, student_id):
+    student = get_object_or_404(StudentProfile, id=student_id)
+    
+    student_data = {
+        "id": student.id,
+        "full_name": student.full_name,
+        "date_of_birth": student.date_of_birth,
+        "gender": student.gender,
+        "phone_number": student.phone_number,
+        "address": student.address,
+        "country": student.country,
+        "state": student.state,
+        "city": student.city,
+        "postal_code": student.postal_code,
+        "education_level": student.education_level,
+        "student_id": student.student_id,
+        "department": student.department,
+        "year_of_study": student.year_of_study,
+        "gpa": student.gpa,
+        "extracurricular_activities": student.extracurricular_activities,
+        "achievements": student.achievements,
+        "preferred_team_roles": student.preferred_team_roles,
+        "emergency_contact_name": student.emergency_contact_name,
+        "emergency_contact_number": student.emergency_contact_number,
+        "hobbies": student.hobbies,
+        "career_goal": student.career_goal,
+        "languages_spoken": student.languages_spoken,
+        "learning_style": student.learning_style,
+        "profile_picture": student.profile_picture.url if student.profile_picture else None,
+        "linkedin": student.linkedin,
+        "github": student.github,
+        "portfolio": student.portfolio,
+        "created_at": student.created_at,
+        "updated_at": student.updated_at,
+        "is_active": student.is_active,
+    }
+    
+    return JsonResponse(student_data)
 
 @api_token_required
 def student_profile(request):

@@ -10,6 +10,7 @@ import ProductGrid from "./components/Cart/ProductGrid";
 import LandingPage from "./components/LandingPage/landingPage"; // Fix casing if needed
 import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewProfile";
+import AllStudents from "./components/Students/AllStudents";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                     <Route path="/landing" element={<LandingPage />} />
                     <Route path="/mentors" element={<AllMentors />} />
                     <Route path="/mentor/:id" element={<MentorProfile />} />
+                    <Route path="/students" element={<AllStudents />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

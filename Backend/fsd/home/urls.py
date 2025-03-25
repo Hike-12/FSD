@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/user/', views.get_user_info, name='get_user_info'),
     
     # Student Profile
+    path('api/students/', views.get_all_students, name='get_all_students'),
+    path('api/students/<int:student_id>/', views.get_student_detail, name='get_student_detail'),
     path('api/student/profile/', views.student_profile, name='student_profile'),
     path('api/student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
     path('api/student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
