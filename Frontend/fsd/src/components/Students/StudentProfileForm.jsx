@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DJANGO_BASE_URL from '../utils';
 
 const StudentProfileForm = () => {
   const navigate = useNavigate();
@@ -25,6 +26,9 @@ const StudentProfileForm = () => {
     skill_ids: [],
     extracurricular_activities: '',
     achievements: '',
+    certifications: '',
+    internships: '',
+    projects: '',
     competition_type_ids: [],
     preferred_team_roles: '',
     past_competition_ids: [],
@@ -50,7 +54,7 @@ const StudentProfileForm = () => {
         
         // Fetch skills
         try {
-          const skillsResponse = await fetch('http://127.0.0.1:8000/api/skills/', {
+          const skillsResponse = await fetch('${DJANGO_BASE_URL}/api/skills/', {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -71,7 +75,7 @@ const StudentProfileForm = () => {
         
         // Fetch competition types
         try {
-          const competitionTypesResponse = await fetch('http://127.0.0.1:8000/api/competition-types/', {
+          const competitionTypesResponse = await fetch('${DJANGO_BASE_URL}/api/competition-types/', {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -92,7 +96,7 @@ const StudentProfileForm = () => {
         
         // Fetch past competitions
         try {
-          const pastCompetitionsResponse = await fetch('http://127.0.0.1:8000/api/competitions/', {
+          const pastCompetitionsResponse = await fetch('${DJANGO_BASE_URL}/api/competitions/', {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -113,7 +117,7 @@ const StudentProfileForm = () => {
         
         // Fetch existing profile
         try {
-          const profileResponse = await fetch('http://127.0.0.1:8000/api/student/profile/', {
+          const profileResponse = await fetch('${DJANGO_BASE_URL}/api/student/profile/', {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -226,7 +230,7 @@ const StudentProfileForm = () => {
       if (existingProfile) {
         console.log(`Sending POST request to /api/student/profile/${existingProfile.id}/update/`);
         
-        response = await fetch(`http://127.0.0.1:8000/api/student/profile/${existingProfile.id}/update/`, {
+        response = await fetch(`${DJANGO_BASE_URL}/api/student/profile/${existingProfile.id}/update/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -236,7 +240,7 @@ const StudentProfileForm = () => {
         });
       } else {
         console.log('Sending POST request to /api/student/profile/update/');
-        response = await fetch('http://127.0.0.1:8000/api/student/profile/update/', {
+        response = await fetch(`${DJANGO_BASE_URL}/api/student/profile/update/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -545,7 +549,7 @@ const StudentProfileForm = () => {
               />
             </div>
             
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium mb-1">Past Competitions</label>
               <select
                 name="past_competition_ids"
@@ -559,7 +563,7 @@ const StudentProfileForm = () => {
                 ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple competitions</p>
-            </div>
+            </div> */}
           </div>
         </div>
         
@@ -576,6 +580,39 @@ const StudentProfileForm = () => {
                 rows="3"
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 placeholder="List your extracurricular activities..."
+              ></textarea>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Certifications</label>
+              <textarea
+                name="certifications"
+                value={formData.certifications || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your Certifications..."
+              ></textarea>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Internships</label>
+              <textarea
+                name="internships"
+                value={formData.internships || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your Internships..."
+              ></textarea>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Projects</label>
+              <textarea
+                name="projects"
+                value={formData.projects || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="List your Projects..."
               ></textarea>
             </div>
             
