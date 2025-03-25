@@ -3,11 +3,13 @@ import Login from "./components/Login/Registration/Login";
 import Register from "./components/Login/Registration/Register";
 import Logout from "./components/Login/Registration/Logout";
 import { AuthProvider } from "./context/AuthContext";
-import MentorProfileForm from "./components/Profiles/MentorProfileForm";
-import StudentProfileForm from "./components/Profiles/StudentProfileForm";
+import MentorProfileForm from "./components/Mentor/MentorProfileForm";
+import StudentProfileForm from "./components/Students/StudentProfileForm";
 import LoginRegister from "./components/Login/Registration/LoginRegister";
 import ProductGrid from "./components/Cart/ProductGrid";
 import LandingPage from "./components/LandingPage/landingPage"; // Fix casing if needed
+import AllMentors from "./components/Mentor/AllMentors";
+import MentorProfile from "./components/Mentor/ViewProfile";
 
 function App() {
     return (
@@ -22,6 +24,8 @@ function App() {
                     <Route path="/login" element={<LoginRegister />} />
                     <Route path="/products" element={<ProductGrid />} />
                     <Route path="/landing" element={<LandingPage />} />
+                    <Route path="/mentors" element={<AllMentors />} />
+                    <Route path="/mentor/:id" element={<MentorProfile />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
