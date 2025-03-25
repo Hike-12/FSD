@@ -33,9 +33,17 @@ const TalentHuntLanding = () => {
   ];
 
   const globalConnections = [
-    { start: { lat: 40.7128, lng: -74.0060 }, end: { lat: 37.7749, lng: -122.4194 } },
-    { start: { lat: 51.5074, lng: -0.1278 }, end: { lat: 35.6762, lng: 139.6503 } },
-    { start: { lat: -33.8688, lng: 151.2093 }, end: { lat: 55.7558, lng: 37.6173 } }
+    { start: { lat: 34.0522, lng: -118.2437 }, end: { lat: 35.2271, lng: -80.8431 } },
+    { start: { lat: 41.8781, lng: -87.6298 }, end: { lat: -33.4489, lng: -70.6693 } },
+    { start: { lat: 60.1695, lng: 24.9354 }, end: { lat: -22.9068, lng: -43.1729 } },
+    { start: { lat: -17.8249, lng: 31.0492 }, end: { lat: 55.6761, lng: 12.5683 } },
+    { start: { lat: 30.0444, lng: 31.2357 }, end: { lat: 1.3521, lng: 103.8198 } },
+    { start: { lat: -4.4419, lng: 15.2663 }, end: { lat: 45.5017, lng: -73.5673 } },
+    { start: { lat: 25.7617, lng: -80.1918 }, end: { lat: -37.8136, lng: 144.9631 } },
+    { start: { lat: 50.1109, lng: 8.6821 }, end: { lat: -36.8485, lng: 174.7633 } },
+    { start: { lat: 14.5995, lng: 120.9842 }, end: { lat: -34.9285, lng: 138.6007 } },
+    { start: { lat: 39.7392, lng: -104.9903 }, end: { lat: -8.4095, lng: 115.1889 } }
+    
   ];
 
   return (

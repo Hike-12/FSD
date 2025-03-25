@@ -15,3 +15,4 @@ export function CardContent({ children, className = '' }) {
     </div>
   );
 }
+
