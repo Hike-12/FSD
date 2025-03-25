@@ -54,7 +54,7 @@ const StudentProfileForm = () => {
         
         // Fetch skills
         try {
-          const skillsResponse = await fetch('${DJANGO_BASE_URL}/api/skills/', {
+          const skillsResponse = await fetch(`${DJANGO_BASE_URL}/api/skills/`, {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ const StudentProfileForm = () => {
         
         // Fetch competition types
         try {
-          const competitionTypesResponse = await fetch('${DJANGO_BASE_URL}/api/competition-types/', {
+          const competitionTypesResponse = await fetch(`${DJANGO_BASE_URL}/api/competition-types/`, {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ const StudentProfileForm = () => {
         
         // Fetch past competitions
         try {
-          const pastCompetitionsResponse = await fetch('${DJANGO_BASE_URL}/api/competitions/', {
+          const pastCompetitionsResponse = await fetch(`${DJANGO_BASE_URL}/api/competitions/`, {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ const StudentProfileForm = () => {
         
         // Fetch existing profile
         try {
-          const profileResponse = await fetch('${DJANGO_BASE_URL}/api/student/profile/', {
+          const profileResponse = await fetch(`${DJANGO_BASE_URL}/api/student/profile/`, {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -549,7 +549,7 @@ const StudentProfileForm = () => {
               />
             </div>
             
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium mb-1">Past Competitions</label>
               <select
                 name="past_competition_ids"
@@ -563,7 +563,7 @@ const StudentProfileForm = () => {
                 ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple competitions</p>
-            </div> */}
+            </div>
           </div>
         </div>
         
