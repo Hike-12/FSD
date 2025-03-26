@@ -14,14 +14,13 @@ function App() {
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
-                    <Route path="/" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
                     <Route path="/products" element={<ProductGrid />} />
-                    <Route path="/landing" element={<LandingPage />} />
+                    <Route path="/" element={<LandingPage />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
