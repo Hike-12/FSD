@@ -141,6 +141,8 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict
 import os
+from django.shortcuts import get_object_or_404
+
 
 @api_token_required
 def my_profile(request):
@@ -196,6 +198,67 @@ def my_profile(request):
             return JsonResponse({'error': 'Mentor profile not found for this user.'}, status=404)
 
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
+
+@api_token_required
+@csrf_exempt
+def get_all_mentors(request):
+    mentors = MentorProfile.objects.all().values(
+        'id', 'full_name', 'date_of_birth', 'gender', 'phone_number', 
+        'address', 'country', 'state', 'city', 'postal_code', 
+        'mentor_type', 'department', 'expertise', 'years_of_experience', 
+        'current_company', 'current_position', 'past_mentorship_count', 
+        'linkedin', 'github', 'website', 'bio', 'certifications', 
+        'achievements', 'languages_spoken', 'availability_status', 
+        'available_days', 'available_times', 'max_teams', 'current_teams_count', 
+        'profile_picture', 'is_verified', 'average_rating', 'created_at', 'updated_at'
+    )
+    
+    return JsonResponse(list(mentors), safe=False)
+
+@api_token_required
+@csrf_exempt
+def mentor_detail(request, id):
+    mentor = get_object_or_404(MentorProfile, id=id)
+    
+    mentor_data = {
+        "id": mentor.id,
+        "full_name": mentor.full_name,
+        "gender": mentor.gender,
+        "date_of_birth": str(mentor.date_of_birth),
+        "phone_number": mentor.phone_number,
+        "email": mentor.user.email if mentor.user else None,
+        "mentor_type": mentor.mentor_type,
+        "address": mentor.address,
+        "city": mentor.city,
+        "state": mentor.state,
+        "country": mentor.country,
+        "postal_code": mentor.postal_code,
+        "department": mentor.department,
+        "expertise": mentor.expertise,
+        "years_of_experience": mentor.years_of_experience,
+        "current_position": mentor.current_position,
+        "current_company": mentor.current_company,
+        "current_teams_count": mentor.current_teams_count,
+        "max_teams": mentor.max_teams,
+        "past_mentorship_count": mentor.past_mentorship_count,
+        "availability_status": mentor.availability_status,
+        "available_days": mentor.available_days,
+        "available_times": mentor.available_times,
+        "languages_spoken": mentor.languages_spoken,
+        "bio": mentor.bio,
+        "certifications": mentor.certifications,
+        "achievements": mentor.achievements,
+        "average_rating": str(mentor.average_rating),
+        "created_at": mentor.created_at,
+        "updated_at": mentor.updated_at,
+        "is_verified": mentor.is_verified,
+        "linkedin": mentor.linkedin,
+        "github": mentor.github,
+        "website": mentor.website,
+        "profile_picture": mentor.profile_picture.url if mentor.profile_picture else "",
+    }
+
+    return JsonResponse(mentor_data)
 
 @api_token_required
 @require_http_methods(["POST"])
@@ -342,7 +405,7 @@ def get_user_info(request):
 
 ##############################################################################################################################################
 ##############################################################################################################################################
-
+                                                # STUDENTS KA PART
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -412,6 +475,66 @@ def update_student_profile_fields(profile, data, files=None):
     profile.save()
     return fields_updated
 
+@api_token_required
+@csrf_exempt
+def get_all_students(request):
+    if request.method == "GET":
+        students = StudentProfile.objects.all().values(
+            'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
+            'address', 'country', 'state', 'city', 'postal_code',
+            'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
+            'extracurricular_activities', 'achievements',
+            'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
+            'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
+            'profile_picture', 'linkedin', 'github', 'portfolio',
+            'created_at', 'updated_at', 'is_active'
+        )
+        return JsonResponse(list(students), safe=False)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+@api_token_required
+@csrf_exempt
+def get_student_detail(request, student_id):
+    student = get_object_or_404(StudentProfile, id=student_id)
+    
+    student_data = {
+        "id": student.id,
+        "full_name": student.full_name,
+        "date_of_birth": student.date_of_birth,
+        "gender": student.gender,
+        "phone_number": student.phone_number,
+        "address": student.address,
+        "country": student.country,
+        "state": student.state,
+        "city": student.city,
+        "postal_code": student.postal_code,
+        "education_level": student.education_level,
+        "student_id": student.student_id,
+        "department": student.department,
+        "year_of_study": student.year_of_study,
+        "gpa": student.gpa,
+        "extracurricular_activities": student.extracurricular_activities,
+        "achievements": student.achievements,
+        "certifications": student.certifications,
+        "projects": student.projects,
+        "internships": student.internships,
+        "preferred_team_roles": student.preferred_team_roles,
+        "emergency_contact_name": student.emergency_contact_name,
+        "emergency_contact_number": student.emergency_contact_number,
+        "hobbies": student.hobbies,
+        "career_goal": student.career_goal,
+        "languages_spoken": student.languages_spoken,
+        "learning_style": student.learning_style,
+        "profile_picture": student.profile_picture.url if student.profile_picture else None,
+        "linkedin": student.linkedin,
+        "github": student.github,
+        "portfolio": student.portfolio,
+        "created_at": student.created_at,
+        "updated_at": student.updated_at,
+        "is_active": student.is_active,
+    }
+    
+    return JsonResponse(student_data)
 
 @api_token_required
 def student_profile(request):
@@ -442,6 +565,9 @@ def student_profile(request):
                 'skills': [skill.name for skill in profile.skills.all()],
                 'extracurricular_activities': profile.extracurricular_activities,
                 'achievements': profile.achievements,
+                'certifications': profile.certifications,
+                'internships': profile.internships,
+                'projects': profile.projects,
                 'preferred_competition_types': [ct.name for ct in profile.preferred_competition_types.all()],
                 'preferred_team_roles': profile.preferred_team_roles,
                 'past_competitions': [comp.name for comp in profile.past_competitions.all()],

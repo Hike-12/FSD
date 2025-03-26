@@ -191,6 +191,10 @@ class StudentProfile(models.Model):
     skills = models.ManyToManyField('Skill', related_name='students', blank=True)
     extracurricular_activities = models.TextField(blank=True, null=True)
     achievements = models.TextField(blank=True, null=True)
+    certifications = models.TextField(blank=True, null=True)
+    projects = models.TextField(blank=True, null=True)
+    internships = models.TextField(blank=True, null=True)
+
     
     # Competition Preferences
     preferred_competition_types = models.ManyToManyField('CompetitionType', related_name='interested_students', blank=True)
