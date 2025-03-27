@@ -18,18 +18,21 @@ function App() {
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
-                    <Route path="/" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
                     <Route path="/products" element={<ProductGrid />} />
+<<<<<<< HEAD
+                    <Route path="/" element={<LandingPage />} />
+=======
                     <Route path="/landing" element={<LandingPage />} />
                     <Route path="/mentors" element={<AllMentors />} />
                     <Route path="/mentor/:id" element={<MentorProfile />} />
                     <Route path="/students" element={<AllStudents />} />
                     <Route path="/students/:id" element={<StudentProfile />} />
+>>>>>>> bb086aaaf66caf284dea488b57d4dee5ae6853d8
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
