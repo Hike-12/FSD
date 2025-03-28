@@ -7,12 +7,14 @@ import MentorProfileForm from "./components/Mentor/MentorProfileForm";
 import StudentProfileForm from "./components/Students/StudentProfileForm";
 import LoginRegister from "./components/Login/Registration/LoginRegister";
 import ProductGrid from "./components/Cart/ProductGrid";
-import LandingPage from "./components/LandingPage/landingPage"; // Fix casing if needed
+import LandingPage from "./components/LandingPage/LandingPage"; // Fix casing if needed
 import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewMentorProfile";
 import AllStudents from "./components/Students/AllStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
 import TestimonialMarquee from "./components/ui/TestomonialMarquee"
+import HostProfileForm from "./components/Hosts/HostProfileForm";
+
 function App() {
     return (
         <BrowserRouter>
@@ -22,6 +24,7 @@ function App() {
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
+                    <Route path="/admin-profile" element={<HostProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
                     <Route path="/products" element={<ProductGrid />} />
                     <Route path="/" element={<LandingPage />} />

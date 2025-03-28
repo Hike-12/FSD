@@ -38,7 +38,7 @@ function LoginRegister() {
           case 'STUDENT':
             navigate('/student-dashboard');
             break;
-          case 'ADMIN':
+          case 'HOST':
             navigate('/admin-dashboard');
             break;
           case 'MENTOR':
@@ -141,7 +141,7 @@ function LoginRegister() {
             >
               <option value="">Select Role</option>
               <option value="STUDENT">Student</option>
-              <option value="ADMIN">Admin</option>
+              <option value="HOST">Admin</option>
               <option value="MENTOR">Mentor</option>
             </select>
             <input 

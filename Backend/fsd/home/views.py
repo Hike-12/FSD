@@ -744,3 +744,37 @@ def competition_detail(request, competition_id):
         
     except Competition.DoesNotExist:
         return JsonResponse({'error': 'Competition not found'}, status=404)
+    
+##################################################################################################################################################
+##################################################################################################################################################
+
+from home.models import Host
+
+@api_token_required
+@csrf_exempt
+def create_or_update_host_profile(request):
+    try:
+        data = json.loads(request.body)
+        host, created = Host.objects.get_or_create(user=request.user)
+
+        # Update basic fields
+        if 'full_name' in data:
+            host.full_name = data['full_name']
+        if 'email' in data:
+            host.email = data['email']
+        if 'contact_number' in data:
+            host.contact_number = data['contact_number']
+
+        host.save()
+
+        result = {
+            # 'id': host.id,
+            'full_name': host.full_name,
+            'email': host.email,
+            'contact_number': host.contact_number
+        }
+
+        return JsonResponse(result, status=201 if created else 200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

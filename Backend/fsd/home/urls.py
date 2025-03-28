@@ -33,6 +33,9 @@ urlpatterns = [
     # Competitions
     path('api/competitions/', views.competitions_list, name='competitions-list'),
     path('api/competitions/<int:competition_id>/', views.competition_detail, name='competition-detail'),
+    
+    #Hosts
+    path('api/hosts/profile/', views.create_or_update_host_profile, name='host-detail'),
 ]
 
 
