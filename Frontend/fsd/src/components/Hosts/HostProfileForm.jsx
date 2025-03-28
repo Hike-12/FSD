@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import DJANGO_BASE_URL from "../utils";
+import DJANGO_BASE_URL from "../../lib/utils";
 
 const HostProfileForm = () => {
   const [formData, setFormData] = useState({
