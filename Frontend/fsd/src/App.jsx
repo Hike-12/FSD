@@ -12,7 +12,7 @@ import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewMentorProfile";
 import AllStudents from "./components/Students/AllStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
-
+import TestimonialMarquee from "./components/ui/TestomonialMarquee"
 function App() {
     return (
         <BrowserRouter>
@@ -24,15 +24,12 @@ function App() {
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
                     <Route path="/products" element={<ProductGrid />} />
-<<<<<<< HEAD
                     <Route path="/" element={<LandingPage />} />
-=======
-                    <Route path="/landing" element={<LandingPage />} />
                     <Route path="/mentors" element={<AllMentors />} />
                     <Route path="/mentor/:id" element={<MentorProfile />} />
                     <Route path="/students" element={<AllStudents />} />
                     <Route path="/students/:id" element={<StudentProfile />} />
->>>>>>> bb086aaaf66caf284dea488b57d4dee5ae6853d8
+                    <Route path="/marquee" element={<TestimonialMarquee />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

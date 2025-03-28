@@ -16,3 +16,4 @@ export function CardContent({ children, className = '' }) {
   );
 }
 
+export default { Card, CardContent };

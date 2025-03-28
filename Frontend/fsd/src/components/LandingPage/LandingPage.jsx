@@ -1,34 +1,45 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
-import { PinContainer } from "@/components/ui/3d-pin"; // nsure correct named import
-import { WorldMap } from "@/components/ui/Worldmap"; // Ensure correct named import
+import { WorldMap } from "@/components/ui/Worldmap";
+import { AnimatedTestimonialsDemo } from "@/components/ui/animated-testimonials"; 
 
 const TalentHuntLanding = () => {
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      role: "Tech Recruiter",
-      description: "This platform revolutionized our hiring process!",
-      gradientFrom: "from-violet-500",
-      gradientVia: "via-purple-500",
-      gradientTo: "to-blue-500"
+      quote:
+        "The attention to detail and innovative features have completely transformed our workflow. This is exactly what we've been looking for.",
+      name: "Sarah Chen",
+      designation: "Product Manager at TechFlow",
+      src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=3560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
-      name: "Michael Chen",
-      role: "Startup Founder",
-      description: "Finding top talent has never been easier.",
-      gradientFrom: "from-green-500",
-      gradientVia: "via-teal-500",
-      gradientTo: "to-cyan-500"
+      quote:
+        "Implementation was seamless and the results exceeded our expectations. The platform's flexibility is remarkable.",
+      name: "Michael Rodriguez",
+      designation: "CTO at InnovateSphere",
+      src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
-      name: "Emma Rodriguez",
-      role: "HR Director",
-      description: "Incredible matching algorithm and user experience.",
-      gradientFrom: "from-red-500",
-      gradientVia: "via-orange-500",
-      gradientTo: "to-yellow-500"
+      quote:
+        "This solution has significantly improved our team's productivity. The intuitive interface makes complex tasks simple.",
+      name: "Emily Watson",
+      designation: "Operations Director at CloudScale",
+      src: "https://images.unsplash.com/photo-1623582854588-d60de57fa33f?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+    {
+      quote:
+        "Outstanding support and robust features. It's rare to find a product that delivers on all its promises.",
+      name: "James Kim",
+      designation: "Engineering Lead at DataPro",
+      src: "https://images.unsplash.com/photo-1636041293178-808a6762ab39?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+    {
+      quote:
+        "The scalability and performance have been game-changing for our organization. Highly recommend to any growing business.",
+      name: "Lisa Thompson",
+      designation: "VP of Technology at FutureNet",
+      src: "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     }
   ];
 
@@ -43,7 +54,6 @@ const TalentHuntLanding = () => {
     { start: { lat: 50.1109, lng: 8.6821 }, end: { lat: -36.8485, lng: 174.7633 } },
     { start: { lat: 14.5995, lng: 120.9842 }, end: { lat: -34.9285, lng: 138.6007 } },
     { start: { lat: 39.7392, lng: -104.9903 }, end: { lat: -8.4095, lng: 115.1889 } }
-    
   ];
 
   return (
@@ -63,7 +73,7 @@ const TalentHuntLanding = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-6xl font-bold mb-6 text-white drop-shadow-lg">
+            <h1 className="text-6xl font-bold mb-6 text-blue-600 drop-shadow-lg">
               Connecting People
             </h1>
 
@@ -91,8 +101,9 @@ const TalentHuntLanding = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition"
+                href="/login"
               >
-                Start Hiring
+                Sign Up
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -106,40 +117,17 @@ const TalentHuntLanding = () => {
         </div>
       </div>
 
-      {/* Testimonials Section with Animated Pins */}
-      <div className="py-20 bg-black">
+      {/* Testimonials Section */}
+      <div className="bg-gray-900 py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16">
-            What Our Users Say
+          <h2 className="text-4xl font-bold text-center mb-16 text-white">
+            What Our Clients Say
           </h2>
-          <div className="flex flex-wrap justify-center gap-8">
-            {testimonials.map((testimonial, index) => (
-              <PinContainer 
-                key={index} 
-                title={testimonial.role} 
-                href="#"
-              >
-                <div className="flex basis-full flex-col p-4 tracking-tight text-slate-100/50 w-[20rem] h-[20rem]">
-                  <h3 className="max-w-xs !pb-2 !m-0 font-bold text-xl text-white">
-                    {testimonial.name}
-                  </h3>
-                  <div className="text-base !m-0 !p-0 font-normal">
-                    <span className="text-slate-400">
-                      {testimonial.description}
-                    </span>
-                  </div>
-                  <div
-                    className={`flex flex-1 w-full rounded-lg mt-4 bg-gradient-to-br ${testimonial.gradientFrom} ${testimonial.gradientVia} ${testimonial.gradientTo}`} 
-                  />
-                </div>
-              </PinContainer>
-            ))}
-          </div>
-        </div>
+          <AnimatedTestimonialsDemo />      </div>
       </div>
 
       {/* Features Section */}
-      <div className="py-20 bg-gray-900">
+      <div className="py-20 bg-gray-800">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16">
             Our Key Features
@@ -164,7 +152,7 @@ const TalentHuntLanding = () => {
             ].map((feature, index) => (
               <div 
                 key={index} 
-                className="bg-gray-800 p-6 rounded-lg text-center hover:scale-105 transition-transform"
+                className="bg-gray-700 p-6 rounded-lg text-center hover:scale-105 transition-transform"
               >
                 <div className="text-6xl mb-4">{feature.icon}</div>
                 <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>

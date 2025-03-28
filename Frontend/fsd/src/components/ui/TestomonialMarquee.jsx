@@ -1,75 +1,96 @@
-// "use client";
-// import React from "react";
-// import { motion } from "framer-motion";
-// import { cn } from "@/lib/utils";
-// import { PinContainer } from "./PinContainer";
-// import { GridLineHorizontal, GridLineVertical } from "./GridLines";
+import React from 'react';
+import { motion } from 'framer-motion';
 
-// export const TestimonialMarquee = ({ testimonials, className }) => {
-//   // Split testimonials into columns
-//   const columns = 4;
-//   const chunkSize = Math.ceil(testimonials.length / columns);
-//   const chunks = Array.from({ length: columns }, (_, colIndex) => {
-//     const start = colIndex * chunkSize;
-//     return testimonials.slice(start, start + chunkSize);
-//   });
+const MarqueeItem = ({ title, description, icon }) => {
+  return (
+    <div className="flex items-center justify-between bg-black border border-white/10 rounded-2xl px-6 py-4 mx-4 min-w-[400px] hover:bg-white/5 transition-colors duration-300">
+      <div>
+        <h3 className="text-white text-2xl font-bold">{title}</h3>
+        <p className="text-gray-400 text-lg">{description}</p>
+      </div>
+      <div className="text-blue-500 text-2xl font-bold">{icon}</div>
+    </div>
+  );
+};
 
-//   return (
-//     <div className={cn("py-20 bg-black", className)}>
-//       <div className="container mx-auto px-4">
-//         <h2 className="text-4xl font-bold text-center mb-16 text-white">
-//           What Our Users Say
-//         </h2>
-//         <div className="flex size-full items-center justify-center">
-//           <div className="size-[1720px] shrink-0 scale-50 sm:scale-75 lg:scale-100">
-//             <div
-//               style={{
-//                 transform: "rotateX(55deg) rotateY(0deg) rotateZ(-45deg)",
-//               }}
-//               className="relative top-96 right-[50%] grid size-full origin-top-left grid-cols-4 gap-8 transform-3d"
-//             >
-//               {chunks.map((column, colIndex) => (
-//                 <motion.div
-//                   key={colIndex}
-//                   animate={{ y: colIndex % 2 === 0 ? 100 : -100 }}
-//                   transition={{
-//                     duration: colIndex % 2 === 0 ? 10 : 15,
-//                     repeat: Infinity,
-//                     repeatType: "reverse",
-//                   }}
-//                   className="flex flex-col items-start gap-8"
-//                 >
-//                   <GridLineVertical className="-left-4" offset="80px" />
-//                   {column.map((testimonial, index) => (
-//                     <div className="relative" key={index}>
-//                       <GridLineHorizontal className="-top-4" offset="20px" />
-//                       <PinContainer 
-//                         title={testimonial.role} 
-//                         href="#"
-//                         className="hover:z-50"
-//                       >
-//                         <div className="flex basis-full flex-col p-4 tracking-tight text-slate-100/50 w-[20rem] h-[20rem]">
-//                           <h3 className="max-w-xs !pb-2 !m-0 font-bold text-xl text-white">
-//                             {testimonial.name}
-//                           </h3>
-//                           <div className="text-base !m-0 !p-0 font-normal">
-//                             <span className="text-slate-400">
-//                               {testimonial.description}
-//                             </span>
-//                           </div>
-//                           <div
-//                             className={`flex flex-1 w-full rounded-lg mt-4 bg-gradient-to-br ${testimonial.gradientFrom} ${testimonial.gradientVia} ${testimonial.gradientTo}`} 
-//                           />
-//                         </div>
-//                       </PinContainer>
-//                     </div>
-//                   ))}
-//                 </motion.div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
+const Marquee = () => {
+  const testimonials = [
+    { title: "Spotlight", description: "which is not overused.", icon: ">" },
+    { title: "Trend", description: "is the new trend.", icon: ">" },
+    { title: "Design", description: "that speaks volumes.", icon: ">" },
+    { title: "Innovation", description: "beyond boundaries.", icon: ">" },
+    { title: "Future", description: "is now.", icon: ">" }
+  ];
+
+  return (
+    <div className="relative w-full overflow-hidden bg-black py-12">
+      <div className="flex animate-marquee">
+        {[...testimonials, ...testimonials].map((item, index) => (
+          <MarqueeItem 
+            key={index} 
+            title={item.title} 
+            description={item.description} 
+            icon={item.icon} 
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const HeroSection = () => {
+  return (
+    <div className="relative bg-black min-h-screen text-white flex items-center justify-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 opacity-50 pointer-events-none"></div>
+      
+      <div className="relative z-10 text-center max-w-4xl px-4">
+        <motion.h1 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent"
+        >
+          Aceternity UI
+        </motion.h1>
+        
+        <motion.p
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="text-xl text-gray-300 mb-10"
+        >
+          Design that transcends boundaries, creating experiences that resonate.
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            Get Started
+          </button>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+const AceternityPage = () => {
+  return (
+    <div className="bg-black">
+      <HeroSection />
+      <Marquee />
+      
+      {/* Additional sections can be added here */}
+      <div className="bg-black text-white py-24 text-center">
+        <h2 className="text-4xl font-bold mb-6">More Sections Coming Soon</h2>
+        <p className="text-gray-400 max-w-2xl mx-auto">
+          Stay tuned for more innovative design and cutting-edge experiences.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default AceternityPage;
