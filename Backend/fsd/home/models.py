@@ -492,49 +492,4 @@ class Host(models.Model):
         return self.full_name
     
 
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import Competition
 
-@csrf_exempt
-@login_required
-def create_competition(request):
-    """Only authenticated users (hosts) can create a competition."""
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            competition = Competition.objects.create(
-                name=data["name"],
-                description=data["description"],
-                competition_type_id=data["competition_type"],
-                start_date=data["start_date"],
-                end_date=data["end_date"],
-                registration_deadline=data["registration_deadline"],
-                min_team_size=data.get("min_team_size", 1),
-                max_team_size=data.get("max_team_size", 5),
-                status=data.get("status", "upcoming"),
-                organizer=data["organizer"],
-                venue=data.get("venue", ""),
-                website=data.get("website", ""),
-                created_by=request.user,
-            )
-            return JsonResponse({"message": "Competition created successfully", "id": competition.id}, status=201)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Invalid request"}, status=400)
-
-
-def list_competitions(request):
-    """Return all competitions."""
-    competitions = list(Competition.objects.values())
-    return JsonResponse(competitions, safe=False)
-
-
-@login_required
-def my_competitions(request):
-    """Return competitions created by the logged-in user (host)."""
-    competitions = list(Competition.objects.filter(created_by=request.user).values())
-    return JsonResponse(competitions, safe=False)

@@ -28,6 +28,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0",
+    "react-toastify": "^11.0.5",
     "react-type-animation": "^3.2.0",
     "react-use-measure": "^2.1.7",
     "sonner": "^2.0.1",

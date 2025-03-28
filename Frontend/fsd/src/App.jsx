@@ -14,6 +14,7 @@ import AllStudents from "./components/Students/AllStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
 import TestimonialMarquee from "./components/ui/TestomonialMarquee"
 import HostProfileForm from "./components/Hosts/HostProfileForm";
+import CreateCompetition from "./components/Competitions/CreateCompetition";
 
 function App() {
     return (
@@ -33,6 +34,7 @@ function App() {
                     <Route path="/students" element={<AllStudents />} />
                     <Route path="/students/:id" element={<StudentProfile />} />
                     <Route path="/marquee" element={<TestimonialMarquee />} />
+                    <Route path="/competition-create" element={<CreateCompetition />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
