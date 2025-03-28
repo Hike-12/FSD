@@ -3,8 +3,14 @@ import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import { WorldMap } from "@/components/ui/Worldmap";
 import { AnimatedTestimonialsDemo } from "@/components/ui/animated-testimonials"; 
+import { useNavigate } from 'react-router-dom';
 
 const TalentHuntLanding = () => {
+  const navigate = useNavigate();
+
+  const handleSignUpCLick = ()=>{
+    navigate("/login");
+  }
   const testimonials = [
     {
       quote:
@@ -96,7 +102,7 @@ const TalentHuntLanding = () => {
               Revolutionizing talent acquisition with a global, AI-powered matching platform
             </p>
 
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center space-x-4" onClick={handleSignUpCLick}>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
