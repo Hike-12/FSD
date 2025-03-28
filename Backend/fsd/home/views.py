@@ -707,6 +707,7 @@ def competition_detail(request, competition_id):
             'website': comp.website,
             'competition_type_id': comp.competition_type_id,
             'competition_type_name': comp.competition_type.name if comp.competition_type else "",
+            'competition_picture': request.build_absolute_uri(comp.competition_picture.url) if comp.competition_picture else None,
         }
         
         return JsonResponse(competition_data, safe=False)
@@ -717,32 +718,37 @@ def competition_detail(request, competition_id):
 @api_token_required
 @csrf_exempt
 def create_competition(request):
+    print(request)
     try:
-        data = json.loads(request.body)
+        if request.method != "POST":
+            return JsonResponse({"error": "Invalid request method"}, status=405)
 
-        # Fetch related objects
-        competition_type = CompetitionType.objects.get(id=data['competition_type_id'])
-        required_skills = Skill.objects.filter(id__in=data['required_skill_ids'])
-        related_sdgs = SDG.objects.filter(id__in=data.get('related_sdg_ids', []))
+        # ✅ Use request.POST for text data, request.FILES for file
+        competition_type = CompetitionType.objects.get(id=request.POST["competition_type_id"])
+        required_skills = Skill.objects.filter(id__in=json.loads(request.POST["required_skill_ids"]))
+        related_sdgs = SDG.objects.filter(id__in=json.loads(request.POST.get("related_sdg_ids", "[]")))
 
-        # Create competition
+        competition_picture = request.FILES.get("competition_picture")  # ✅ Get the image file correctly
+
+        # ✅ Create Competition Object
         competition = Competition.objects.create(
-            name=data['name'],
+            name=request.POST["name"],
             competition_type=competition_type,
-            description=data['description'],
-            start_date=data['start_date'],
-            end_date=data['end_date'],
-            registration_deadline=data['registration_deadline'],
-            min_team_size=data['min_team_size'],
-            max_team_size=data['max_team_size'],
-            status=data['status'],
-            organizer=data['organizer'],
-            venue=data.get('venue', ''),
-            website=data.get('website', ''),
-            created_by=request.user
+            description=request.POST["description"],
+            start_date=request.POST["start_date"],
+            end_date=request.POST["end_date"],
+            registration_deadline=request.POST["registration_deadline"],
+            min_team_size=request.POST["min_team_size"],
+            max_team_size=request.POST["max_team_size"],
+            status=request.POST["status"],
+            organizer=request.POST["organizer"],
+            venue=request.POST.get("venue", ""),
+            website=request.POST.get("website", ""),
+            created_by=request.user,
+            competition_picture=competition_picture,  # ✅ This now correctly saves the file
         )
 
-        # Many-to-Many Relations
+        # ✅ Set Many-to-Many Relations
         competition.required_skills.set(required_skills)
         competition.related_sdgs.set(related_sdgs)
         competition.save()
@@ -750,7 +756,8 @@ def create_competition(request):
         return JsonResponse({"message": "Competition created successfully!"}, status=201)
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        print("Error:", e)
+        return JsonResponse({"error": str(e)}, status=400)
 
 @api_token_required
 @csrf_exempt
@@ -758,7 +765,7 @@ def list_competitions(request):
     competitions = Competition.objects.all().values(
         'id', 'name', 'competition_type__name', 'description', 'start_date', 'end_date',
         'registration_deadline', 'min_team_size', 'max_team_size', 'status',
-        'organizer', 'venue', 'website'
+        'organizer', 'venue', 'website','competition_picture'
     )
     return JsonResponse(list(competitions), safe=False)
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import imageCompression from 'browser-image-compression';
 
 const DJANGO_BASE_URL = "http://127.0.0.1:8000";
 
@@ -64,7 +65,25 @@ const AdminCompetitionForm = () => {
     fetchData();
   }, []);
   
+  
 
+const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+  
+  try {
+    const compressedFile = await imageCompression(file, options);
+    setFormData(prev => ({ ...prev, competition_picture: compressedFile }));
+  } catch (error) {
+    console.error("Error compressing image:", error);
+    toast.error("Failed to compress image");
+  }
+};
+
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -80,21 +99,35 @@ const AdminCompetitionForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    const formDataToSend = new FormData();
+    
+    for (const key in formData) {
+      if (key === "required_skill_ids") {
+        formDataToSend.append(key, JSON.stringify(formData[key])); // Convert array to JSON string
+      } else {
+        formDataToSend.append(key, formData[key]);
+      }
+    }
+  
+    if (formData.competition_picture) {
+      formDataToSend.append("competition_picture", formData.competition_picture);
+    }
+    for (const pair of formDataToSend.entries()) {
+        console.log(pair[0], pair[1]); // Logs key-value pairs
+      }
     try {
       const response = await fetch(`${DJANGO_BASE_URL}/api/competitions/create/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: formDataToSend, // Do NOT stringify formData when sending files
       });
-
+  
       if (response.ok) {
         toast.success("Competition created successfully!");
-        // Reset form
         setFormData({
           name: "",
           competition_type_id: "",
@@ -109,8 +142,11 @@ const AdminCompetitionForm = () => {
           venue: "",
           website: "",
           required_skill_ids: [],
+          competition_picture: null,
         });
       } else {
+        const errorData = await response.json(); // Try getting error details
+        console.error("Server Error:", errorData);
         toast.error("Failed to create competition");
       }
     } catch (error) {
@@ -118,6 +154,8 @@ const AdminCompetitionForm = () => {
       toast.error("An error occurred");
     }
   };
+  
+  
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
@@ -244,7 +282,7 @@ const AdminCompetitionForm = () => {
             <option key={skill.id} value={skill.id}>{skill.name}</option>
           ))}
         </select>
-
+        <input type="file" name="competition_picture" accept="image/*" onChange={handleFileChange} />
         <button 
           type="submit" 
           className="w-full p-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"

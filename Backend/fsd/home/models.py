@@ -316,6 +316,8 @@ class Competition(models.Model):
     # SDG Mapping
     related_sdgs = models.ManyToManyField('SDG', related_name='competitions', blank=True)
     
+    competition_picture = models.ImageField(upload_to='competition_picture/', null=True, blank=True)
+    
     # Organization
     organizer = models.CharField(max_length=100)
     venue = models.CharField(max_length=200, blank=True)
