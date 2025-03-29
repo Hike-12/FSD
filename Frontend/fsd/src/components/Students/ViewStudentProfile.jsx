@@ -16,7 +16,7 @@ import {
   Briefcase,
   Users
 } from "lucide-react";
-import DJANGO_BASE_URL from "../utils";
+import DJANGO_BASE_URL from "../../lib/utils";
 
 const StudentProfile = () => {
     const { id } = useParams();

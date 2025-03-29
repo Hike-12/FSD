@@ -31,8 +31,13 @@ urlpatterns = [
     path('api/student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
     
     # Competitions
-    path('api/competitions/', views.competitions_list, name='competitions-list'),
+    path('competition-types/', views.competition_types_list, name='competition-types-list'),
     path('api/competitions/<int:competition_id>/', views.competition_detail, name='competition-detail'),
+    path('api/competitions/', views.list_competitions, name='list_competitions'),
+    path('api/competitions/create/', views.create_competition, name='create_competition'),
+    
+    #Hosts
+    path('api/hosts/profile/', views.create_or_update_host_profile, name='host-detail'),
 ]
 
 

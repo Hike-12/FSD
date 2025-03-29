@@ -26,7 +26,7 @@ const Login = () => {
           case 'STUDENT':
             navigate('/student-dashboard');
             break;
-          case 'ADMIN':
+          case 'HOST':
             navigate('/admin-dashboard');
             break;
           case 'MENTOR':

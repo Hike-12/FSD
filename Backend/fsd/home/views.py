@@ -684,37 +684,6 @@ from .models import Competition
 
 @api_token_required
 @csrf_exempt
-def competitions_list(request):
-    """
-    List all competitions.
-    """
-    competitions = Competition.objects.all()
-    
-    # Build the response data manually
-    result = []
-    for comp in competitions:
-        competition_data = {
-            'id': comp.id,
-            'name': comp.name,
-            'description': comp.description,
-            'start_date': comp.start_date.isoformat() if comp.start_date else None,
-            'end_date': comp.end_date.isoformat() if comp.end_date else None,
-            'registration_deadline': comp.registration_deadline.isoformat() if comp.registration_deadline else None,
-            'min_team_size': comp.min_team_size,
-            'max_team_size': comp.max_team_size,
-            'status': comp.status,
-            'organizer': comp.organizer,
-            'venue': comp.venue,
-            'website': comp.website,
-            'competition_type_id': comp.competition_type_id,
-            'competition_type_name': comp.competition_type.name if comp.competition_type else "",
-        }
-        result.append(competition_data)
-    
-    return JsonResponse(result, safe=False)
-
-@api_token_required
-@csrf_exempt
 def competition_detail(request, competition_id):
     """
     Get details for a specific competition.
@@ -738,9 +707,107 @@ def competition_detail(request, competition_id):
             'website': comp.website,
             'competition_type_id': comp.competition_type_id,
             'competition_type_name': comp.competition_type.name if comp.competition_type else "",
+            'competition_picture': request.build_absolute_uri(comp.competition_picture.url) if comp.competition_picture else None,
         }
         
         return JsonResponse(competition_data, safe=False)
         
     except Competition.DoesNotExist:
         return JsonResponse({'error': 'Competition not found'}, status=404)
+    
+@api_token_required
+@csrf_exempt
+def create_competition(request):
+    print(request)
+    try:
+        if request.method != "POST":
+            return JsonResponse({"error": "Invalid request method"}, status=405)
+
+        # ✅ Use request.POST for text data, request.FILES for file
+        competition_type = CompetitionType.objects.get(id=request.POST["competition_type_id"])
+        required_skills = Skill.objects.filter(id__in=json.loads(request.POST["required_skill_ids"]))
+        related_sdgs = SDG.objects.filter(id__in=json.loads(request.POST.get("related_sdg_ids", "[]")))
+
+        competition_picture = request.FILES.get("competition_picture")  # ✅ Get the image file correctly
+
+        # ✅ Create Competition Object
+        competition = Competition.objects.create(
+            name=request.POST["name"],
+            competition_type=competition_type,
+            description=request.POST["description"],
+            start_date=request.POST["start_date"],
+            end_date=request.POST["end_date"],
+            registration_deadline=request.POST["registration_deadline"],
+            min_team_size=request.POST["min_team_size"],
+            max_team_size=request.POST["max_team_size"],
+            status=request.POST["status"],
+            organizer=request.POST["organizer"],
+            venue=request.POST.get("venue", ""),
+            website=request.POST.get("website", ""),
+            created_by=request.user,
+            competition_picture=competition_picture,  # ✅ This now correctly saves the file
+        )
+
+        # ✅ Set Many-to-Many Relations
+        competition.required_skills.set(required_skills)
+        competition.related_sdgs.set(related_sdgs)
+        competition.save()
+
+        return JsonResponse({"message": "Competition created successfully!"}, status=201)
+
+    except Exception as e:
+        print("Error:", e)
+        return JsonResponse({"error": str(e)}, status=400)
+
+@api_token_required
+@csrf_exempt
+def list_competitions(request):
+    competitions = Competition.objects.all().values(
+        'id', 'name', 'competition_type__name', 'description', 'start_date', 'end_date',
+        'registration_deadline', 'min_team_size', 'max_team_size', 'status',
+        'organizer', 'venue', 'website','competition_picture'
+    )
+    return JsonResponse(list(competitions), safe=False)
+
+from django.http import JsonResponse
+from .models import CompetitionType
+
+def competition_types_list(request):
+    competition_types = CompetitionType.objects.all().values("id", "name", "description")
+    return JsonResponse(list(competition_types), safe=False)
+
+    
+##################################################################################################################################################
+##################################################################################################################################################
+
+from home.models import Host,SDG
+
+@api_token_required
+@csrf_exempt
+def create_or_update_host_profile(request):
+    try:
+        data = json.loads(request.body)
+        host, created = Host.objects.get_or_create(user=request.user)
+
+        # Update basic fields
+        if 'full_name' in data:
+            host.full_name = data['full_name']
+        if 'email' in data:
+            host.email = data['email']
+        if 'contact_number' in data:
+            host.contact_number = data['contact_number']
+
+        host.save()
+
+        result = {
+            # 'id': host.id,
+            'full_name': host.full_name,
+            'email': host.email,
+            'contact_number': host.contact_number
+        }
+
+        return JsonResponse(result, status=201 if created else 200)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    

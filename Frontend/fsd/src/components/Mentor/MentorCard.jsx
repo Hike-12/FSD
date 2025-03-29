@@ -1,16 +1,29 @@
-import React from "react";
-import { MapPin, Star, Calendar, ArrowRight, ChevronDown } from "lucide-react";
-import { motion } from "framer-motion";
-import {
-  Expandable,
-  ExpandableCard,
+import React, { useState } from "react";
+import { 
+  MapPin, Star, Calendar, ArrowRight, Briefcase, 
+  MessageSquare, Coffee, UserCheck 
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { 
+  Expandable, 
+  ExpandableCard, 
+  ExpandableCardContent, 
+  ExpandableCardHeader, 
   ExpandableContent,
-  ExpandableTrigger,
-  ExpandableCardHeader,
-  ExpandableCardContent,
-  ExpandableCardFooter,
-} from "./Expandable"; // Ensure Expandable component is correctly imported
-import DJANGO_BASE_URL from "../utils";
+  ExpandableTrigger 
+} from "@/components/ui/expandable";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+
+import DJANGO_BASE_URL from "../../lib/utils";
 
 const getAvailabilityBadgeColor = (status) => {
   switch (status.toLowerCase()) {
@@ -25,87 +38,126 @@ const getAvailabilityBadgeColor = (status) => {
 
 const MentorCard = ({ mentor, onViewProfile }) => {
   return (
-    <Expandable>
-      <ExpandableCard className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <ExpandableCardHeader className="p-4 flex items-center space-x-4">
-          {/* Profile Picture */}
-          <div className="flex-shrink-0">
-            {mentor.profile_picture ? (
-              <img
-                src={`${DJANGO_BASE_URL}/media/${mentor.profile_picture}`}
-                alt={mentor.full_name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-gray-500 font-medium">
-                  {mentor.full_name.charAt(0)}
-                </span>
+    <Expandable 
+      expandDirection="both" 
+      expandBehavior="replace"
+    >
+      <ExpandableTrigger>
+        <ExpandableCard
+          className="w-full relative"
+          collapsedSize={{ width: 320, height: 420 }}
+          expandedSize={{ width: 420, height: 620 }}
+          hoverToExpand={false}
+          expandDelay={200}
+          collapseDelay={300}
+        >
+          <ExpandableCardHeader>
+            <motion.div 
+              className="flex flex-col items-center"
+              initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.43, 0.13, 0.23, 0.96] }}
+            >
+              {/* Profile Picture */}
+              <div className="relative mb-4">
+                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+                  <AvatarImage 
+                    src={mentor.profile_picture 
+                      ? `${DJANGO_BASE_URL}/media/${mentor.profile_picture}` 
+                      : undefined
+                    } 
+                    alt={mentor.full_name}
+                  />
+                  <AvatarFallback className="bg-blue-100 text-blue-600 text-3xl">
+                    {mentor.full_name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-            )}
-          </div>
 
-          {/* Basic Info */}
-          <div className="flex-grow">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {mentor.full_name}
-            </h3>
-            <span
-              className={`inline-block px-2 py-0.5 text-xs rounded-full ${
-                getAvailabilityBadgeColor(mentor.availability_status)
-              }`}
-            >
-              {mentor.availability_status}
-            </span>
-          </div>
+              {/* Availability Status */}
+              <Badge 
+                variant="secondary" 
+                className={`${getAvailabilityBadgeColor(mentor.availability_status)} mb-2`}
+              >
+                {mentor.availability_status}
+              </Badge>
 
-          {/* Expand Trigger */}
-          <ExpandableTrigger>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
-            >
-              <ChevronDown className="w-5 h-5 text-gray-600" />
+              {/* Mentor Name */}
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                {mentor.full_name}
+              </h3>
+
+              {/* Mentor Type and Department */}
+              <p className="text-gray-600 font-medium">
+                {mentor.mentor_type} {mentor.department && `· ${mentor.department}`}
+              </p>
             </motion.div>
-          </ExpandableTrigger>
-        </ExpandableCardHeader>
+          </ExpandableCardHeader>
 
-        <ExpandableContent preset="slide-down">
-          <ExpandableCardContent className="p-4 space-y-3">
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5 text-amber-500" />
-              <span>{mentor.years_of_experience} years of experience</span>
-            </div>
+          <ExpandableCardContent>
+            <div className="space-y-4 text-sm">
+              {/* Basic Details */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Star className="w-4 h-4 text-amber-500" />
+                  <span>{mentor.years_of_experience} years</span>
+                </div>
 
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <span>
-                {[mentor.city, mentor.state, mentor.country]
-                  .filter(Boolean)
-                  .join(", ") || "Location unavailable"}
-              </span>
-            </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span>
+                    {[mentor.city, mentor.state, mentor.country]
+                      .filter(Boolean)
+                      .join(", ") || "Location unavailable"}
+                  </span>
+                </div>
+              </div>
 
-            <div className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-gray-400" />
-              <span>{mentor.availability_status}</span>
+              {/* Expanded Content */}
+              <ExpandableContent 
+                preset="fade" 
+                stagger 
+                staggerChildren={0.1}
+              >
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Briefcase className="w-5 h-5 text-blue-500" />
+                    <span>Expertise: {mentor.mentor_type}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <UserCheck className="w-5 h-5 text-green-500" />
+                    <span>Preferred Mentorship: {mentor.availability_status}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Coffee className="w-5 h-5 text-orange-500" />
+                    <span>Consultation Style: Collaborative</span>
+                  </div>
+                </div>
+              </ExpandableContent>
             </div>
           </ExpandableCardContent>
 
-          <ExpandableCardFooter className="p-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onViewProfile(mentor.id)}
-              className="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"
-            >
-              <span>View Full Profile</span>
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
-          </ExpandableCardFooter>
-        </ExpandableContent>
-      </ExpandableCard>
+          {/* Footer */}
+          <ExpandableContent preset="slide-up">
+            <div className="mt-4 space-y-3">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => navigate(`/mentor/${mentor.id}`)}
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                View Full Profile
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Request Consultation
+              </Button>
+            </div>
+          </ExpandableContent>
+        </ExpandableCard>
+      </ExpandableTrigger>
     </Expandable>
   );
 };

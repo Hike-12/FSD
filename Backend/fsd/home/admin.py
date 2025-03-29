@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
     CustomUser, MentorProfile, StudentProfile, Skill,
-    SDG, CompetitionType, Competition
+    SDG, CompetitionType, Competition,Host
 )
 
 # Custom User Admin
@@ -72,4 +72,7 @@ class CompetitionAdmin(admin.ModelAdmin):
     list_display = ('name', 'competition_type', 'start_date', 'end_date', 'status')
     list_filter = ('competition_type', 'status', 'start_date')
     search_fields = ('name', 'competition_type__name', 'description')
+    
+
+admin.site.register(Host)
 

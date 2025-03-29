@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserPlus, Search, Users, Star, MapPin, Calendar } from "lucide-react";
-import DJANGO_BASE_URL from "../utils";
+import DJANGO_BASE_URL from "../../lib/utils";
 
 const SkeletonStudentCard = () => (
   <motion.div 
