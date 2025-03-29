@@ -7,7 +7,7 @@ import { UserPlus, Search } from "lucide-react";
 
 const SkeletonMentorCard = () => (
   <motion.div 
-    className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 transform transition-all duration-300 hover:scale-105"
+    className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl p-6 transform transition-all duration-300 hover:scale-[1.02]"
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.3 }}
@@ -62,7 +62,7 @@ const AllMentors = () => {
     fetchMentors();
   }, []);
 
-  // Filter mentors with null checks and default empty strings
+  // Filter mentors with null checks
   const filteredMentors = mentors.filter(mentor => {
     const name = mentor.full_name || '';
     const specialty = mentor.specialty || '';
@@ -71,22 +71,6 @@ const AllMentors = () => {
     return name.toLowerCase().includes(searchTermLower) || 
     specialty.toLowerCase().includes(searchTermLower);
   });
-
-  const renderSkeletons = () => {
-    return Array(6)
-      .fill(0)
-      .map((_, index) => <SkeletonMentorCard key={index} />);
-  };
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
@@ -106,7 +90,7 @@ const AllMentors = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            Connect with experienced professionals who can guide your career journey
+            Connect with experienced professionals who can guide your career journey.
           </motion.p>
 
           {/* Search Input */}
@@ -132,11 +116,11 @@ const AllMentors = () => {
         {loading ? (
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={container}
-            initial="hidden"
-            animate="show"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
           >
-            {renderSkeletons()}
+            {Array(6).fill(0).map((_, index) => <SkeletonMentorCard key={index} />)}
           </motion.div>
         ) : filteredMentors.length === 0 ? (
           <motion.div
@@ -175,12 +159,12 @@ const AllMentors = () => {
         ) : (
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={container}
-            initial="hidden"
-            animate="show"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
           >
-            {filteredMentors.map((mentor, index) => (
-              <MentorCard key={mentor.id} mentor={mentor} index={index} />
+            {filteredMentors.map((mentor) => (
+              <MentorCard key={mentor.id} mentor={mentor} onViewProfile={(id) => navigate(`/mentors/${id}`)} />
             ))}
           </motion.div>
         )}

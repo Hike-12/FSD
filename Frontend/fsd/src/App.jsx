@@ -12,7 +12,7 @@ import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewMentorProfile";
 import AllStudents from "./components/Students/AllStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
-import TestimonialMarquee from "./components/ui/TestomonialMarquee"
+import TestimonialMarquee from "./components/ui/TestomonialMarquee";
 function App() {
     return (
         <BrowserRouter>
