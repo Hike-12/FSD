@@ -19,6 +19,7 @@ import CreateCompetition from "./components/Competitions/CreateCompetition";
 import CompetitionsList from "./components/Competitions/DisplayCompetitions";
 import CompetitionDetail from "./components/Competitions/CompetitionDetail";
 import StudentLandingPage from "./components/Students/StudentLandingPage";
+import AdminLandingPage from "./components/Hosts/AdminLandingPage";
 function App() {
     return (
         <BrowserRouter>
@@ -41,6 +42,7 @@ function App() {
                     <Route path="/competitions" element={<CompetitionsList />} />
                     <Route path="/competitions/:id" element={<CompetitionDetail />} />
                     <Route path="/student-landing" element={<StudentLandingPage />} />
+                    <Route path="/admin-landing" element={<AdminLandingPage />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
