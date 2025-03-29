@@ -81,7 +81,7 @@ const ToggleButton = styled.button`
   transition: all 0.6s ease-in-out;
 
   &::before {
-    content: "👉";
+    content: "";
     font-size: 3.5rem;
     filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
   }
