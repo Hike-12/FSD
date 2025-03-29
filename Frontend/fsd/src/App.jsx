@@ -13,12 +13,12 @@ import MentorProfile from "./components/Mentor/ViewMentorProfile";
 import AllStudents from "./components/Students/AllStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
 import TestimonialMarquee from "./components/ui/TestomonialMarquee";
-import TestimonialMarquee from "./components/ui/TestomonialMarquee"
+// import TestimonialMarquee from "./components/ui/TestomonialMarquee"
 import HostProfileForm from "./components/Hosts/HostProfileForm";
 import CreateCompetition from "./components/Competitions/CreateCompetition";
 import CompetitionsList from "./components/Competitions/DisplayCompetitions";
 import CompetitionDetail from "./components/Competitions/CompetitionDetail";
-
+import StudentLandingPage from "./components/Students/StudentLandingPage";
 function App() {
     return (
         <BrowserRouter>
@@ -40,6 +40,7 @@ function App() {
                     <Route path="/competition-create" element={<CreateCompetition />} />
                     <Route path="/competitions" element={<CompetitionsList />} />
                     <Route path="/competitions/:id" element={<CompetitionDetail />} />
+                    <Route path="/student-landing" element={<StudentLandingPage />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
