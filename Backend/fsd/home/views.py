@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team, TeamMembership
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -804,3 +804,73 @@ def create_or_update_host_profile(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     
+######################################################################################################################################################
+######################################################################################################################################################
+
+@api_token_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_team(request):
+    try:
+        data = json.loads(request.body)
+        competition_id = data.get('competition_id')
+        team_name = data.get('team_name')
+
+        if not competition_id or not team_name:
+            return JsonResponse({'error': 'Competition ID and team name are required'}, status=400)
+
+        competition = Competition.objects.get(id=competition_id)
+
+        # Check if the user already leads a team in this competition
+        if Team.objects.filter(competition=competition, team_leader=request.user.studentprofile).exists():
+            return JsonResponse({'error': 'You already lead a team in this competition'}, status=400)
+
+        # Create the team
+        team = Team.objects.create(
+            name=team_name,
+            competition=competition,
+            team_leader=request.user.studentprofile,
+            max_team_size=competition.max_team_size
+        )
+
+        return JsonResponse({
+            'message': 'Team created successfully',
+            'team_code': team.team_code,
+            'team_id': team.id
+        }, status=201)
+
+    except Competition.DoesNotExist:
+        return JsonResponse({'error': 'Competition not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+
+@api_token_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def join_team(request):
+    try:
+        data = json.loads(request.body)
+        team_code = data.get('team_code')
+
+        if not team_code:
+            return JsonResponse({'error': 'Team code is required'}, status=400)
+
+        team = Team.objects.filter(team_code=team_code).first()
+        if not team:
+            return JsonResponse({'error': 'Invalid team code'}, status=404)
+
+        # Check if the team size limit is reached
+        if team.memberships.count() >= team.max_team_size:
+            return JsonResponse({'error': 'Team size limit reached'}, status=403)
+
+        # Add the user to the team
+        student_profile = StudentProfile.objects.get(user=request.user)
+        TeamMembership.objects.create(team=team, student=student_profile, role='member')
+
+        return JsonResponse({'message': 'Successfully joined the team'}, status=200)
+
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
