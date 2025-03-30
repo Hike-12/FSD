@@ -1,10 +1,9 @@
-from django.views.decorators.csrf import ensure_csrf_cookie, get_token
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG
+from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
 from functools import wraps
@@ -112,6 +111,8 @@ def custom_login(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 @require_http_methods(["POST"])
+@csrf_exempt
+@api_token_required
 def custom_logout(request):
     try:
         django_logout(request)
@@ -132,19 +133,9 @@ def role_required(allowed_roles):
 
 ##############################################################################################################################################
 ##############################################################################################################################################
-
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .models import MentorProfile, Skill, CompetitionType
-import json
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from django.http import QueryDict
-import os
-from django.shortcuts import get_object_or_404
-
-
+                                                         # MENTORS KA PART
 @api_token_required
+@csrf_exempt
 def my_profile(request):
     print("User ID:", request.user.id)
     print("User:", request.user)
@@ -375,8 +366,12 @@ def update_mentor_profile(request, mentor_id):
         traceback.print_exc()
         return JsonResponse({'error': f'Error updating profile: {str(e)}'}, status=500)
 
+####################################################################################################################################################
+################################################################################################################################################################
+# SKILLS KA PART
 
 @api_token_required
+@csrf_exempt
 def list_skills(request):
     if request.method == 'GET':
         skills = Skill.objects.all()
@@ -385,17 +380,12 @@ def list_skills(request):
 
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
 
-@api_token_required
-def list_competition_types(request):
-    if request.method == 'GET':
-        comps = CompetitionType.objects.all()
-        data = [{'id': comp.id, 'name': comp.name} for comp in comps]
-        return JsonResponse({'competition_types': data})
 
-    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
-
+###################################################################################################################################################
+###################################################################################################################################################
 @api_token_required
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_user_info(request):
     return JsonResponse({
         'username': request.user.username,
@@ -406,16 +396,6 @@ def get_user_info(request):
 ##############################################################################################################################################
 ##############################################################################################################################################
                                                 # STUDENTS KA PART
-
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .models import StudentProfile, Skill, CompetitionType, Competition
-import json
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from django.http import QueryDict
-import os
-
 
 def clean_field_value(field_name, value):
     boolean_fields = ['is_active']
@@ -430,6 +410,7 @@ def clean_field_value(field_name, value):
         except (ValueError, TypeError):
             return None
     return value  # Default: return as-is
+
 
 def update_student_profile_fields(profile, data, files=None):
     fields_updated = []
@@ -537,6 +518,7 @@ def get_student_detail(request, student_id):
     return JsonResponse(student_data)
 
 @api_token_required
+@csrf_exempt
 def student_profile(request):
     print("Request content type:", request.content_type)
     print("User ID:", request.user.id)
@@ -596,6 +578,7 @@ def student_profile(request):
 
 @api_token_required
 @require_http_methods(["POST"])
+@csrf_exempt
 def create_or_update_student_profile(request):
     try:
         data = json.loads(request.body)
@@ -677,10 +660,19 @@ def update_student_profile(request, student_id):
     
 ##############################################################################################################################################
 ##############################################################################################################################################
+# COMPETITION TYPES KA PART
 
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from .models import Competition
+
+
+@api_token_required
+@csrf_exempt
+def list_competition_types(request):
+    if request.method == 'GET':
+        comps = CompetitionType.objects.all()
+        data = [{'id': comp.id, 'name': comp.name} for comp in comps]
+        return JsonResponse({'competition_types': data})
+
+    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
 
 @api_token_required
 @csrf_exempt
@@ -779,7 +771,7 @@ def competition_types_list(request):
     
 ##################################################################################################################################################
 ##################################################################################################################################################
-
+#       HOSTS?ADMIN KA PART
 from home.models import Host,SDG
 
 @api_token_required
