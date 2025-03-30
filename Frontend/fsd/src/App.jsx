@@ -6,7 +6,6 @@ import { AuthProvider } from "./context/AuthContext";
 import MentorProfileForm from "./components/Mentor/MentorProfileForm";
 import StudentProfileForm from "./components/Students/StudentProfileForm";
 import LoginRegister from "./components/Login/Registration/LoginRegister";
-import ProductGrid from "./components/Cart/ProductGrid";
 import LandingPage from "./components/LandingPage/LandingPage"; // Fix casing if needed
 import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewMentorProfile";
@@ -33,7 +32,6 @@ function App() {
                     <Route path="/student-profile" element={<StudentProfileForm/>} />
                     <Route path="/admin-profile" element={<HostProfileForm/>} />
                     <Route path="/login" element={<LoginRegister />} />
-                    <Route path="/products" element={<ProductGrid />} />
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/mentors" element={<AllMentors />} />
                     <Route path="/mentor/:id" element={<MentorProfile />} />
