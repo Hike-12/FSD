@@ -878,3 +878,29 @@ def join_team(request):
         return JsonResponse({'error': 'Student profile not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    
+@api_token_required
+@require_http_methods(["GET"])
+def get_user_teams(request):
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+        memberships = TeamMembership.objects.filter(student=student_profile).select_related('team', 'team__competition')
+
+        teams = [
+            {
+                'team_id': membership.team.id,
+                'team_name': membership.team.name,
+                'competition_name': membership.team.competition.name,
+                'competition_id': membership.team.competition.id,
+                'role': membership.role,
+            }
+            for membership in memberships
+        ]
+
+        return JsonResponse({'teams': teams}, status=200)
+
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
