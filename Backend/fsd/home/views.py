@@ -888,7 +888,7 @@ def join_team(request):
     
 @api_token_required
 @require_http_methods(["GET"])
-def get_user_teams(request):
+def get_student_teams(request):
     try:
         # Get the logged-in user's student profile
         student_profile = StudentProfile.objects.get(user=request.user)
@@ -989,3 +989,4 @@ def get_team_details(request, team_id):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    

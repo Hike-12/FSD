@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/student/profile/', views.student_profile, name='student_profile'),
     path('api/student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
     path('api/student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
-    
+    path('api/student/get-student-teams/', views.get_student_teams, name='get_student_teams'),
     # Competitions
     path('competition-types/', views.competition_types_list, name='competition-types-list'),
     path('api/competitions/<int:competition_id>/', views.competition_detail, name='competition-detail'),

@@ -10,10 +10,46 @@ const CompetitionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [teamName, setTeamName] = useState("");
-  const [teamCode, setTeamCode] = useState(""); // Updated to use teamCode instead of teamId
+  const [teamCode, setTeamCode] = useState("");
+  const [userTeam, setUserTeam] = useState(null); // Store the user's team for this competition
+
+  // Fetch the user's team for this competition
+  useEffect
+  const fetchUserTeam = async () => {
+    try {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/student/get-student-teams/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+      });
+  
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        // Check if the user is already in a team for this competition
+        const team = data.teams.find((team) => team.competition_id === parseInt(id));
+        if (team) {
+          setUserTeam(team); // Store the team details
+          navigate(`/team/${team.team_id}`); // Redirect to the team page
+        }
+      } else {
+        console.error(data.error || "Failed to fetch user teams");
+      }
+    } catch (err) {
+      console.error("An error occurred while fetching user teams:", err);
+    }
+  };
 
   const handleCreateTeam = async () => {
     try {
+      // Check if the user is already in a team
+      if (userTeam) {
+        alert("You are already in a team for this competition!");
+        navigate(`/team/${userTeam.team_id}`);
+        return;
+      }
+
       const response = await fetch(`${DJANGO_BASE_URL}/api/create-team/`, {
         method: "POST",
         headers: {
@@ -37,19 +73,26 @@ const CompetitionDetail = () => {
 
   const handleJoinTeam = async () => {
     try {
+      // Check if the user is already in a team
+      if (userTeam) {
+        alert("You are already in a team for this competition!");
+        navigate(`/team/${userTeam.team_id}`);
+        return;
+      }
+
       const response = await fetch(`${DJANGO_BASE_URL}/api/join-team/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Token ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({ team_code: teamCode }), // Use team_code instead of teamId
+        body: JSON.stringify({ team_code: teamCode }),
       });
 
       const data = await response.json();
       if (response.ok) {
         alert("Successfully joined the team!");
-        navigate(`/team/${data.team_id}`);
+        navigate(`/team/${data.team_id}`); // Redirect to the team page
       } else {
         alert(data.error || "Failed to join the team");
       }
@@ -81,6 +124,7 @@ const CompetitionDetail = () => {
     };
 
     fetchCompetition();
+    fetchUserTeam(); // Fetch the user's team for this competition
   }, [id]);
 
   if (loading) return <p>Loading competition details...</p>;
@@ -131,8 +175,8 @@ const CompetitionDetail = () => {
         <input
           type="text"
           placeholder="Enter Team Code"
-          value={teamCode} // Updated to use teamCode
-          onChange={(e) => setTeamCode(e.target.value)} // Updated to set teamCode
+          value={teamCode}
+          onChange={(e) => setTeamCode(e.target.value)}
           className="border p-2 rounded w-full mt-2"
         />
         <button onClick={handleJoinTeam} className="bg-green-500 text-white px-4 py-2 rounded mt-2">
