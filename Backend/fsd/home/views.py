@@ -11,7 +11,17 @@ from django.core.cache import cache
 import random
 import string
 import os
+import joblib
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 
+# Load the recommendation model and vectorizer at startup
+MODEL_PATH = "c:/Users/Lenovo/Desktop/Aliqyaan Coding/FSD/Backend/fsd/home/ml/"
+nn_model = joblib.load(f"{MODEL_PATH}nn_model.joblib")
+tfidf_vectorizer = joblib.load(f"{MODEL_PATH}tfidf_vectorizer.joblib")
+
+# Load the student data (used for recommendations)
+students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
 
 # Modified decorator for token auth
 def api_token_required(view_func):
@@ -100,6 +110,7 @@ def custom_login(request):
             print("Is user authenticated after login:", request.user.is_authenticated)
             response = JsonResponse({
                 'message': 'Login successful',
+                'id': user.id,
                 'role': user.role,
                 'username': user.username,
                 'token':token,
@@ -109,6 +120,7 @@ def custom_login(request):
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
     except Exception as e:
+        print(f"Error in custom_login: {e}")
         return JsonResponse({'error': str(e)}, status=400)
 
 @require_http_methods(["POST"])
@@ -384,11 +396,12 @@ def list_skills(request):
 
 ###################################################################################################################################################
 ###################################################################################################################################################
-@api_token_required
+
 @require_http_methods(["GET"])
 @csrf_exempt
 def get_user_info(request):
     return JsonResponse({
+        'id': request.user.id,
         'username': request.user.username,
         'email': request.user.email,
         'role': request.user.role
@@ -398,6 +411,46 @@ def get_user_info(request):
 ##############################################################################################################################################
                                                 # STUDENTS KA PART
 
+
+def get_recommendations(student_id, top_n=2):
+    print("This is in get_recommendations", student_id)
+    try:
+        # Debug: Print the columns in students_data
+        print("Columns in students_data:", students_data.columns)
+
+        # Ensure data type consistency
+        student_id = str(student_id)
+        students_data['ID'] = students_data['ID'].astype(str)
+
+        # Find the student's combined features using the ID column
+        student_row = students_data[students_data['ID'] == student_id]
+        print("Matching rows in students_data:", student_row)
+
+        if student_row.empty:
+            print(f"No student found with ID {student_id}")
+            return []
+
+        # Debug: Print the combined features for the student
+        combined_features = student_row['combined_features'].values
+        # print("Combined features for the student:", combined_features)
+
+        # Transform the student's features into a TF-IDF vector
+        student_features = tfidf_vectorizer.transform(combined_features)
+        # print("TF-IDF vector for the student:", student_features)
+
+        # Use the Nearest Neighbors model to find similar students
+        distances, indices = nn_model.kneighbors(student_features, n_neighbors=top_n)
+        # print("Distances:", distances)
+        # print("Indices:", indices)
+
+        # Retrieve the recommended students
+        recommended_students = students_data.iloc[indices[0]].to_dict(orient="records")
+        # print("Recommended students:", recommended_students)
+        return recommended_students
+    except Exception as e:
+        print(f"Error in get_recommendations: {e}")
+        return []
+    
 def clean_field_value(field_name, value):
     boolean_fields = ['is_active']
     float_fields = ['gpa']
@@ -457,22 +510,78 @@ def update_student_profile_fields(profile, data, files=None):
     profile.save()
     return fields_updated
 
+            # Fetch all students database version
+            
+            # students = StudentProfile.objects.all().values(
+            #     'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
+            #     'address', 'country', 'state', 'city', 'postal_code',
+            #     'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
+            #     'extracurricular_activities', 'achievements',
+            #     'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
+            #     'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
+            #     'profile_picture', 'linkedin', 'github', 'portfolio',
+            #     'created_at', 'updated_at', 'is_active'
+            # )
+
+            # students_list = list(students)
 @api_token_required
 @csrf_exempt
 def get_all_students(request):
     if request.method == "GET":
-        students = StudentProfile.objects.all().values(
-            'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
-            'address', 'country', 'state', 'city', 'postal_code',
-            'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
-            'extracurricular_activities', 'achievements',
-            'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
-            'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
-            'profile_picture', 'linkedin', 'github', 'portfolio',
-            'created_at', 'updated_at', 'is_active'
-        )
-        return JsonResponse(list(students), safe=False)
+        try:
+            # Get the student ID from the query parameters (if provided)
+            student_id = request.GET.get("student_id", None)
+
+            # Load the students data from the CSV file
+            students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")
+
+            # Convert the data to a list of dictionaries
+            students_list = students_data.to_dict(orient="records")
+            print("Students List After Loading:", students_list)
+
+            # If a student ID is provided, filter the students by recommendation
+            if student_id:
+                try:
+                    # Ensure the student ID is a string for comparison
+                    student_id = str(student_id)
+
+                    # Get recommendations for the student
+                    recommended_students = get_recommendations(student_id)
+                    recommended_ids = [str(student['ID']) for student in recommended_students]
+
+                    # Debug: Print recommended IDs
+                    print("Recommended IDs:", recommended_ids)
+
+                    # Filter the students_list to include only recommended students
+                    # filtered_students_list = [
+                    #     student for student in students_list if student['ID'] in recommended_ids
+                    # ]
+
+                    # Ensure the filtered list is ordered based on recommended_ids
+                    # filtered_students_list.sort(
+                    #     key=lambda x: recommended_ids.index(x['ID'])
+                    # )
+
+                    # Debug: Print the filtered and ordered students list
+                    print("Filtered and Ordered Students List:", recommended_students)
+
+                    return JsonResponse(recommended_students, safe=False)
+
+                except ValueError as e:
+                    print(f"Error in filtering students_list: {e}")
+                    return JsonResponse({"error": "Error filtering students list"}, status=500)
+                except Exception as e:
+                    print(f"Error in recommendation logic: {e}")
+                    return JsonResponse({"error": "Error generating recommendations"}, status=500)
+
+            # If no student ID is provided, return the full list
+            return JsonResponse(students_list, safe=False)
+        except Exception as e:
+            print(f"Error fetching students: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 @api_token_required
 @csrf_exempt
@@ -772,7 +881,7 @@ def competition_types_list(request):
     
 ##################################################################################################################################################
 ##################################################################################################################################################
-#       HOSTS?ADMIN KA PART
+#       HOSTS/ADMIN KA PART
 from home.models import Host,SDG
 
 @api_token_required

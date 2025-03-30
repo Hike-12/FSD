@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
 class CustomUser(AbstractUser):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     ROLES = (
         ('STUDENT', 'Student'),
         ('HOST', 'Host'),
@@ -20,6 +21,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
 class MentorProfile(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     GENDER_CHOICES = [
         ('male', 'Male'),
         ('female', 'Female'),
@@ -125,6 +127,7 @@ class MentorProfile(models.Model):
     
 
 class StudentProfile(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     GENDER_CHOICES = [
         ('male', 'Male'),
         ('female', 'Female'),
@@ -236,6 +239,7 @@ class StudentProfile(models.Model):
 # New Models
 
 class Skill(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     SKILL_CATEGORIES = [
         ('technical', 'Technical'),
         ('design', 'Design'),
@@ -276,6 +280,7 @@ class Skill(models.Model):
 #         return f"{self.student.full_name} - {self.skill.name} ({self.proficiency_level})"
 
 class SDG(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     number = models.PositiveIntegerField(unique=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -285,6 +290,7 @@ class SDG(models.Model):
         return f"SDG {self.number}: {self.title}"
 
 class CompetitionType(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     name = models.CharField(max_length=100)
     description = models.TextField()
     required_skills = models.ManyToManyField('Skill', related_name='competition_types')
@@ -293,6 +299,7 @@ class CompetitionType(models.Model):
         return self.name
 
 class Competition(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     STATUS_CHOICES = [
         ('upcoming', 'Upcoming'),
         ('active', 'Active'),
@@ -335,6 +342,7 @@ class Competition(models.Model):
         return self.name
 
 class Team(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     STATUS_CHOICES = [
         ('forming', 'Forming'),
         ('complete', 'Complete'),
@@ -370,6 +378,7 @@ class Team(models.Model):
         return f"{self.name} - {self.competition.name}"
 
 class TeamInvitation(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
@@ -393,6 +402,7 @@ class TeamInvitation(models.Model):
         return f"Invitation for {self.student.full_name} to join {self.team.name}"
 
 class MentorshipSession(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     STATUS_CHOICES = [
         ('scheduled', 'Scheduled'),
         ('completed', 'Completed'),
@@ -426,6 +436,7 @@ class MentorshipSession(models.Model):
         return f"{self.title} - {self.team.name} with {self.mentor.full_name}"
 
 class ProjectSubmission(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('submitted', 'Submitted'),
@@ -461,6 +472,7 @@ class ProjectSubmission(models.Model):
 
 
 class Host(models.Model):
+    id = models.AutoField(primary_key=True)  # Explicitly define the id field
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -468,6 +480,6 @@ class Host(models.Model):
 
     def __str__(self):
         return self.full_name
-    
+
 
 

@@ -87,6 +87,7 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
             console.log('Login data:', data);
             
+            localStorage.setItem('userId', data.id);
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('role', data.role);
             await fetchUser();
