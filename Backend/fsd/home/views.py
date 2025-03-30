@@ -825,12 +825,15 @@ def create_team(request):
         if Team.objects.filter(competition=competition, team_leader=request.user.student_profile).exists():
             return JsonResponse({'error': 'You already lead a team in this competition'}, status=400)
 
+        team_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        
         # Create the team
         team = Team.objects.create(
             name=team_name,
             competition=competition,
             team_leader=request.user.student_profile,
-            max_team_size=competition.max_team_size
+            max_team_size=competition.max_team_size,
+            team_code=team_code
         )
 
         return JsonResponse({
@@ -851,12 +854,12 @@ def create_team(request):
 def join_team(request):
     try:
         data = json.loads(request.body)
-        team_id = data.get('team_id')
+        team_code = data.get('team_code')
 
-        if not team_id:
+        if not team_code:
             return JsonResponse({'error': 'Team ID is required'}, status=400)
 
-        team = Team.objects.filter(id=team_id).first()
+        team = Team.objects.filter(team_code=team_code).first()
         if not team:
             return JsonResponse({'error': 'Invalid team ID'}, status=404)
 
@@ -928,3 +931,50 @@ def get_user_competitions(request):
         return JsonResponse({'error': 'Student profile not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from home.models import Team, TeamMembership
+
+@api_token_required
+@require_http_methods(["GET"])
+def get_team_details(request, team_id):
+    try:
+        # Fetch the team
+        team = get_object_or_404(Team, id=team_id)
+
+        # Fetch team members
+        members = TeamMembership.objects.filter(team=team).select_related('student')
+        member_list = [
+            {
+                "id": member.student.id,
+                "full_name": member.student.full_name,
+                "role": member.role,
+            }
+            for member in members
+        ]
+
+        # Prepare the response data
+        response_data = {
+            "team_id": team.id,
+            "name": team.name,
+            "team_code": team.team_code,
+            "status": team.status,
+            "is_open_for_members": team.is_open_for_members,
+            "competition_name": team.competition.name,
+            "competition_description": team.competition.description,
+            "competition_start_date": team.competition.start_date.isoformat() if team.competition.start_date else None,
+            "competition_end_date": team.competition.end_date.isoformat() if team.competition.end_date else None,
+            "competition_registration_deadline": team.competition.registration_deadline.isoformat() if team.competition.registration_deadline else None,
+            "competition_min_team_size": team.competition.min_team_size,
+            "competition_max_team_size": team.competition.max_team_size,
+            "competition_organizer": team.competition.organizer,
+            "competition_venue": team.competition.venue,
+            "competition_website": team.competition.website,
+            "members": member_list,
+        }
+
+        return JsonResponse(response_data, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

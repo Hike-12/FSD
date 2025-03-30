@@ -383,6 +383,7 @@ class TeamMembership(models.Model):
     role = models.CharField(max_length=15, choices=ROLE_CHOICES)
     joined_date = models.DateTimeField(auto_now_add=True)
     contributions = models.TextField(blank=True)
+    members = models.ManyToManyField('StudentProfile', related_name='teams', blank=True)
     
     class Meta:
         unique_together = ['team', 'student']

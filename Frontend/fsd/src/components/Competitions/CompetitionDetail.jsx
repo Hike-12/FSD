@@ -10,42 +10,53 @@ const CompetitionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [teamName, setTeamName] = useState("");
-  const [teamId, setTeamId] = useState("");
-  const handleCreateTeam = async () => {
-    const response = await fetch(`${DJANGO_BASE_URL}/api/create-team/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${localStorage.getItem("authToken")}`,
-      },
-      body: JSON.stringify({ competition_id: id, team_name: teamName }),
-    });
+  const [teamCode, setTeamCode] = useState(""); // Updated to use teamCode instead of teamId
 
-    const data = await response.json();
-    if (response.ok) {
-      alert(`Team created successfully! Team Code: ${data.team_code}`);
-    } else {
-      alert(data.error);
+  const handleCreateTeam = async () => {
+    try {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/create-team/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({ competition_id: id, team_name: teamName }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(`Team created successfully! Team Code: ${data.team_code}`);
+        navigate(`/team/${data.team_id}`); // Redirect to the team page
+      } else {
+        alert(data.error || "Failed to create team");
+      }
+    } catch (err) {
+      alert("An error occurred while creating the team. Please try again.");
     }
   };
 
   const handleJoinTeam = async () => {
-    const response = await fetch(`${DJANGO_BASE_URL}/api/join-team/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${localStorage.getItem("authToken")}`,
-      },
-      body: JSON.stringify({ team_id: teamId }),
-    });
+    try {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/join-team/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({ team_code: teamCode }), // Use team_code instead of teamId
+      });
 
-    const data = await response.json();
-    if (response.ok) {
-      alert("Successfully joined the team!");
-    } else {
-      alert(data.error);
+      const data = await response.json();
+      if (response.ok) {
+        alert("Successfully joined the team!");
+      } else {
+        alert(data.error || "Failed to join the team");
+      }
+    } catch (err) {
+      alert("An error occurred while joining the team. Please try again.");
     }
   };
+
   useEffect(() => {
     const fetchCompetition = async () => {
       try {
@@ -60,7 +71,6 @@ const CompetitionDetail = () => {
         if (!response.ok) throw new Error("Failed to fetch competition details");
 
         const data = await response.json();
-        console.log("Competition Details:", data);
         setCompetition(data);
       } catch (err) {
         setError(err.message);
@@ -82,8 +92,8 @@ const CompetitionDetail = () => {
       </button>
       <h2 className="text-3xl font-bold">{competition.name}</h2>
       {competition.competition_picture && (
-    <img src={competition.competition_picture} alt="Competition" className="w-full h-auto rounded-lg shadow-md" />
-)}
+        <img src={competition.competition_picture} alt="Competition" className="w-full h-auto rounded-lg shadow-md" />
+      )}
       <p><strong>Type:</strong> {competition.competition_type_name}</p>
       <p><strong>Description:</strong> {competition.description}</p>
       <p><strong>Start Date:</strong> {competition.start_date}</p>
@@ -99,6 +109,7 @@ const CompetitionDetail = () => {
         ) : " N/A"}
       </p>
 
+      {/* Create Team Section */}
       <div>
         <h3 className="text-xl font-bold mt-6">Create a Team</h3>
         <input
@@ -118,9 +129,9 @@ const CompetitionDetail = () => {
         <h3 className="text-xl font-bold mt-6">Join a Team</h3>
         <input
           type="text"
-          placeholder="Enter Team ID"
-          value={teamId}
-          onChange={(e) => setTeamId(e.target.value)}
+          placeholder="Enter Team Code"
+          value={teamCode} // Updated to use teamCode
+          onChange={(e) => setTeamCode(e.target.value)} // Updated to set teamCode
           className="border p-2 rounded w-full mt-2"
         />
         <button onClick={handleJoinTeam} className="bg-green-500 text-white px-4 py-2 rounded mt-2">

@@ -42,6 +42,7 @@ urlpatterns = [
     #TEAMS
     path('api/join-team/', views.join_team, name='join_team'),
     path('api/create-team/', views.create_team, name='create_team'),
+    path("api/teams/<int:team_id>/", views.get_team_details, name="get_team_details"),
 ]
 
 
