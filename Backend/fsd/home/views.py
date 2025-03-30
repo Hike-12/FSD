@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team, TeamMembership
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -825,16 +825,19 @@ def create_team(request):
         if Team.objects.filter(competition=competition, team_leader=request.user.student_profile).exists():
             return JsonResponse({'error': 'You already lead a team in this competition'}, status=400)
 
+        # Generate a unique team code
         team_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-        
+
         # Create the team
         team = Team.objects.create(
             name=team_name,
             competition=competition,
             team_leader=request.user.student_profile,
-            max_team_size=competition.max_team_size,
             team_code=team_code
         )
+
+        # Add the team leader as a member
+        team.members.add(request.user.student_profile)
 
         return JsonResponse({
             'message': 'Team created successfully',
@@ -857,25 +860,25 @@ def join_team(request):
         team_code = data.get('team_code')
 
         if not team_code:
-            return JsonResponse({'error': 'Team ID is required'}, status=400)
+            return JsonResponse({'error': 'Team code is required'}, status=400)
 
         team = Team.objects.filter(team_code=team_code).first()
         if not team:
-            return JsonResponse({'error': 'Invalid team ID'}, status=404)
+            return JsonResponse({'error': 'Invalid team code'}, status=404)
 
         # Check if the user is already in a team for this competition
         student_profile = request.user.student_profile
-        if TeamMembership.objects.filter(student=student_profile, team__competition=team.competition).exists():
+        if Team.objects.filter(competition=team.competition, members=student_profile).exists():
             return JsonResponse({'error': 'You are already in a team for this competition'}, status=400)
 
         # Check if the team size limit is reached
-        if team.memberships.count() >= team.competition.max_team_size:
+        if team.members.count() >= team.max_team_size:
             return JsonResponse({'error': 'Team size limit reached'}, status=403)
 
         # Add the user to the team
-        TeamMembership.objects.create(team=team, student=student_profile, role='member')
+        team.members.add(student_profile)
 
-        return JsonResponse({'message': 'Successfully joined the team'}, status=200)
+        return JsonResponse({'message': 'Successfully joined the team','team_id': team.id}, status=200)
 
     except StudentProfile.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
@@ -887,21 +890,26 @@ def join_team(request):
 @require_http_methods(["GET"])
 def get_user_teams(request):
     try:
+        # Get the logged-in user's student profile
         student_profile = StudentProfile.objects.get(user=request.user)
-        memberships = TeamMembership.objects.filter(student=student_profile).select_related('team', 'team__competition')
 
-        teams = [
+        # Fetch all teams where the user is a member
+        teams = Team.objects.filter(members=student_profile).select_related('competition')
+
+        # Prepare the response data
+        team_list = [
             {
-                'team_id': membership.team.id,
-                'team_name': membership.team.name,
-                'competition_name': membership.team.competition.name,
-                'competition_id': membership.team.competition.id,
-                'role': membership.role,
+                'team_id': team.id,
+                'team_name': team.name,
+                'competition_name': team.competition.name,
+                'competition_id': team.competition.id,
+                'team_code': team.team_code,
+                'status': team.status,
             }
-            for membership in memberships
+            for team in teams
         ]
 
-        return JsonResponse({'teams': teams}, status=200)
+        return JsonResponse({'teams': team_list}, status=200)
 
     except StudentProfile.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
@@ -912,29 +920,33 @@ def get_user_teams(request):
 @require_http_methods(["GET"])
 def get_user_competitions(request):
     try:
+        # Get the logged-in user's student profile
         student_profile = StudentProfile.objects.get(user=request.user)
-        memberships = TeamMembership.objects.filter(student=student_profile).select_related('team__competition')
 
-        competitions = {
-            membership.team.competition.id: {
-                'competition_id': membership.team.competition.id,
-                'competition_name': membership.team.competition.name,
-                'start_date': membership.team.competition.start_date,
-                'end_date': membership.team.competition.end_date,
+        # Fetch all competitions where the user is a member of a team
+        competitions = Competition.objects.filter(teams__members=student_profile).distinct()
+
+        # Prepare the response data
+        competition_list = [
+            {
+                'competition_id': competition.id,
+                'competition_name': competition.name,
+                'start_date': competition.start_date.isoformat() if competition.start_date else None,
+                'end_date': competition.end_date.isoformat() if competition.end_date else None,
+                'registration_deadline': competition.registration_deadline.isoformat() if competition.registration_deadline else None,
+                'status': competition.status,
+                'organizer': competition.organizer,
             }
-            for membership in memberships
-        }
+            for competition in competitions
+        ]
 
-        return JsonResponse({'competitions': list(competitions.values())}, status=200)
+        return JsonResponse({'competitions': competition_list}, status=200)
 
     except StudentProfile.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from home.models import Team, TeamMembership
 
 @api_token_required
 @require_http_methods(["GET"])
@@ -944,12 +956,11 @@ def get_team_details(request, team_id):
         team = get_object_or_404(Team, id=team_id)
 
         # Fetch team members
-        members = TeamMembership.objects.filter(team=team).select_related('student')
+        members = team.members.all()
         member_list = [
             {
-                "id": member.student.id,
-                "full_name": member.student.full_name,
-                "role": member.role,
+                "id": member.id,
+                "full_name": member.full_name,
             }
             for member in members
         ]

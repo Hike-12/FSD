@@ -57,7 +57,7 @@ const TeamDetail = () => {
       <p><strong>Members:</strong></p>
       <ul>
         {team.members.map((member) => (
-          <li key={member.id}>{member.full_name} ({member.role})</li>
+          <li key={member.id}>{member.full_name}</li>
         ))}
       </ul>
     </div>

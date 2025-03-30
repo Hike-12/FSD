@@ -350,6 +350,7 @@ class Team(models.Model):
     max_team_size = models.PositiveIntegerField(default=5)
     team_code = models.CharField(max_length=8, unique=True, blank=True)
     
+    members = models.ManyToManyField('StudentProfile', related_name='teams', blank=True)
     # SDG Mapping
     related_sdgs = models.ManyToManyField('SDG', related_name='teams', blank=True)
     
@@ -367,29 +368,6 @@ class Team(models.Model):
     
     def __str__(self):
         return f"{self.name} - {self.competition.name}"
-
-class TeamMembership(models.Model):
-    ROLE_CHOICES = [
-        ('leader', 'Team Leader'),
-        ('developer', 'Developer'),
-        ('designer', 'Designer'),
-        ('researcher', 'Researcher'),
-        ('presenter', 'Presenter'),
-        ('other', 'Other'),
-    ]
-    
-    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='memberships')
-    student = models.ForeignKey('StudentProfile', on_delete=models.CASCADE, related_name='team_memberships')
-    role = models.CharField(max_length=15, choices=ROLE_CHOICES)
-    joined_date = models.DateTimeField(auto_now_add=True)
-    contributions = models.TextField(blank=True)
-    members = models.ManyToManyField('StudentProfile', related_name='teams', blank=True)
-    
-    class Meta:
-        unique_together = ['team', 'student']
-    
-    def __str__(self):
-        return f"{self.student.full_name} ({self.get_role_display()}) in {self.team.name}"
 
 class TeamInvitation(models.Model):
     STATUS_CHOICES = [

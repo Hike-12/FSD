@@ -49,6 +49,7 @@ const CompetitionDetail = () => {
       const data = await response.json();
       if (response.ok) {
         alert("Successfully joined the team!");
+        navigate(`/team/${data.team_id}`);
       } else {
         alert(data.error || "Failed to join the team");
       }
