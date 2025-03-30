@@ -348,10 +348,7 @@ class Team(models.Model):
     mentor = models.ForeignKey('MentorProfile', on_delete=models.SET_NULL, null=True, blank=True, related_name='mentored_teams')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='forming')
     max_team_size = models.PositiveIntegerField(default=5)
-    # Team description and goals
-    description = models.TextField(blank=True)
-    project_title = models.CharField(max_length=200, blank=True)
-    project_description = models.TextField(blank=True)
+    team_code = models.CharField(max_length=8, unique=True, blank=True)
     
     # SDG Mapping
     related_sdgs = models.ManyToManyField('SDG', related_name='teams', blank=True)
