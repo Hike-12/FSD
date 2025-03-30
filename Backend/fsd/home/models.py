@@ -347,7 +347,7 @@ class Team(models.Model):
     team_leader = models.ForeignKey('StudentProfile', on_delete=models.CASCADE, related_name='led_teams')
     mentor = models.ForeignKey('MentorProfile', on_delete=models.SET_NULL, null=True, blank=True, related_name='mentored_teams')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='forming')
-    
+    max_team_size = models.PositiveIntegerField(default=5)
     # Team description and goals
     description = models.TextField(blank=True)
     project_title = models.CharField(max_length=200, blank=True)

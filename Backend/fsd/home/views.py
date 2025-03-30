@@ -822,14 +822,14 @@ def create_team(request):
         competition = Competition.objects.get(id=competition_id)
 
         # Check if the user already leads a team in this competition
-        if Team.objects.filter(competition=competition, team_leader=request.user.studentprofile).exists():
+        if Team.objects.filter(competition=competition, team_leader=request.user.student_profile).exists():
             return JsonResponse({'error': 'You already lead a team in this competition'}, status=400)
 
         # Create the team
         team = Team.objects.create(
             name=team_name,
             competition=competition,
-            team_leader=request.user.studentprofile,
+            team_leader=request.user.student_profile,
             max_team_size=competition.max_team_size
         )
 
@@ -861,7 +861,7 @@ def join_team(request):
             return JsonResponse({'error': 'Invalid team ID'}, status=404)
 
         # Check if the user is already in a team for this competition
-        student_profile = StudentProfile.objects.get(user=request.user)
+        student_profile = request.user.student_profile
         if TeamMembership.objects.filter(student=student_profile, team__competition=team.competition).exists():
             return JsonResponse({'error': 'You are already in a team for this competition'}, status=400)
 

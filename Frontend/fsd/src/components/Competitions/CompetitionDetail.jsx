@@ -9,7 +9,43 @@ const CompetitionDetail = () => {
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamName, setTeamName] = useState("");
+  const [teamId, setTeamId] = useState("");
+  const handleCreateTeam = async () => {
+    const response = await fetch(`${DJANGO_BASE_URL}/api/create-team/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+      },
+      body: JSON.stringify({ competition_id: id, team_name: teamName }),
+    });
 
+    const data = await response.json();
+    if (response.ok) {
+      alert(`Team created successfully! Team Code: ${data.team_code}`);
+    } else {
+      alert(data.error);
+    }
+  };
+
+  const handleJoinTeam = async () => {
+    const response = await fetch(`${DJANGO_BASE_URL}/api/join-team/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+      },
+      body: JSON.stringify({ team_id: teamId }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Successfully joined the team!");
+    } else {
+      alert(data.error);
+    }
+  };
   useEffect(() => {
     const fetchCompetition = async () => {
       try {
@@ -62,6 +98,35 @@ const CompetitionDetail = () => {
           <a href={competition.website} target="_blank" rel="noopener noreferrer" className="text-blue-500"> Visit</a>
         ) : " N/A"}
       </p>
+
+      <div>
+        <h3 className="text-xl font-bold mt-6">Create a Team</h3>
+        <input
+          type="text"
+          placeholder="Enter Team Name"
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value)}
+          className="border p-2 rounded w-full mt-2"
+        />
+        <button onClick={handleCreateTeam} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+          Create Team
+        </button>
+      </div>
+
+      {/* Join Team Section */}
+      <div>
+        <h3 className="text-xl font-bold mt-6">Join a Team</h3>
+        <input
+          type="text"
+          placeholder="Enter Team ID"
+          value={teamId}
+          onChange={(e) => setTeamId(e.target.value)}
+          className="border p-2 rounded w-full mt-2"
+        />
+        <button onClick={handleJoinTeam} className="bg-green-500 text-white px-4 py-2 rounded mt-2">
+          Join Team
+        </button>
+      </div>
     </div>
   );
 };

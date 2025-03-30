@@ -35,7 +35,7 @@ const getAvailabilityBadgeColor = (status) => {
         }
       };
       
-const MentorCard = ({ mentor, onViewProfile }) => {
+const MentorCard = ({ mentor, onViewProfile,index = 0 }) => {
   const shouldReduceMotion = useReducedMotion();
   return (
     <Expandable 

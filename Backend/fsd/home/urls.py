@@ -38,6 +38,10 @@ urlpatterns = [
     
     #Hosts
     path('api/hosts/profile/', views.create_or_update_host_profile, name='host-detail'),
+    
+    #TEAMS
+    path('api/join-team/', views.join_team, name='join_team'),
+    path('api/create-team/', views.create_team, name='create_team'),
 ]
 
 
