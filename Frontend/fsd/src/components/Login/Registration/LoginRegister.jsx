@@ -36,13 +36,13 @@ function LoginRegister() {
         const role = localStorage.getItem('role');
         switch (role) {
           case 'STUDENT':
-            navigate('/student-dashboard');
+            navigate('/student-landing');
             break;
           case 'HOST':
-            navigate('/admin-dashboard');
+            navigate('/admin-landing');
             break;
           case 'MENTOR':
-            navigate('/mentor-dashboard');
+            navigate('/mentor-landing');
             break;
           case 'MANAGER':
             navigate('/manager-dashboard');

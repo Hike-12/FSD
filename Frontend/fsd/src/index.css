@@ -21,6 +21,14 @@
     animation-play-state: paused;
   }
 
+  .animate-blink {
+    animation: blink-animation 1s step-start infinite;
+  }
+  @keyframes blink-animation {
+    50% {
+      opacity: 0;
+    }
+  }
   :root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
