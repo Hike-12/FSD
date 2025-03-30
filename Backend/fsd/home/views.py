@@ -806,7 +806,7 @@ def create_or_update_host_profile(request):
     
 ######################################################################################################################################################
 ######################################################################################################################################################
-
+# TEAMS KA PART
 @api_token_required
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -851,21 +851,25 @@ def create_team(request):
 def join_team(request):
     try:
         data = json.loads(request.body)
-        team_code = data.get('team_code')
+        team_id = data.get('team_id')
 
-        if not team_code:
-            return JsonResponse({'error': 'Team code is required'}, status=400)
+        if not team_id:
+            return JsonResponse({'error': 'Team ID is required'}, status=400)
 
-        team = Team.objects.filter(team_code=team_code).first()
+        team = Team.objects.filter(id=team_id).first()
         if not team:
-            return JsonResponse({'error': 'Invalid team code'}, status=404)
+            return JsonResponse({'error': 'Invalid team ID'}, status=404)
+
+        # Check if the user is already in a team for this competition
+        student_profile = StudentProfile.objects.get(user=request.user)
+        if TeamMembership.objects.filter(student=student_profile, team__competition=team.competition).exists():
+            return JsonResponse({'error': 'You are already in a team for this competition'}, status=400)
 
         # Check if the team size limit is reached
-        if team.memberships.count() >= team.max_team_size:
+        if team.memberships.count() >= team.competition.max_team_size:
             return JsonResponse({'error': 'Team size limit reached'}, status=403)
 
         # Add the user to the team
-        student_profile = StudentProfile.objects.get(user=request.user)
         TeamMembership.objects.create(team=team, student=student_profile, role='member')
 
         return JsonResponse({'message': 'Successfully joined the team'}, status=200)

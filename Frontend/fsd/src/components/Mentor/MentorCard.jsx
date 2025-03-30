@@ -24,19 +24,19 @@ import {
 } from "@/components/ui/tooltip";
 
 import DJANGO_BASE_URL from "../../lib/utils";
-
 const getAvailabilityBadgeColor = (status) => {
   switch (status.toLowerCase()) {
     case "available":
       return "bg-green-100 text-green-800";
-    case "busy":
-      return "bg-yellow-100 text-yellow-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
+      case "busy":
+        return "bg-yellow-100 text-yellow-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+        }
+      };
+      
 const MentorCard = ({ mentor, onViewProfile }) => {
+  const shouldReduceMotion = useReducedMotion();
   return (
     <Expandable 
       expandDirection="both" 
