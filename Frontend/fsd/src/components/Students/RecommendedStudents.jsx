@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserPlus, Search, Users, Star, MapPin, Calendar } from "lucide-react";
 import DJANGO_BASE_URL from "../../lib/utils";
+import { useAuth } from "../../context/AuthContext";
 
 const SkeletonStudentCard = () => (
   <motion.div 
@@ -96,16 +97,23 @@ const StudentCard = ({ student, index }) => {
   );
 };
 
-const AllStudents = () => {
+const renderSkeletons = () => {
+  return Array(6)
+    .fill(0)
+    .map((_, index) => <SkeletonStudentCard key={index} />); // Ensure unique key for each skeleton
+};
+
+const RecommendedStudents = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const studentId = localStorage.getItem("userId") || null;
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`${DJANGO_BASE_URL}/api/students/`, {
+        const response = await fetch(`${DJANGO_BASE_URL}/api/recommended-students/?student_id=${studentId}`, {
           headers: {
             Authorization: `Token ${localStorage.getItem("authToken")}`,
           },
@@ -139,12 +147,6 @@ const AllStudents = () => {
     return name.toLowerCase().includes(searchTermLower) || 
            department.toLowerCase().includes(searchTermLower);
   });
-
-  const renderSkeletons = () => {
-    return Array(6)
-      .fill(0)
-      .map((_, index) => <SkeletonStudentCard key={index} />);
-  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -248,7 +250,7 @@ const AllStudents = () => {
             animate="show"
           >
             {filteredStudents.map((student, index) => (
-              <StudentCard key={student.id} student={student} index={index} />
+              <StudentCard key={student.id || index} student={student} index={index} /> // Ensure unique key for each student
             ))}
           </motion.div>
         )}
@@ -257,4 +259,4 @@ const AllStudents = () => {
   );
 };
 
-export default AllStudents;
+export default RecommendedStudents;

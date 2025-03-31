@@ -6,7 +6,7 @@ import LoginRegister from "./components/Login/Registration/LoginRegister";
 import LandingPage from "./components/LandingPage/LandingPage"; // Fix casing if needed
 import AllMentors from "./components/Mentor/AllMentors";
 import MentorProfile from "./components/Mentor/ViewMentorProfile";
-import AllStudents from "./components/Students/AllStudents";
+import RecommendedStudents from "./components/Students/RecommendedStudents";
 import StudentProfile from "./components/Students/ViewStudentProfile";
 import HostProfileForm from "./components/Hosts/HostProfileForm";
 import CreateCompetition from "./components/Competitions/CreateCompetition";
@@ -28,7 +28,7 @@ function App() {
                     <Route path="/admin-profile" element={<HostProfileForm/>} />
                     <Route path="/mentors" element={<AllMentors />} />
                     <Route path="/mentor/:id" element={<MentorProfile />} />
-                    <Route path="/students" element={<AllStudents />} />
+                    <Route path="/students" element={<RecommendedStudents />} />
                     <Route path="/students/:id" element={<StudentProfile />} />
                     <Route path="/competition-create" element={<CreateCompetition />} />
                     <Route path="/competitions" element={<CompetitionsList />} />
