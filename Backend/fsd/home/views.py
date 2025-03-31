@@ -880,15 +880,32 @@ def create_competition(request):
         print("Error:", e)
         return JsonResponse({"error": str(e)}, status=400)
 
+from django.conf import settings
+
 @api_token_required
 @csrf_exempt
 def list_competitions(request):
-    competitions = Competition.objects.all().values(
-        'id', 'name', 'competition_type__name', 'description', 'start_date', 'end_date',
-        'registration_deadline', 'min_team_size', 'max_team_size', 'status',
-        'organizer', 'venue', 'website','competition_picture'
-    )
-    return JsonResponse(list(competitions), safe=False)
+    competitions = Competition.objects.all()
+    competition_list = [
+        {
+            'id': comp.id,
+            'name': comp.name,
+            'competition_type__name': comp.competition_type.name if comp.competition_type else None,
+            'description': comp.description,
+            'start_date': comp.start_date.isoformat() if comp.start_date else None,
+            'end_date': comp.end_date.isoformat() if comp.end_date else None,
+            'registration_deadline': comp.registration_deadline.isoformat() if comp.registration_deadline else None,
+            'min_team_size': comp.min_team_size,
+            'max_team_size': comp.max_team_size,
+            'status': comp.status,
+            'organizer': comp.organizer,
+            'venue': comp.venue,
+            'website': comp.website,
+            'competition_picture': request.build_absolute_uri(comp.competition_picture.url) if comp.competition_picture else None,
+        }
+        for comp in competitions
+    ]
+    return JsonResponse(competition_list, safe=False)
 
 from django.http import JsonResponse
 from .models import CompetitionType

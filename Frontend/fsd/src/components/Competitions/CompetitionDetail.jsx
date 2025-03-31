@@ -197,6 +197,7 @@ const CompetitionDetail = () => {
         if (!response.ok) throw new Error("Failed to fetch competition details");
 
         const data = await response.json();
+        console.log("Competition data:", data);
         setCompetition(data);
       } catch (err) {
         setError(err.message);

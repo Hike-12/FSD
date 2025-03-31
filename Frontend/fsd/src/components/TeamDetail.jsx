@@ -18,46 +18,46 @@ const TeamDetail = () => {
   const messagesEndRef = useRef(null);
 
   // Mock data for development
-  const mockTeam = {
-    id: teamId,
-    name: "Quantum Coders",
-    competition_name: "AI Innovation Hackathon",
-    competition_description: "Develop AI solutions for real-world problems in healthcare.",
-    competition_start_date: "2025-03-15",
-    competition_end_date: "2025-04-30",
-    competition_registration_deadline: "2025-03-10",
-    competition_min_team_size: 2,
-    competition_max_team_size: 5,
-    competition_organizer: "Tech Innovators Inc.",
-    competition_venue: "Virtual",
-    competition_website: "https://ai-hackathon.example.com",
-    team_code: "QUANT-2025",
-    status: "Active",
-    progress: 65,
-    members: [
-      { id: 1, full_name: "Alex Johnson", role: "Team Lead", avatar: "AJ", online: true },
-      { id: 2, full_name: "Sam Wilson", role: "Backend Developer", avatar: "SW", online: false },
-      { id: 3, full_name: "Taylor Smith", role: "UI/UX Designer", avatar: "TS", online: true },
-    ],
-    tasks: [
-      { id: 1, title: "Project Proposal", completed: true, due_date: "2025-03-20" },
-      { id: 2, title: "Initial Prototype", completed: true, due_date: "2025-04-05" },
-      { id: 3, title: "Final Submission", completed: false, due_date: "2025-04-30" },
-    ],
-    files: [
-      { id: 1, name: "Project_Spec.pdf", uploaded_by: "Alex Johnson", date: "2025-03-18" },
-      { id: 2, name: "Wireframes.sketch", uploaded_by: "Taylor Smith", date: "2025-03-22" },
-    ]
-  };
+  // const mockTeam = {
+  //   id: teamId,
+  //   name: "Quantum Coders",
+  //   competition_name: "AI Innovation Hackathon",
+  //   competition_description: "Develop AI solutions for real-world problems in healthcare.",
+  //   competition_start_date: "2025-03-15",
+  //   competition_end_date: "2025-04-30",
+  //   competition_registration_deadline: "2025-03-10",
+  //   competition_min_team_size: 2,
+  //   competition_max_team_size: 5,
+  //   competition_organizer: "Tech Innovators Inc.",
+  //   competition_venue: "Virtual",
+  //   competition_website: "https://ai-hackathon.example.com",
+  //   team_code: "QUANT-2025",
+  //   status: "Active",
+  //   progress: 65,
+  //   members: [
+  //     { id: 1, full_name: "Alex Johnson", role: "Team Lead", avatar: "AJ", online: true },
+  //     { id: 2, full_name: "Sam Wilson", role: "Backend Developer", avatar: "SW", online: false },
+  //     { id: 3, full_name: "Taylor Smith", role: "UI/UX Designer", avatar: "TS", online: true },
+  //   ],
+  //   tasks: [
+  //     { id: 1, title: "Project Proposal", completed: true, due_date: "2025-03-20" },
+  //     { id: 2, title: "Initial Prototype", completed: true, due_date: "2025-04-05" },
+  //     { id: 3, title: "Final Submission", completed: false, due_date: "2025-04-30" },
+  //   ],
+  //   files: [
+  //     { id: 1, name: "Project_Spec.pdf", uploaded_by: "Alex Johnson", date: "2025-03-18" },
+  //     { id: 2, name: "Wireframes.sketch", uploaded_by: "Taylor Smith", date: "2025-03-22" },
+  //   ]
+  // };
 
   useEffect(() => {
     const fetchTeam = async () => {
       try {
         // For development, using mock data
-        setTeam(mockTeam);
+        // setTeam(mockTeam);
         
         // Uncomment for production
-        /*
+  
         const response = await fetch(`${DJANGO_BASE_URL}/api/teams/${teamId}/`, {
           method: "GET",
           headers: {
@@ -69,7 +69,7 @@ const TeamDetail = () => {
 
         const data = await response.json();
         setTeam(data);
-        */
+        
       } catch (err) {
         setError(err.message);
       } finally {
