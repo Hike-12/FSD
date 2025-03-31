@@ -97,6 +97,12 @@ const StudentCard = ({ student, index }) => {
   );
 };
 
+const renderSkeletons = () => {
+  return Array(6)
+    .fill(0)
+    .map((_, index) => <SkeletonStudentCard key={index} />); // Ensure unique key for each skeleton
+};
+
 const AllStudents = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +113,7 @@ const AllStudents = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`${DJANGO_BASE_URL}/api/students/?student_id=${studentId}`, {
+        const response = await fetch(`${DJANGO_BASE_URL}/api/recommended-students/?student_id=${studentId}`, {
           headers: {
             Authorization: `Token ${localStorage.getItem("authToken")}`,
           },
@@ -141,12 +147,6 @@ const AllStudents = () => {
     return name.toLowerCase().includes(searchTermLower) || 
            department.toLowerCase().includes(searchTermLower);
   });
-
-  const renderSkeletons = () => {
-    return Array(6)
-      .fill(0)
-      .map((_, index) => <SkeletonStudentCard key={index} />);
-  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -250,7 +250,7 @@ const AllStudents = () => {
             animate="show"
           >
             {filteredStudents.map((student, index) => (
-              <StudentCard key={student.id} student={student} index={index} />
+              <StudentCard key={student.id || index} student={student} index={index} /> // Ensure unique key for each student
             ))}
           </motion.div>
         )}

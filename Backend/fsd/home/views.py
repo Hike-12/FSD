@@ -21,7 +21,7 @@ nn_model = joblib.load(f"{MODEL_PATH}nn_model.joblib")
 tfidf_vectorizer = joblib.load(f"{MODEL_PATH}tfidf_vectorizer.joblib")
 
 # Load the student data (used for recommendations)
-students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
+# students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
 
 # Modified decorator for token auth
 def api_token_required(view_func):
@@ -411,19 +411,48 @@ def get_user_info(request):
 ##############################################################################################################################################
                                                 # STUDENTS KA PART
 
+def compute_combined_features(student):
+    features = [
+        student['department'],
+        student['year_of_study'],
+        str(student['gpa']),
+        student['extracurricular_activities'],
+        student['achievements'],
+        student['certifications'],
+        student['projects'],
+        student['internships'],
+        student['hobbies'],
+        student['career_goal'],
+        student['languages_spoken'],
+    ]
+    return ' '.join(filter(None, features))  # Join non-empty features with a space
 
-def get_recommendations(student_id, top_n=2):
+def get_recommendations(student_id, top_n=100):
     print("This is in get_recommendations", student_id)
     try:
-        # Debug: Print the columns in students_data
-        print("Columns in students_data:", students_data.columns)
+        # Fetch all students from the database
+        students_data = StudentProfile.objects.all().values(
+            'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
+            'address', 'country', 'state', 'city', 'postal_code',
+            'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
+            'extracurricular_activities', 'achievements', 'certifications',
+            'projects', 'internships', 'preferred_team_roles', 'emergency_contact_name',
+            'emergency_contact_number', 'hobbies', 'career_goal', 'languages_spoken',
+            'learning_style', 'linkedin', 'github', 'portfolio', 'is_active'
+        )
+
+        # Convert the QuerySet to a DataFrame
+        students_df = pd.DataFrame(students_data)
+
+        # Compute combined_features dynamically
+        students_df['combined_features'] = students_df.apply(compute_combined_features, axis=1)
 
         # Ensure data type consistency
         student_id = str(student_id)
-        students_data['ID'] = students_data['ID'].astype(str)
+        students_df['id'] = students_df['id'].astype(str)
 
         # Find the student's combined features using the ID column
-        student_row = students_data[students_data['ID'] == student_id]
+        student_row = students_df[students_df['id'] == student_id]
         print("Matching rows in students_data:", student_row)
 
         if student_row.empty:
@@ -432,20 +461,17 @@ def get_recommendations(student_id, top_n=2):
 
         # Debug: Print the combined features for the student
         combined_features = student_row['combined_features'].values
-        # print("Combined features for the student:", combined_features)
+        print("Combined features for the student:", combined_features)
 
         # Transform the student's features into a TF-IDF vector
         student_features = tfidf_vectorizer.transform(combined_features)
-        # print("TF-IDF vector for the student:", student_features)
 
         # Use the Nearest Neighbors model to find similar students
         distances, indices = nn_model.kneighbors(student_features, n_neighbors=top_n)
-        # print("Distances:", distances)
-        # print("Indices:", indices)
 
         # Retrieve the recommended students
-        recommended_students = students_data.iloc[indices[0]].to_dict(orient="records")
-        # print("Recommended students:", recommended_students)
+        recommended_students = students_df.iloc[indices[0]].to_dict(orient="records")
+        print("Recommended students:", recommended_students)
         return recommended_students
     except Exception as e:
         print(f"Error in get_recommendations: {e}")
@@ -510,34 +536,27 @@ def update_student_profile_fields(profile, data, files=None):
     profile.save()
     return fields_updated
 
-            # Fetch all students database version
-            
-            # students = StudentProfile.objects.all().values(
-            #     'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
-            #     'address', 'country', 'state', 'city', 'postal_code',
-            #     'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
-            #     'extracurricular_activities', 'achievements',
-            #     'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
-            #     'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
-            #     'profile_picture', 'linkedin', 'github', 'portfolio',
-            #     'created_at', 'updated_at', 'is_active'
-            # )
-
-            # students_list = list(students)
 @api_token_required
 @csrf_exempt
-def get_all_students(request):
+def get_recommended_students(request):
     if request.method == "GET":
         try:
             # Get the student ID from the query parameters (if provided)
             student_id = request.GET.get("student_id", None)
 
-            # Load the students data from the CSV file
-            students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")
+            # Fetch all students from the database
+            students = StudentProfile.objects.all().values(
+                'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
+                'address', 'country', 'state', 'city', 'postal_code',
+                'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
+                'extracurricular_activities', 'achievements',
+                'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
+                'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
+                'profile_picture', 'linkedin', 'github', 'portfolio',
+                'created_at', 'updated_at', 'is_active'
+            )
 
-            # Convert the data to a list of dictionaries
-            students_list = students_data.to_dict(orient="records")
-            print("Students List After Loading:", students_list)
+            students_list = list(students)
 
             # If a student ID is provided, filter the students by recommendation
             if student_id:
@@ -547,25 +566,25 @@ def get_all_students(request):
 
                     # Get recommendations for the student
                     recommended_students = get_recommendations(student_id)
-                    recommended_ids = [str(student['ID']) for student in recommended_students]
+                    recommended_ids = [str(student['id']) for student in recommended_students]
 
                     # Debug: Print recommended IDs
                     print("Recommended IDs:", recommended_ids)
 
                     # Filter the students_list to include only recommended students
-                    # filtered_students_list = [
-                    #     student for student in students_list if student['ID'] in recommended_ids
-                    # ]
+                    filtered_students_list = [
+                        student for student in students_list if str(student['id']) in recommended_ids
+                    ]
 
                     # Ensure the filtered list is ordered based on recommended_ids
-                    # filtered_students_list.sort(
-                    #     key=lambda x: recommended_ids.index(x['ID'])
-                    # )
+                    filtered_students_list.sort(
+                        key=lambda x: recommended_ids.index(str(x['id']))
+                    )
 
                     # Debug: Print the filtered and ordered students list
-                    print("Filtered and Ordered Students List:", recommended_students)
+                    print("Filtered and Ordered Students List:", filtered_students_list)
 
-                    return JsonResponse(recommended_students, safe=False)
+                    return JsonResponse(filtered_students_list, safe=False)
 
                 except ValueError as e:
                     print(f"Error in filtering students_list: {e}")
