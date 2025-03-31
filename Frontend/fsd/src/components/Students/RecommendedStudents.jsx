@@ -103,7 +103,7 @@ const renderSkeletons = () => {
     .map((_, index) => <SkeletonStudentCard key={index} />); // Ensure unique key for each skeleton
 };
 
-const AllStudents = () => {
+const RecommendedStudents = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -259,4 +259,4 @@ const AllStudents = () => {
   );
 };
 
-export default AllStudents;
+export default RecommendedStudents;
