@@ -11,9 +11,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  // server: {
-  //   proxy: {
-  //     '/api': 'http://localhost:8000', // Ensure this matches your backend URL
-  //   },
-  // },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8000', // Ensure this matches your backend URL
+    },
+  },
 });

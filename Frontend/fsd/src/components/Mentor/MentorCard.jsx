@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { 
   MapPin, Star, Calendar, ArrowRight, Briefcase, 
   MessageSquare, Coffee, UserCheck 
@@ -16,27 +16,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
 
-import DJANGO_BASE_URL from "../../lib/utils";
 const getAvailabilityBadgeColor = (status) => {
   switch (status.toLowerCase()) {
     case "available":
       return "bg-green-100 text-green-800";
-      case "busy":
-        return "bg-yellow-100 text-yellow-800";
-        default:
-          return "bg-gray-100 text-gray-800";
-        }
-      };
-      
-const MentorCard = ({ mentor, onViewProfile,index = 0 }) => {
+    case "busy":
+      return "bg-yellow-100 text-yellow-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+const MentorCard = ({ mentor, index = 0 }) => {
+  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
+
   return (
     <Expandable 
       expandDirection="both" 
@@ -62,10 +57,7 @@ const MentorCard = ({ mentor, onViewProfile,index = 0 }) => {
               <div className="relative mb-4">
                 <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
                   <AvatarImage 
-                    src={mentor.profile_picture 
-                      ? `${DJANGO_BASE_URL}/media/${mentor.profile_picture}` 
-                      : undefined
-                    } 
+                    src={mentor.profile_picture || "/placeholder.svg"} 
                     alt={mentor.full_name}
                   />
                   <AvatarFallback className="bg-blue-100 text-blue-600 text-3xl">

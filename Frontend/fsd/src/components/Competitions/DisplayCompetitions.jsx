@@ -76,7 +76,7 @@ const TypewriterEffectSmooth = ({ words, className }) => {
 };
 
 // Navbar Component
-const Navbar = () => {
+const Navbar = ({ toggleSidebar }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -96,6 +96,14 @@ const Navbar = () => {
         </div>
         
         <div className="hidden md:flex items-center space-x-4">
+          <button 
+            onClick={toggleSidebar} 
+            className="p-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
           <button onClick={() => navigate('/profile')} className="p-2 text-gray-300 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -174,7 +182,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Sidebar */}
       <aside 
         className={`fixed top-16 bottom-0 left-0 w-64 bg-gray-900 border-r border-gray-800 z-40 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
@@ -279,27 +287,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </div>
         </div>
       </aside>
-      
-      {/* Mobile Toggle Button */}
-      <button
-        className="md:hidden fixed bottom-4 left-4 z-50 bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-full shadow-lg text-white"
-        onClick={toggleSidebar}
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-          ></path>
-        </svg>
-      </button>
     </>
   );
 };
@@ -417,12 +404,12 @@ const CompetitionsPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-gray-100">
-      <Navbar />
+      <Navbar toggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       
-      <div className="pt-16 md:pl-64">
+      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? "md:pl-64" : ""}`}>
         {/* Hero Section with Grid Background */}
-        <div className="relative flex h-screen w-full items-center justify-center overflow-hidden">
+        <div className="relative flex h-[70vh] w-full items-center justify-center overflow-hidden">
           <div
             className={cn(
               "absolute inset-0",
@@ -455,7 +442,7 @@ const CompetitionsPage = () => {
               </button>
             </div>
             
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            {/* <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
               <svg 
                 className="w-6 h-6 text-gray-400" 
                 fill="none" 
@@ -467,7 +454,7 @@ const CompetitionsPage = () => {
               >
                 <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
               </svg>
-            </div>
+            </div> */}
           </div>
         </div>
 
