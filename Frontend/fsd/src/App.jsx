@@ -25,6 +25,7 @@ import MentorSidebar from "./components/Mentor/MentorSidebar";
 import StudentSidebar from "./components/Students/StudentSidebar";
 import HostSidebar from "./components/Hosts/HostSidebar";
 import Layout from "./components/NavSideLayout";
+import Chat from "./components/Chat/Chat";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -67,6 +68,7 @@ function App() {
                         <Route path="/student-teams" element={<StudentTeams />} />
                         <Route path="/student-competitions" element={<StudentCompetitions />} />
                         <Route path="/host-competitions" element={<HostCompetitions />} />
+                        <Route path="/chat" element = {<Chat />} />
                     </Routes>
                 </Layout>
             </AuthProvider>
