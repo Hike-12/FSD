@@ -30,15 +30,19 @@ urlpatterns = [
     path('api/student/profile/update/', views.create_or_update_student_profile, name='update_student_profile'),
     path('api/student/profile/<int:student_id>/update/', views.update_student_profile, name='update_student_profile_detail'),
     path('api/student/get-student-teams/', views.get_student_teams, name='get_student_teams'),
+    path('api/student/get-student-competitions/', views.get_student_competitions, name='get_student_competitions'),
+    
+    
     # Competitions
-    path('competition-types/', views.competition_types_list, name='competition-types-list'),
+    path('api/competition-types/', views.competition_types_list, name='competition-types-list'),
     path('api/competitions/<int:competition_id>/', views.competition_detail, name='competition-detail'),
     path('api/competitions/', views.list_competitions, name='list_competitions'),
     path('api/competitions/create/', views.create_competition, name='create_competition'),
     
     #Hosts
     path('api/hosts/profile/', views.create_or_update_host_profile, name='host-detail'),
-    
+    path('api/hosts/get-host-competitions/', views.get_host_competitions, name='get_host_competitions'),
+        
     #TEAMS
     path('api/join-team/', views.join_team, name='join_team'),
     path('api/create-team/', views.create_team, name='create_team'),

@@ -785,6 +785,37 @@ def update_student_profile(request, student_id):
         traceback.print_exc()
         return JsonResponse({'error': f'Error updating student profile: {str(e)}'}, status=500)
 
+@api_token_required
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_student_competitions(request):
+    try:
+        # Get the logged-in student's profile
+        student_profile = StudentProfile.objects.get(user=request.user)
+
+        # Fetch competitions where the student is a participant
+        competitions = Competition.objects.filter(teams__members=student_profile).distinct()
+
+        # Prepare response data
+        competition_list = [
+            {
+                'id': competition.id,
+                'name': competition.name,
+                'description': competition.description,
+                'start_date': competition.start_date.isoformat(),
+                'end_date': competition.end_date.isoformat(),
+                'status': competition.status,
+                'organizer': competition.organizer,
+            }
+            for competition in competitions
+        ]
+
+        return JsonResponse({'competitions': competition_list}, status=200)
+
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
     
     
 ##############################################################################################################################################
@@ -948,6 +979,37 @@ def create_or_update_host_profile(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+    
+@api_token_required
+@require_http_methods(["GET"])
+def get_host_competitions(request):
+    try:
+        # Get the logged-in host's profile
+        host = Host.objects.get(user=request.user)
+
+        # Fetch competitions created by the host
+        competitions = Competition.objects.filter(created_by=request.user)
+
+        # Prepare response data
+        competition_list = [
+            {
+                'id': competition.id,
+                'name': competition.name,
+                'description': competition.description,
+                'start_date': competition.start_date.isoformat(),
+                'end_date': competition.end_date.isoformat(),
+                'status': competition.status,
+                'organizer': competition.organizer,
+            }
+            for competition in competitions
+        ]
+
+        return JsonResponse({'competitions': competition_list}, status=200)
+
+    except Host.DoesNotExist:
+        return JsonResponse({'error': 'Host profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
     
 ######################################################################################################################################################
 ######################################################################################################################################################

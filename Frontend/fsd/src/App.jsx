@@ -14,7 +14,10 @@ import CompetitionsList from "./components/Competitions/DisplayCompetitions";
 import CompetitionDetail from "./components/Competitions/CompetitionDetail";
 import StudentLandingPage from "./components/Students/StudentLandingPage";
 import AdminLandingPage from "./components/Hosts/AdminLandingPage";
-import TeamDetail from "./components/TeamDetail";
+import TeamDetail from "./components/Competitions/TeamDetail";
+import StudentCompetitions from "./components/Students/StudentCompetitions";
+import StudentTeams from "./components/Students/StudentTeams";
+import HostCompetitions from "./components/Hosts/HostCompetitions";
 
 function App() {
     return (
@@ -36,6 +39,9 @@ function App() {
                     <Route path="/student-landing" element={<StudentLandingPage />} />
                     <Route path="/admin-landing" element={<AdminLandingPage />} />
                     <Route path="/team/:teamId" element={<TeamDetail />} />
+                    <Route path="/student-teams" element={<StudentTeams />} />
+                    <Route path="/student-competitions" element={<StudentCompetitions />} />
+                    <Route path="/host-competitions" element={<HostCompetitions />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

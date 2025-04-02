@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 
 const DJANGO_BASE_URL = "http://127.0.0.1:8000";
 
-const UserTeams = () => {
+const StudentTeams = () => {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
     const fetchTeams = async () => {
-      const response = await fetch(`${DJANGO_BASE_URL}/api/user-teams/`, {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/student/get-student-teams/`, {
         method: "GET",
         headers: {
           Authorization: `Token ${localStorage.getItem("authToken")}`,
@@ -43,4 +43,4 @@ const UserTeams = () => {
   );
 };
 
-export default UserTeams;
+export default StudentTeams;
