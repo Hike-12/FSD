@@ -1,265 +1,419 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import styled, { keyframes } from 'styled-components';
 
-function LoginRegister() {
-  // Toggle state for sign in/sign up
-  const [signIn, setSignIn] = useState(true);
+const move = keyframes`
+  0% { opacity: 0; }
+  95% { opacity: 1; }
+`;
 
-  // Login states
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+const LoginContainer = styled.div`
+  position: relative;
+  width: 900px;
+  height: 600px;
+  background: #121212;
+  border-radius: 23px;
+  overflow: hidden;
+  border: 1px solid #00C4B8;
+  box-shadow: 0 0 30px rgba(0, 196, 184, 0.2);
+  margin: 0 auto;
+`;
 
-  // Register states
-  const [registerUsername, setRegisterUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [role, setRole] = useState('');
-  const [registerError, setRegisterError] = useState('');
+const FormPanel = styled.div`
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  transition: all 1s ease-in-out;
+  z-index: ${props => props.active ? 2 : 1};
+  opacity: ${props => props.active ? 1 : 0};
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  left: ${props => props.left ? '0' : 'auto'};
+  right: ${props => props.right ? '0' : 'auto'};
+`;
+
+const OverlayContainer = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;
+
+const OverlayPanel = styled.div`
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, #006D66, #00C4B8);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 2.5rem;
+  transition: transform 1s ease-in-out;
+  ${props => props.right ? `
+    right: 0;
+    transform: ${props.active ? 'translateX(0)' : 'translateX(100%)'};
+    border-radius: 0 23px 23px 0;
+  ` : `
+    left: 0;
+    transform: ${props.active ? 'translateX(0)' : 'translateX(-100%)'};
+    border-radius: 23px 0 0 23px;
+  `}
+`;
+
+const ToggleButton = styled.button`
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 4;
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%) rotate(${props => props.active ? '180deg' : '0deg'});
+  transition: all 0.6s ease-in-out;
+
+  &::before {
+    content: "👉";
+    font-size: 3.5rem;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
+  }
+`;
+
+const Form = styled.form`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 1.1rem;
+  background: #1F2A2A;
+  border: 1px solid #2A3A3A;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: #00C4B8;
+    box-shadow: 0 0 0 2px rgba(0, 196, 184, 0.3);
+  }
+
+  &::placeholder {
+    color: #A0AEC0;
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 1.1rem;
+  background: #1F2A2A;
+  border: 1px solid #2A3A3A;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  transition: all 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: #00C4B8;
+    box-shadow: 0 0 0 2px rgba(0, 196, 184, 0.3);
+  }
+`;
+
+const Button = styled.button`
+  padding: 1.1rem;
+  background: linear-gradient(to right, #00C4B8, #006D66);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 196, 184, 0.3);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 196, 184, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const ErrorText = styled.p`
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: -0.8rem 0 0.8rem 0;
+`;
+
+const Link = styled.a`
+  color: #A0AEC0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #00C4B8;
+    text-decoration: underline;
+  }
+`;
+
+const Title = styled.h1`
+  color: white;
+  font-size: 2.2rem;
+  margin-bottom: 1.8rem;
+  text-align: center;
+`;
+
+const PanelTitle = styled.h2`
+  font-size: 2rem;
+  margin-bottom: 1.2rem;
+  color: white;
+`;
+
+const PanelText = styled.p`
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 80%;
+`;
+
+const LoginPage = () => {
+  const [isSignInActive, setIsSignInActive] = useState(true);
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    registerUsername: '',
+    email: '',
+    registerPassword: '',
+    role: ''
+  });
+  const [errors, setErrors] = useState({
+    login: '',
+    register: ''
+  });
 
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const toggle = (value) => {
-    setSignIn(value);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoginError('');
-    
+    setErrors({ ...errors, login: '' });
     try {
-      const success = await login({ username, password });
-      
+      const success = await login({ 
+        username: formData.username, 
+        password: formData.password 
+      });
       if (success) {
         const role = localStorage.getItem('role');
         switch (role) {
-          case 'STUDENT':
-            navigate('/student-landing');
-            break;
-          case 'HOST':
-            navigate('/admin-landing');
-            break;
-          case 'MENTOR':
-            navigate('/mentor-landing');
-            break;
-          case 'MANAGER':
-            navigate('/manager-dashboard');
-            break;
-          default:
-            navigate('/student-dashboard');
+          case 'STUDENT': navigate('/student-landing'); break;
+          case 'HOST': navigate('/admin-landing'); break;
+          case 'MENTOR': navigate('/mentor-landing'); break;
+          case 'MANAGER': navigate('/manager-dashboard'); break;
+          default: navigate('/student-dashboard');
         }
       } else {
-        setLoginError('Login failed. Please check your credentials.');
+        setErrors({ ...errors, login: 'Login failed. Please check your credentials.' });
       }
     } catch (err) {
-      setLoginError(err.message);
+      setErrors({ ...errors, login: err.message });
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setRegisterError('');
-    
+    setErrors({ ...errors, register: '' });
     try {
       const response = await fetch('http://127.0.0.1:8000/api/register/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          username: registerUsername, 
-          email, 
-          password: registerPassword, 
-          role 
+          username: formData.registerUsername, 
+          email: formData.email, 
+          password: formData.registerPassword, 
+          role: formData.role 
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         const errorMsg = errorData.error || 'Registration failed';
-
         if (errorMsg.includes('home_customuser.email')) {
-          setRegisterError('Email already exists. Please use a different email.');
+          setErrors({ ...errors, register: 'Email already exists. Please use a different email.' });
         } else if (errorMsg.includes('home_customuser.username')) {
-          setRegisterError('Username already taken. Please choose another one.');
+          setErrors({ ...errors, register: 'Username already taken. Please choose another one.' });
         } else {
-          setRegisterError(errorMsg);
+          setErrors({ ...errors, register: errorMsg });
         }
         return;
       }
 
       const data = await response.json();
       alert(data.message || 'Registration successful!');
-      
-      // Switch to login view after successful registration
-      setSignIn(true);
+      setIsSignInActive(true);
     } catch (err) {
-      setRegisterError(err.message);
+      setErrors({ ...errors, register: err.message });
     }
   };
 
   return (
-    <div style={{ backgroundColor: '#233d4d' }} className="flex items-center justify-center h-screen overflow-hidden">
-      <div className="bg-white rounded-lg shadow-2xl relative overflow-hidden w-full max-w-[678px] min-h-[400px]">
-        {/* Sign Up Container */}
-        <div 
-          className={`absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2 ${
-            !signIn 
-              ? "transform translate-x-full opacity-100 z-10" 
-              : "opacity-0 z-0"
-          }`}
-        >
-          <form 
-            onSubmit={handleRegister}
-            className="bg-white flex items-center justify-center flex-col p-0 px-12 h-full text-center"
-          >
-            <h1 style={{ color: '#233d4d' }} className="font-bold m-0">Create Account</h1>
-            <input 
-              type="text" 
-              placeholder="Username" 
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={registerUsername}
-              onChange={(e) => setRegisterUsername(e.target.value)}
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#0A0A0A',
+      padding: '2rem'
+    }}>
+      <LoginContainer>
+        {/* Sign In Form (Left Side) */}
+        <FormPanel active={isSignInActive} left>
+          <Form onSubmit={handleLogin}>
+            <Title>Sign In</Title>
+            <Input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
               required
             />
-            <input 
-              type="email" 
-              placeholder="Email" 
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+            <Input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
               required
             />
-            <select
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+            {errors.login && <ErrorText>{errors.login}</ErrorText>}
+            <Link href="#">Forgot password?</Link>
+            <Button type="submit">Sign In</Button>
+          </Form>
+        </FormPanel>
+
+        {/* Create Account Form (Right Side) */}
+        <FormPanel active={!isSignInActive} right>
+          <Form onSubmit={handleRegister}>
+            <Title>Create Account</Title>
+            <Input
+              type="text"
+              name="registerUsername"
+              placeholder="Username"
+              value={formData.registerUsername}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <Select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
               required
             >
-              <option value="">Select Role</option>
+              <option value="" disabled>Select Role</option>
               <option value="STUDENT">Student</option>
               <option value="HOST">Admin</option>
               <option value="MENTOR">Mentor</option>
-            </select>
-            <input 
-              type="password" 
-              placeholder="Password" 
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={registerPassword}
-              onChange={(e) => setRegisterPassword(e.target.value)}
+            </Select>
+            <Input
+              type="password"
+              name="registerPassword"
+              placeholder="Password"
+              value={formData.registerPassword}
+              onChange={handleChange}
               required
             />
-            {registerError && <p className="text-red-500 text-xs mt-2">{registerError}</p>}
-            <button 
-              type="submit"
-              style={{ backgroundColor: '#e1bb80', color: '#233d4d', borderColor: '#e1bb80' }}
-              className="rounded-full border text-xs font-bold py-3 px-11 uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none mt-4"
-            >
-              Sign Up
-            </button>
-          </form>
-        </div>
-
-        {/* Sign In Container */}
-        <div 
-          className={`absolute top-0 h-full transition-all duration-600 ease-in-out left-0 w-1/2 z-[2] ${
-            signIn ? "" : "transform translate-x-full"
-          }`}
-        >
-          <form 
-            onSubmit={handleLogin}
-            className="bg-white flex items-center justify-center flex-col p-0 px-12 h-full text-center"
-          >
-            <h1 style={{ color: '#233d4d' }} className="font-bold m-0">Sign in</h1>
-            <input 
-              type="text" 
-              placeholder="Username" 
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              className="bg-gray-100 border-none py-3 px-4 my-2 w-full"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <a href="#" className="text-gray-800 text-sm no-underline my-4">
-              Forgot your password?
-            </a>
-            {loginError && <p className="text-red-500 text-xs mt-2">{loginError}</p>}
-            <button 
-              type="submit"
-              style={{ backgroundColor: '#e1bb80', color: '#233d4d', borderColor: '#e1bb80' }}
-              className="rounded-full border text-xs font-bold py-3 px-11 uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none"
-            >
-              Sign In
-            </button>
-          </form>
-        </div>
+            {errors.register && <ErrorText>{errors.register}</ErrorText>}
+            <Link href="#" onClick={() => setIsSignInActive(true)}>
+              Already have an account?
+            </Link>
+            <Button type="submit">Sign Up</Button>
+          </Form>
+        </FormPanel>
 
         {/* Overlay Container */}
-        <div 
-          className={`absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-600 ease-in-out z-100 ${
-            !signIn ? "transform -translate-x-full" : ""
-          }`}
-        >
-          {/* Overlay */}
-          <div 
-            className={`bg-no-repeat bg-cover bg-left text-white relative -left-full h-full w-[200%] transition-transform duration-600 ease-in-out ${
-              !signIn ? "transform translate-x-1/2" : "transform translate-x-0"
-            }`}
-            style={{ background: 'linear-gradient(to right, #e1bb80, #233d4d)' }}
-          >
-            {/* Left Overlay Panel */}
-            <div 
-              className={`absolute flex items-center justify-center flex-col p-0 px-10 text-center top-0 h-full w-1/2 transition-transform duration-600 ease-in-out ${
-                !signIn ? "transform translate-x-0" : "transform -translate-x-[20%]"
-              }`}
+        <OverlayContainer>
+          {/* Right Overlay Panel */}
+          <OverlayPanel right active={isSignInActive}>
+            <PanelTitle>New Here?</PanelTitle>
+            <PanelText>
+              Sign up and discover a great community of mentors and students!
+            </PanelText>
+            <Button 
+              onClick={() => setIsSignInActive(false)}
+              style={{ 
+                marginTop: '2rem', 
+                background: 'transparent', 
+                border: '2px solid white',
+                width: '150px'
+              }}
             >
-              <h1 style={{ color: '#233d4d' }} className="font-bold m-0">Welcome Back!</h1>
-              <p style={{ color: '#233d4d' }} className="text-sm font-thin leading-5 tracking-wider my-5 mx-0">
-                To keep connected with us please login with your personal info
-              </p>
-              <button 
-                onClick={() => toggle(true)}
-                style={{ color: '#233d4d', borderColor: '#233d4d' }}
-                className="rounded-full border bg-transparent text-xs font-bold py-3 px-11 uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none"
-                type="button"
-              >
-                Sign In
-              </button>
-            </div>
+              Sign Up
+            </Button>
+          </OverlayPanel>
 
-            {/* Right Overlay Panel */}
-            <div 
-              className={`absolute right-0 flex items-center justify-center flex-col p-0 px-10 text-center top-0 h-full w-1/2 transition-transform duration-600 ease-in-out ${
-                !signIn ? "transform translate-x-[20%]" : "transform translate-x-0"
-              }`}
+          {/* Left Overlay Panel */}
+          <OverlayPanel left active={!isSignInActive}>
+            <PanelTitle>Welcome Back!</PanelTitle>
+            <PanelText>
+              To keep connected with us please login with your personal info
+            </PanelText>
+            <Button 
+              onClick={() => setIsSignInActive(true)}
+              style={{ 
+                marginTop: '2rem', 
+                background: 'transparent', 
+                border: '2px solid white',
+                width: '150px'
+              }}
             >
-              <h1 className="font-bold m-0 text-white">Hello, Friend!</h1>
-              <p className="text-sm font-thin leading-5 tracking-wider my-5 mx-0 text-white">
-                Enter your personal details and start journey with us
-              </p>
-              <button 
-                onClick={() => toggle(false)}
-                className="rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-11 uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none"
-                type="button"
-              >
-                Sign Up
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+              Sign In
+            </Button>
+          </OverlayPanel>
+        </OverlayContainer>
+
+        <ToggleButton 
+          active={isSignInActive} 
+          onClick={() => setIsSignInActive(!isSignInActive)}
+        />
+      </LoginContainer>
     </div>
   );
-}
+};
 
-export default LoginRegister;
+export default LoginPage;
