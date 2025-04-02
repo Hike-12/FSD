@@ -18,33 +18,60 @@ import TeamDetail from "./components/Competitions/TeamDetail";
 import StudentCompetitions from "./components/Students/StudentCompetitions";
 import StudentTeams from "./components/Students/StudentTeams";
 import HostCompetitions from "./components/Hosts/HostCompetitions";
+import MentorNavbar from "./components/Mentor/MentorNavbar";
+import StudentNavbar from "./components/Students/StudentNavbar";
+import HostNavbar from "./components/Hosts/HostNavbar";
+import MentorSidebar from "./components/Mentor/MentorSidebar";
+import StudentSidebar from "./components/Students/StudentSidebar";
+import HostSidebar from "./components/Hosts/HostSidebar";
+import Layout from "./components/NavSideLayout";
 
 function App() {
+    const userRole = localStorage.getItem("role"); 
+
+    const getNavbar = () => {
+        if (userRole === "STUDENT") return <StudentNavbar />;
+        if (userRole === "MENTOR") return <MentorNavbar />;
+        if (userRole === "HOST") return <HostNavbar />;
+        return null;
+      };
+    
+      const getSidebar = () => {
+        if (userRole === "STUDENT") return <StudentSidebar />;
+        if (userRole === "MENTOR") return <MentorSidebar />;
+        if (userRole === "HOST") return <HostSidebar />;
+        return null;
+      };
+
     return (
+        <>
         <BrowserRouter>
             <AuthProvider>
-                <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/login" element={<LoginRegister />} />
-                    <Route path="/mentor-profile" element={<MentorProfileForm/>} />
-                    <Route path="/student-profile" element={<StudentProfileForm/>} />
-                    <Route path="/admin-profile" element={<HostProfileForm/>} />
-                    <Route path="/mentors" element={<AllMentors />} />
-                    <Route path="/mentor/:id" element={<MentorProfile />} />
-                    <Route path="/students" element={<RecommendedStudents />} />
-                    <Route path="/students/:id" element={<StudentProfile />} />
-                    <Route path="/competition-create" element={<CreateCompetition />} />
-                    <Route path="/competitions" element={<CompetitionsList />} />
-                    <Route path="/competitions/:id" element={<CompetitionDetail />} />
-                    <Route path="/student-landing" element={<StudentLandingPage />} />
-                    <Route path="/admin-landing" element={<AdminLandingPage />} />
-                    <Route path="/team/:teamId" element={<TeamDetail />} />
-                    <Route path="/student-teams" element={<StudentTeams />} />
-                    <Route path="/student-competitions" element={<StudentCompetitions />} />
-                    <Route path="/host-competitions" element={<HostCompetitions />} />
-                </Routes>
+                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
+                    <Routes>
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/login" element={<LoginRegister />} />
+                        <Route path="/mentor-profile" element={<MentorProfileForm/>} />
+                        <Route path="/student-profile" element={<StudentProfileForm/>} />
+                        <Route path="/admin-profile" element={<HostProfileForm/>} />
+                        <Route path="/mentors" element={<AllMentors />} />
+                        <Route path="/mentor/:id" element={<MentorProfile />} />
+                        <Route path="/students" element={<RecommendedStudents />} />
+                        <Route path="/students/:id" element={<StudentProfile />} />
+                        <Route path="/competition-create" element={<CreateCompetition />} />
+                        <Route path="/competitions" element={<CompetitionsList />} />
+                        <Route path="/competitions/:id" element={<CompetitionDetail />} />
+                        <Route path="/student-landing" element={<StudentLandingPage />} />
+                        <Route path="/admin-landing" element={<AdminLandingPage />} />
+                        <Route path="/team/:teamId" element={<TeamDetail />} />
+                        <Route path="/student-teams" element={<StudentTeams />} />
+                        <Route path="/student-competitions" element={<StudentCompetitions />} />
+                        <Route path="/host-competitions" element={<HostCompetitions />} />
+                    </Routes>
+                </Layout>
             </AuthProvider>
         </BrowserRouter>
+        </>
     );
 }
 

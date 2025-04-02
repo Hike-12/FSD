@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import DJANGO_BASE_URL from "../lib/utils";
 
 const AuthContext = createContext();
 
@@ -10,7 +11,7 @@ export const AuthProvider = ({ children }) => {
 
     // const fetchCsrfToken = async () => {
     //     try {
-    //         const response = await fetch('http://127.0.0.1:8000/csrf/', {
+    //         const response = await fetch('${DJANGO_BASE_URL}/csrf/', {
     //             method: 'GET',
     //             credentials: 'include',
     //         });
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/user/', {
+            const response = await fetch(`${DJANGO_BASE_URL}/api/user/`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }) => {
             //     token = freshToken;
             // }
             
-            const response = await fetch('http://127.0.0.1:8000/api/login/', {
+            const response = await fetch(`${DJANGO_BASE_URL}/api/login/`, {
                 method: 'POST',
                 headers: {
                     // 'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -100,7 +101,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await fetch('http://127.0.0.1:8000/api/logout/', {
+            const response = await fetch(`${DJANGO_BASE_URL}/api/logout/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -108,6 +109,13 @@ export const AuthProvider = ({ children }) => {
                 },
                 credentials: 'include'
             });
+            if (!response.ok) {
+                throw new Error('Logout failed');
+            }
+            alert('Logout successful!');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('role');
         } catch (err) {
             console.error('Logout error:', err);
         } finally {

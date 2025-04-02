@@ -15,10 +15,13 @@ import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Load the recommendation model and vectorizer at startup
-MODEL_PATH = "c:/Users/Lenovo/Desktop/Aliqyaan Coding/FSD/Backend/fsd/home/ml/"
-nn_model = joblib.load(f"{MODEL_PATH}nn_model.joblib")
-tfidf_vectorizer = joblib.load(f"{MODEL_PATH}tfidf_vectorizer.joblib")
+# Dynamically construct the base directory and model path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Get the base directory
+MODEL_PATH = os.path.join(BASE_DIR, "home", "ml")  # Construct the model path
+
+# Load the recommendation model and vectorizer
+nn_model = joblib.load(os.path.join(MODEL_PATH, "nn_model.joblib"))
+tfidf_vectorizer = joblib.load(os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib"))
 
 # Load the student data (used for recommendations)
 # students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
