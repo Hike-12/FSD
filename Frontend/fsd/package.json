@@ -53,12 +53,8 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "framer-motion": "^12.6.2",
     "globals": "^15.15.0",
-<<<<<<< HEAD
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.0.17",
     "vite": "^6.2.0"
-=======
-    "vite": "^6.2.3"
->>>>>>> e1168ef (hii)
   }
 }
