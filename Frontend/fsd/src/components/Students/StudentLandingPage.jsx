@@ -572,3 +572,488 @@ const StudentLandingPage = () => {
 };
 
 export default StudentLandingPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Future use
+// import React, { useState, useEffect } from 'react';
+// import { motion } from "framer-motion";
+// import styled from "styled-components";
+// import StudentNavbar from "./StudentNavbar";
+// import { ChevronRight, BarChart2, Eye, Activity, Trophy, Calendar, Clock, Users, TrendingUp } from 'lucide-react';
+// import { Bar, Line, Radar } from 'react-chartjs-2';
+// import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, RadialLinearScale } from 'chart.js';
+
+// // Register ChartJS components
+// ChartJS.register(
+//   CategoryScale,
+//   LinearScale,
+//   BarElement,
+//   Title,
+//   Tooltip,
+//   Legend,
+//   PointElement,
+//   LineElement,
+//   RadialLinearScale
+// );
+
+// // Styled components
+// const Card = styled.div`
+//   background: #1F2A2A;
+//   color: white;
+//   border-radius: 12px;
+//   padding: 1.5rem;
+//   border: 1px solid #2A3A3A;
+//   transition: all 0.3s;
+//   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+//   &:hover {
+//     border-color: #00C4B8;
+//     box-shadow: 0 0 15px rgba(0, 196, 184, 0.2);
+//   }
+// `;
+
+// const MetricCard = styled(Card)`
+//   padding: 1.5rem;
+//   display: flex;
+//   flex-direction: column;
+//   height: 100%;
+
+//   h3 {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+//     font-size: 1.1rem;
+//     margin-bottom: 1rem;
+//     color: #A0AEC0;
+//   }
+
+//   .value {
+//     font-size: 2rem;
+//     font-weight: bold;
+//     margin-bottom: 0.5rem;
+//     background: linear-gradient(to right, #00C4B8, #00a1e0);
+//     -webkit-background-clip: text;
+//     -webkit-text-fill-color: transparent;
+//   }
+
+//   .change {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.25rem;
+//     font-size: 0.9rem;
+//     color: ${props => props.positive ? '#00C4B8' : '#f87171'};
+//   }
+// `;
+
+// const PrimaryButton = styled.button`
+//   padding: 0.75rem 1.5rem;
+//   background: linear-gradient(to right, #00C4B8, #006D66);
+//   color: white;
+//   border: none;
+//   border-radius: 30px;
+//   font-weight: bold;
+//   cursor: pointer;
+//   transition: all 0.3s;
+//   box-shadow: 0 4px 15px rgba(0, 196, 184, 0.3);
+//   display: flex;
+//   align-items: center;
+//   gap: 0.5rem;
+
+//   &:hover {
+//     transform: translateY(-2px);
+//     box-shadow: 0 6px 20px rgba(0, 196, 184, 0.4);
+//   }
+
+//   &:active {
+//     transform: translateY(0);
+//   }
+// `;
+
+// const SecondaryButton = styled.button`
+//   padding: 0.75rem 1.5rem;
+//   background: #1F2A2A;
+//   color: #A0AEC0;
+//   border: 1px solid #2A3A3A;
+//   border-radius: 30px;
+//   font-weight: bold;
+//   cursor: pointer;
+//   transition: all 0.3s;
+//   display: flex;
+//   align-items: center;
+//   gap: 0.5rem;
+
+//   &:hover {
+//     background: #2A3A3A;
+//     color: white;
+//     border-color: #00C4B8;
+//   }
+// `;
+
+// const StudentLandingPage = () => {
+//   const [currentColorIndex, setCurrentColorIndex] = useState(0);
+//   const colors = ["text-cyan-400", "text-fuchsia-400", "text-pink-400"];
+
+//   // Mock data for charts
+//   const hackathonData = {
+//     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+//     datasets: [
+//       {
+//         label: 'Hackathons Participated',
+//         data: [2, 3, 5, 4, 6, 8, 7],
+//         backgroundColor: 'rgba(0, 196, 184, 0.7)',
+//         borderColor: 'rgba(0, 196, 184, 1)',
+//         borderWidth: 2,
+//         borderRadius: 4,
+//       }
+//     ]
+//   };
+
+//   const profileViewData = {
+//     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+//     datasets: [
+//       {
+//         label: 'Profile Views',
+//         data: [12, 19, 15, 23, 18, 25, 22],
+//         borderColor: 'rgba(124, 58, 237, 1)',
+//         backgroundColor: 'rgba(124, 58, 237, 0.2)',
+//         borderWidth: 2,
+//         tension: 0.4,
+//         fill: true,
+//       }
+//     ]
+//   };
+
+//   const engagementData = {
+//     labels: ['Problem Solving', 'Collaboration', 'Creativity', 'Communication', 'Technical Skills'],
+//     datasets: [
+//       {
+//         label: 'Current Month',
+//         data: [85, 70, 90, 65, 80],
+//         backgroundColor: 'rgba(0, 196, 184, 0.2)',
+//         borderColor: 'rgba(0, 196, 184, 1)',
+//         borderWidth: 2,
+//         pointBackgroundColor: 'rgba(0, 196, 184, 1)',
+//       },
+//       {
+//         label: 'Last Month',
+//         data: [70, 60, 75, 50, 65],
+//         backgroundColor: 'rgba(124, 58, 237, 0.2)',
+//         borderColor: 'rgba(124, 58, 237, 1)',
+//         borderWidth: 2,
+//         pointBackgroundColor: 'rgba(124, 58, 237, 1)',
+//       }
+//     ]
+//   };
+
+//   const hackathonOptions = {
+//     responsive: true,
+//     plugins: {
+//       legend: {
+//         position: 'top',
+//         labels: {
+//           color: '#E2E8F0',
+//         }
+//       },
+//     },
+//     scales: {
+//       x: {
+//         grid: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         ticks: {
+//           color: '#A0AEC0',
+//         }
+//       },
+//       y: {
+//         grid: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         ticks: {
+//           color: '#A0AEC0',
+//         }
+//       }
+//     }
+//   };
+
+//   const profileViewOptions = {
+//     responsive: true,
+//     plugins: {
+//       legend: {
+//         position: 'top',
+//         labels: {
+//           color: '#E2E8F0',
+//         }
+//       },
+//     },
+//     scales: {
+//       x: {
+//         grid: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         ticks: {
+//           color: '#A0AEC0',
+//         }
+//       },
+//       y: {
+//         grid: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         ticks: {
+//           color: '#A0AEC0',
+//         }
+//       }
+//     }
+//   };
+
+//   const engagementOptions = {
+//     responsive: true,
+//     plugins: {
+//       legend: {
+//         position: 'top',
+//         labels: {
+//           color: '#E2E8F0',
+//         }
+//       },
+//     },
+//     scales: {
+//       r: {
+//         angleLines: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         grid: {
+//           color: 'rgba(255, 255, 255, 0.1)'
+//         },
+//         pointLabels: {
+//           color: '#A0AEC0',
+//         },
+//         ticks: {
+//           backdropColor: 'transparent',
+//           color: '#A0AEC0',
+//         },
+//         suggestedMin: 0,
+//         suggestedMax: 100
+//       }
+//     }
+//   };
+
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setCurrentColorIndex((prev) => (prev + 1) % colors.length);
+//     }, 5000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   return (
+//     <StudentNavbar>
+//       {/* Hero Section */}
+//       <section className="relative h-screen flex items-center justify-center overflow-hidden">
+//         <div className="absolute inset-0 z-0">
+//           <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/90 to-[#121F1F]/90"></div>
+//           <div className="absolute top-0 left-0 w-full h-full opacity-20">
+//             <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-cyan-500 filter blur-3xl opacity-30 animate-pulse"></div>
+//             <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-indigo-500 filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
+//           </div>
+//         </div>
+        
+//         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
+//           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+//             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 bg-clip-text text-transparent">
+//               Welcome to DevCompete
+//             </h1>
+//             <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
+//               The ultimate platform for students to learn, compete, and grow.
+//             </p>
+//             <div className="flex flex-wrap gap-4 justify-center">
+//               <PrimaryButton>
+//                 Get Started <ChevronRight className="h-5 w-5" />
+//               </PrimaryButton>
+//               <SecondaryButton>
+//                 Learn More
+//               </SecondaryButton>
+//             </div>
+//           </motion.div>
+//         </div>
+//       </section>
+
+//       {/* Dashboard Section */}
+//       <section className="py-20 px-4 max-w-7xl mx-auto">
+//         <div className="text-center mb-16">
+//           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Your Dashboard</h2>
+//           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+//             Track your progress and performance across the platform.
+//           </p>
+//         </div>
+        
+//         {/* Quick Stats */}
+//         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+//           <MetricCard positive={true}>
+//             <h3><Trophy size={18} /> Hackathons</h3>
+//             <div className="value">24</div>
+//             <div className="change">
+//               <TrendingUp size={16} />
+//               <span>+12% from last month</span>
+//             </div>
+//           </MetricCard>
+          
+//           <MetricCard positive={true}>
+//             <h3><Eye size={18} /> Profile Views</h3>
+//             <div className="value">156</div>
+//             <div className="change">
+//               <TrendingUp size={16} />
+//               <span>+8% from last week</span>
+//             </div>
+//           </MetricCard>
+          
+//           <MetricCard positive={false}>
+//             <h3><Clock size={18} /> Time Spent</h3>
+//             <div className="value">42h</div>
+//             <div className="change">
+//               <TrendingUp size={16} />
+//               <span>-5% from last week</span>
+//             </div>
+//           </MetricCard>
+          
+//           <MetricCard positive={true}>
+//             <h3><Users size={18} /> Connections</h3>
+//             <div className="value">38</div>
+//             <div className="change">
+//               <TrendingUp size={16} />
+//               <span>+3 new this week</span>
+//             </div>
+//           </MetricCard>
+//         </div>
+        
+//         {/* Charts Section */}
+//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+//           {/* Hackathons Participated */}
+//           <Card>
+//             <div className="flex items-center justify-between mb-6">
+//               <h3 className="font-bold text-xl flex items-center gap-2">
+//                 <BarChart2 size={20} /> Hackathons Participated
+//               </h3>
+//               <select className="bg-[#1F2A2A] border border-[#2A3A3A] rounded-md px-3 py-1 text-sm">
+//                 <option>Last 6 Months</option>
+//                 <option>This Year</option>
+//                 <option>All Time</option>
+//               </select>
+//             </div>
+//             <div className="h-64">
+//               <Bar data={hackathonData} options={hackathonOptions} />
+//             </div>
+//           </Card>
+          
+//           {/* Profile Views */}
+//           <Card>
+//             <div className="flex items-center justify-between mb-6">
+//               <h3 className="font-bold text-xl flex items-center gap-2">
+//                 <Eye size={20} /> Profile Views
+//               </h3>
+//               <select className="bg-[#1F2A2A] border border-[#2A3A3A] rounded-md px-3 py-1 text-sm">
+//                 <option>Last 7 Days</option>
+//                 <option>Last 30 Days</option>
+//                 <option>Last 90 Days</option>
+//               </select>
+//             </div>
+//             <div className="h-64">
+//               <Line data={profileViewData} options={profileViewOptions} />
+//             </div>
+//           </Card>
+//         </div>
+        
+//         {/* Engagement Radar */}
+//         <div className="grid grid-cols-1 gap-8">
+//           <Card>
+//             <div className="flex items-center justify-between mb-6">
+//               <h3 className="font-bold text-xl flex items-center gap-2">
+//                 <Activity size={20} /> Engagement Metrics
+//               </h3>
+//               <select className="bg-[#1F2A2A] border border-[#2A3A3A] rounded-md px-3 py-1 text-sm">
+//                 <option>Skills Breakdown</option>
+//                 <option>Activity Levels</option>
+//                 <option>Participation</option>
+//               </select>
+//             </div>
+//             <div className="h-96">
+//               <Radar data={engagementData} options={engagementOptions} />
+//             </div>
+//           </Card>
+//         </div>
+//       </section>
+
+//       {/* Upcoming Events Section */}
+//       <section className="py-20 px-4 max-w-7xl mx-auto bg-gradient-to-b from-[#121F1F] to-[#0A0A0A] rounded-3xl mb-20">
+//         <div className="text-center mb-16">
+//           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Upcoming Events</h2>
+//           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+//             Don't miss these exciting opportunities to learn and compete.
+//           </p>
+//         </div>
+        
+//         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+//           <Card>
+//             <div className="flex items-center gap-3 mb-4">
+//               <div className="bg-cyan-500/20 p-2 rounded-lg">
+//                 <Calendar className="text-cyan-400" size={20} />
+//               </div>
+//               <span className="text-sm text-cyan-400">Jun 15-17, 2023</span>
+//             </div>
+//             <h3 className="font-bold text-xl mb-2">AI Innovation Challenge</h3>
+//             <p className="text-gray-400 mb-4">Build AI solutions for real-world problems in this 48-hour hackathon.</p>
+//             <PrimaryButton className="w-full justify-center">
+//               Register Now
+//             </PrimaryButton>
+//           </Card>
+          
+//           <Card>
+//             <div className="flex items-center gap-3 mb-4">
+//               <div className="bg-purple-500/20 p-2 rounded-lg">
+//                 <Calendar className="text-purple-400" size={20} />
+//               </div>
+//               <span className="text-sm text-purple-400">Jul 5-7, 2023</span>
+//             </div>
+//             <h3 className="font-bold text-xl mb-2">Web3 Builders Summit</h3>
+//             <p className="text-gray-400 mb-4">Create decentralized applications and compete for prizes in crypto.</p>
+//             <PrimaryButton className="w-full justify-center">
+//               Register Now
+//             </PrimaryButton>
+//           </Card>
+          
+//           <Card>
+//             <div className="flex items-center gap-3 mb-4">
+//               <div className="bg-pink-500/20 p-2 rounded-lg">
+//                 <Calendar className="text-pink-400" size={20} />
+//               </div>
+//               <span className="text-sm text-pink-400">Aug 12-14, 2023</span>
+//             </div>
+//             <h3 className="font-bold text-xl mb-2">Global Coding Championship</h3>
+//             <p className="text-gray-400 mb-4">The ultimate test of algorithmic problem-solving skills.</p>
+//             <PrimaryButton className="w-full justify-center">
+//               Register Now
+//             </PrimaryButton>
+//           </Card>
+//         </div>
+//       </section>
+//     </StudentNavbar>
+//   );
+// };
+
+// export default StudentLandingPage;
+
+// The above code is a React component for a student landing page. It includes a hero section, dashboard metrics, charts, and upcoming events. The design uses styled-components for styling and includes animations using Framer Motion. The charts are created using Chart.js and display mock data for hackathons participated, profile views, and engagement metrics. The page also features a gradient background and responsive design for different screen sizes.
