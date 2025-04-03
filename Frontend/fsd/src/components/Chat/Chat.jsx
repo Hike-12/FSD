@@ -382,7 +382,11 @@ const Chat = () => {
         };
     
         console.log("Sending message:", newMessage);
-    
+        socketRef.current.emit("sendMessage", {
+            team_id: teamId,
+            message,
+            sender: userId,
+        });
         try {
             const response = await fetch(`${API_URL}/messages`, {
                 method: "POST",
