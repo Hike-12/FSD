@@ -85,15 +85,15 @@ io.on("connection", (socket) => {
         console.log("User joining room:", { team_id, user_id });
         try {
             const chatRoom = await ChatRoom.findOne({ team_id });
-
+    
             if (!chatRoom) {
                 return socket.emit("error", { message: "Chat room not found" });
             }
-
+    
             if (!chatRoom.members.includes(user_id)) {
                 return socket.emit("error", { message: "Access denied" });
             }
-
+    
             socket.join(team_id);
             console.log(`User ${user_id} joined room ${team_id}`);
         } catch (error) {
@@ -107,7 +107,6 @@ io.on("connection", (socket) => {
             // Fetch the userName from Django
             const djangoApiUrl = `${process.env.DJANGO_API_URL}/api/user/${sender}/`;
             const response = await axios.get(djangoApiUrl);
-            console.log("Django API response:", response.data);
     
             if (response.status !== 200) {
                 console.error("Failed to fetch userName from Django:", response.statusText);
@@ -119,8 +118,12 @@ io.on("connection", (socket) => {
     
             console.log("Broadcasting message:", { team_id, message, sender, userName });
     
-            // Broadcast the message with userName
-            io.to(team_id).emit("receiveMessage", { message, sender, userName });
+            // Save the message to MongoDB
+            const newMessage = new Message({ sender, content: message, team_id, userName });
+            await newMessage.save();
+    
+            // Broadcast the message to the specific team
+            io.to(team_id).emit("receiveMessage", { sender, content: message, userName });
         } catch (error) {
             console.error("Error in sendMessage event:", error);
         }
@@ -138,13 +141,20 @@ app.get("/", (req, res) => {
   // API Routes
   app.get("/messages", async (req, res) => {
     try {
-      const messages = await Message.find().sort({ createdAt: -1 }).limit(20);
-      res.json(messages);
+        const { team_id } = req.query;
+
+        if (!team_id) {
+            return res.status(400).json({ error: "Missing team_id parameter" });
+        }
+
+        // Fetch messages for the specific team
+        const messages = await Message.find({ team_id }).sort({ timestamp: -1 }).limit(20);
+        res.json(messages);
     } catch (error) {
-      console.error("Error fetching messages:", error);
-      res.status(500).json({ error: "Error fetching messages" });
+        console.error("Error fetching messages:", error);
+        res.status(500).json({ error: "Error fetching messages" });
     }
-  });
+});
   
   app.post("/messages", async (req, res) => {
     try {
