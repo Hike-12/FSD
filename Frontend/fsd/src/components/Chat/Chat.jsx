@@ -400,6 +400,20 @@ const Chat = () => {
         }
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
+
+    const startVideoCall = () => {
+        setIsVideoCallActive(true);
+    };
+
+    const endVideoCall = () => {
+        setIsVideoCallActive(false);
+    };
+
     return (
         <div>
             <h2>Chat Room</h2>

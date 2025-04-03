@@ -16,7 +16,9 @@ import {
   FiChevronRight, 
   FiChevronLeft,
   FiX,
-  FiCheck
+  FiCheck,
+  FiPlus,
+  FiMinus
 } from 'react-icons/fi';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -50,11 +52,11 @@ const CreateCompetition = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [previewImage, setPreviewImage] = useState(null);
-  const [progress, setProgress] = useState(25);
+  const [progress, setProgress] = useState(20);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [searchSkill, setSearchSkill] = useState("");
 
-  const tabs = ['basic', 'schedule', 'team', 'location', 'details'];
+  const tabs = ['basic', 'schedule', 'team', 'details'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,9 +101,8 @@ const CreateCompetition = () => {
   useEffect(() => {
     const progressValues = {
       'basic': 20,
-      'schedule': 40,
-      'team': 60,
-      'location': 80,
+      'schedule': 45,
+      'team': 70,
       'details': 100
     };
     setProgress(progressValues[activeTab]);
@@ -202,28 +203,28 @@ const CreateCompetition = () => {
   const renderBasicInfoTab = () => (
     <div className="space-y-6">
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Competition Name *</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Competition Name *</label>
         <input 
           type="text" 
           name="name" 
           placeholder="Enter competition name" 
           value={formData.name} 
           onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
           required 
         />
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Competition Type *</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Competition Type *</label>
         <select 
           name="competition_type_id" 
           value={formData.competition_type_id} 
           onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
           required
         >
-          <option value="" className="text-gray-400">Select Competition Type</option>
+          <option value="" className="text-gray-500">Select Competition Type</option>
           {competitionTypes.map((ct) => (
             <option key={ct.id} value={ct.id} className="text-white">{ct.name}</option>
           ))}
@@ -231,25 +232,25 @@ const CreateCompetition = () => {
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Description *</label>
         <textarea 
           name="description" 
           placeholder="Provide detailed description of the competition" 
           value={formData.description} 
           onChange={handleChange} 
           rows="5"
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
           required 
         />
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Competition Image</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Competition Image</label>
         <div className="flex items-center space-x-4">
-          <label className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors">
+          <label className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:bg-gray-800/50 transition-colors group">
             <div className="flex flex-col items-center justify-center">
-              <FiImage className="w-8 h-8 text-gray-500 mb-2" />
-              <p className="text-sm text-gray-400">Click to upload image</p>
+              <FiImage className="w-8 h-8 text-gray-500 mb-2 group-hover:text-teal-400 transition-colors" />
+              <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Click to upload image</p>
               <p className="text-xs text-gray-500">PNG, JPG (Max 5MB)</p>
             </div>
             <input 
@@ -261,7 +262,7 @@ const CreateCompetition = () => {
             />
           </label>
           {previewImage && (
-            <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-700 group">
+            <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-700 group">
               <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
               <button 
                 type="button"
@@ -269,9 +270,9 @@ const CreateCompetition = () => {
                   setPreviewImage(null);
                   setFormData(prev => ({ ...prev, competition_picture: null }));
                 }}
-                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <FiX className="text-white" />
+                <FiX className="text-white text-xl" />
               </button>
             </div>
           )}
@@ -284,8 +285,8 @@ const CreateCompetition = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="form-group">
-          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-            <FiCalendar className="mr-2 text-purple-400" /> Start Date *
+          <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+            <FiCalendar className="mr-2 text-teal-400" /> Start Date *
           </label>
           <DatePicker
             selected={formData.start_date ? new Date(formData.start_date) : null}
@@ -294,7 +295,7 @@ const CreateCompetition = () => {
             startDate={formData.start_date ? new Date(formData.start_date) : null}
             endDate={formData.end_date ? new Date(formData.end_date) : null}
             minDate={new Date()}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+            className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
             required
             popperClassName="dark-theme-datepicker"
             calendarClassName="dark-theme-datepicker"
@@ -303,8 +304,8 @@ const CreateCompetition = () => {
         </div>
 
         <div className="form-group">
-          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-            <FiCalendar className="mr-2 text-purple-400" /> End Date *
+          <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+            <FiCalendar className="mr-2 text-teal-400" /> End Date *
           </label>
           <DatePicker
             selected={formData.end_date ? new Date(formData.end_date) : null}
@@ -313,7 +314,7 @@ const CreateCompetition = () => {
             startDate={formData.start_date ? new Date(formData.start_date) : null}
             endDate={formData.end_date ? new Date(formData.end_date) : null}
             minDate={formData.start_date ? new Date(formData.start_date) : new Date()}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+            className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
             required
             popperClassName="dark-theme-datepicker"
             calendarClassName="dark-theme-datepicker"
@@ -323,41 +324,20 @@ const CreateCompetition = () => {
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-          <FiCalendar className="mr-2 text-purple-400" /> Registration Deadline *
+        <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+          <FiCalendar className="mr-2 text-teal-400" /> Registration Deadline *
         </label>
         <DatePicker
           selected={formData.registration_deadline ? new Date(formData.registration_deadline) : null}
           onChange={(date) => handleDateChange(date, 'registration_deadline')}
           minDate={new Date()}
           maxDate={formData.start_date ? new Date(formData.start_date) : null}
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
           required
           popperClassName="dark-theme-datepicker"
           calendarClassName="dark-theme-datepicker"
           wrapperClassName="w-full"
         />
-      </div>
-
-      <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
-        <div className="grid grid-cols-4 gap-2">
-          {['upcoming', 'ongoing', 'completed', 'cancelled'].map(status => (
-            <label key={status} className="flex items-center">
-              <input
-                type="radio"
-                name="status"
-                value={status}
-                checked={formData.status === status}
-                onChange={handleChange}
-                className="hidden peer"
-              />
-              <div className="w-full p-2 text-center border border-gray-700 rounded-lg peer-checked:bg-purple-600 peer-checked:border-purple-500 cursor-pointer hover:bg-gray-800 transition-colors">
-                <span className="text-xs capitalize">{status}</span>
-              </div>
-            </label>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -366,39 +346,73 @@ const CreateCompetition = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="form-group">
-          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-            <FiUsers className="mr-2 text-purple-400" /> Min Team Size *
+          <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+            <FiUsers className="mr-2 text-teal-400" /> Min Team Size *
           </label>
-          <input 
-            type="number" 
-            name="min_team_size" 
-            min="1"
-            value={formData.min_team_size} 
-            onChange={handleChange} 
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
-            required 
-          />
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, min_team_size: Math.max(1, prev.min_team_size - 1) }))}
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white"
+              disabled={formData.min_team_size <= 1}
+            >
+              <FiMinus />
+            </button>
+            <input 
+              type="number" 
+              name="min_team_size" 
+              min="1"
+              value={formData.min_team_size} 
+              onChange={handleChange} 
+              className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white text-center"
+              required 
+            />
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, min_team_size: prev.min_team_size + 1 }))}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white"
+            >
+              <FiPlus />
+            </button>
+          </div>
         </div>
 
         <div className="form-group">
-          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-            <FiUsers className="mr-2 text-purple-400" /> Max Team Size *
+          <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+            <FiUsers className="mr-2 text-teal-400" /> Max Team Size *
           </label>
-          <input 
-            type="number" 
-            name="max_team_size" 
-            min={formData.min_team_size}
-            value={formData.max_team_size} 
-            onChange={handleChange} 
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
-            required 
-          />
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, max_team_size: Math.max(prev.min_team_size, prev.max_team_size - 1) }))}
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white"
+              disabled={formData.max_team_size <= formData.min_team_size}
+            >
+              <FiMinus />
+            </button>
+            <input 
+              type="number" 
+              name="max_team_size" 
+              min={formData.min_team_size}
+              value={formData.max_team_size} 
+              onChange={handleChange} 
+              className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white text-center"
+              required 
+            />
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, max_team_size: prev.max_team_size + 1 }))}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white"
+            >
+              <FiPlus />
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-          <FiAward className="mr-2 text-purple-400" /> Required Skills
+        <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+          <FiAward className="mr-2 text-teal-400" /> Required Skills
         </label>
         
         {/* Selected Skills Chips */}
@@ -409,13 +423,13 @@ const CreateCompetition = () => {
               return skill ? (
                 <div 
                   key={skillId} 
-                  className="flex items-center bg-purple-900 text-purple-100 px-3 py-1 rounded-full text-sm"
+                  className="flex items-center bg-teal-900/50 text-teal-100 px-3 py-1 rounded-full text-sm border border-teal-800"
                 >
                   {skill.name}
                   <button 
                     type="button"
                     onClick={() => toggleSkill(skillId)}
-                    className="ml-2 text-purple-300 hover:text-white"
+                    className="ml-2 text-teal-300 hover:text-white transition-colors"
                   >
                     <FiX size={14} />
                   </button>
@@ -432,25 +446,25 @@ const CreateCompetition = () => {
             placeholder="Search skills..."
             value={searchSkill}
             onChange={(e) => setSearchSkill(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white mb-2"
+            className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white mb-2 placeholder-gray-500"
           />
           
-          <div className="max-h-60 overflow-y-auto bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
+          <div className="max-h-60 overflow-y-auto bg-gray-900 border border-gray-700 rounded-lg shadow-lg">
             {filteredSkills.length > 0 ? (
               filteredSkills.map(skill => (
                 <div 
                   key={skill.id}
                   onClick={() => toggleSkill(skill.id)}
-                  className={`p-3 hover:bg-gray-700 cursor-pointer flex items-center justify-between ${
-                    selectedSkills.includes(skill.id) ? 'bg-purple-900' : ''
+                  className={`p-3 hover:bg-gray-800 cursor-pointer flex items-center justify-between transition-colors ${
+                    selectedSkills.includes(skill.id) ? 'bg-teal-900/30 border-l-4 border-l-teal-500' : ''
                   }`}
                 >
-                  <span>{skill.name}</span>
-                  {selectedSkills.includes(skill.id) && <FiCheck className="text-green-400" />}
+                  <span className="text-gray-200">{skill.name}</span>
+                  {selectedSkills.includes(skill.id) && <FiCheck className="text-teal-400" />}
                 </div>
               ))
             ) : (
-              <div className="p-3 text-gray-400 text-center">No skills found</div>
+              <div className="p-3 text-gray-500 text-center">No skills found</div>
             )}
           </div>
         </div>
@@ -458,24 +472,11 @@ const CreateCompetition = () => {
     </div>
   );
 
-  const renderLocationTab = () => (
+  const renderDetailsTab = () => (
     <div className="space-y-6">
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Organizer *</label>
-        <input 
-          type="text" 
-          name="organizer" 
-          placeholder="Organization or company name" 
-          value={formData.organizer} 
-          onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
-          required 
-        />
-      </div>
-
-      <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-          <FiMapPin className="mr-2 text-purple-400" /> Venue
+        <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+          <FiMapPin className="mr-2 text-teal-400" /> Venue
         </label>
         <input 
           type="text" 
@@ -483,13 +484,13 @@ const CreateCompetition = () => {
           placeholder="Physical location or online platform" 
           value={formData.venue} 
           onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
         />
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-          <FiLink className="mr-2 text-purple-400" /> Website URL
+        <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
+          <FiLink className="mr-2 text-teal-400" /> Website URL
         </label>
         <input 
           type="url" 
@@ -497,66 +498,75 @@ const CreateCompetition = () => {
           placeholder="https://example.com" 
           value={formData.website} 
           onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
         />
       </div>
-    </div>
-  );
 
-  const renderDetailsTab = () => (
-    <div className="space-y-6">
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Prize Information</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Organizer *</label>
+        <input 
+          type="text" 
+          name="organizer" 
+          placeholder="Organization or company name" 
+          value={formData.organizer} 
+          onChange={handleChange} 
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
+          required 
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="block text-sm font-medium text-teal-300 mb-2">Prize Information</label>
         <input 
           type="text" 
           name="prize" 
           placeholder="E.g., $10,000 cash prize, Internship opportunities" 
           value={formData.prize} 
           onChange={handleChange} 
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
         />
       </div>
 
       <div className="form-group">
-        <label className="block text-sm font-medium text-gray-300 mb-2">Competition Rules</label>
+        <label className="block text-sm font-medium text-teal-300 mb-2">Competition Rules</label>
         <textarea 
           name="rules" 
           placeholder="Detailed rules and guidelines for participants" 
           value={formData.rules} 
           onChange={handleChange} 
           rows="6"
-          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white"
+          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white placeholder-gray-500"
         />
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-950 text-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <ToastContainer position="top-right" autoClose={5000} theme="dark" />
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-gray-800 shadow-xl rounded-xl overflow-hidden border border-gray-700">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-gray-900 shadow-2xl rounded-xl overflow-hidden border border-gray-800">
           <div className="p-6 sm:p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-white">Create New Competition</h2>
-                <p className="text-gray-400 mt-1">Fill in the details to create a new competition</p>
+                <h2 className="text-2xl font-bold text-white font-sans">Create New Competition</h2>
+                <p className="text-gray-400 mt-1 font-sans">Fill in the details to create a new competition</p>
               </div>
-              <div className="flex items-center space-x-2 bg-gray-700 px-4 py-2 rounded-full mt-4 md:mt-0">
-                <FiInfo className="text-purple-400" />
-                <span className="text-sm text-gray-300">All fields marked with * are required</span>
+              <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-full mt-4 md:mt-0 border border-gray-700">
+                <FiInfo className="text-teal-400" />
+                <span className="text-sm text-gray-300 font-sans">All fields marked with * are required</span>
               </div>
             </div>
 
             {/* Progress Bar with Animation */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-300">Progress</span>
-                <span className="text-sm font-medium text-purple-400">{progress}%</span>
+                <span className="text-sm font-medium text-gray-300 font-sans">Progress</span>
+                <span className="text-sm font-medium text-teal-400 font-sans">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-2.5 relative overflow-hidden">
+              <div className="w-full bg-gray-800 rounded-full h-2.5 relative overflow-hidden">
                 <div 
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-700 ease-out"
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
@@ -570,7 +580,7 @@ const CreateCompetition = () => {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "px-4 py-3 font-medium text-sm relative whitespace-nowrap",
+                      "px-4 py-3 font-medium text-sm relative whitespace-nowrap font-sans",
                       activeTab === tab 
                         ? 'text-white' 
                         : 'text-gray-400 hover:text-gray-300'
@@ -578,7 +588,7 @@ const CreateCompetition = () => {
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1).replace('_', ' ')}
                     {activeTab === tab && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-full"></span>
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-full"></span>
                     )}
                   </button>
                 ))}
@@ -589,15 +599,14 @@ const CreateCompetition = () => {
               {activeTab === 'basic' && renderBasicInfoTab()}
               {activeTab === 'schedule' && renderScheduleTab()}
               {activeTab === 'team' && renderTeamTab()}
-              {activeTab === 'location' && renderLocationTab()}
               {activeTab === 'details' && renderDetailsTab()}
 
-              <div className="mt-10 pt-6 border-t border-gray-700 flex justify-between">
+              <div className="mt-10 pt-6 border-t border-gray-800 flex justify-between">
                 {activeTab !== 'basic' && (
                   <button
                     type="button"
                     onClick={() => setActiveTab(tabs[tabs.indexOf(activeTab) - 1])}
-                    className="flex items-center px-6 py-3 border border-gray-600 rounded-lg shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 hover:scale-105"
+                    className="flex items-center px-6 py-3 border border-gray-700 rounded-lg shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700/70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 hover:scale-[1.02]"
                   >
                     <FiChevronLeft className="mr-2" /> Previous
                   </button>
@@ -607,7 +616,7 @@ const CreateCompetition = () => {
                     <button
                       type="button"
                       onClick={() => setActiveTab(tabs[tabs.indexOf(activeTab) + 1])}
-                      className="flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 hover:scale-105"
+                      className="flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 hover:scale-[1.02]"
                     >
                       Next <FiChevronRight className="ml-2" />
                     </button>
@@ -615,7 +624,7 @@ const CreateCompetition = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+                      className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-[1.02]"
                     >
                       {isLoading ? (
                         <span className="flex items-center">
@@ -638,13 +647,13 @@ const CreateCompetition = () => {
       {/* Dark Theme Datepicker CSS */}
       <style jsx global>{`
         .dark-theme-datepicker {
-          background-color: #1f2937;
+          background-color: #111827;
           color: #f3f4f6;
-          border-color: #374151;
+          border-color: #1f2937;
         }
         .dark-theme-datepicker .react-datepicker__header {
-          background-color: #111827;
-          border-bottom-color: #374151;
+          background-color: #0f172a;
+          border-bottom-color: #1f2937;
         }
         .dark-theme-datepicker .react-datepicker__current-month,
         .dark-theme-datepicker .react-datepicker__day-name,
@@ -652,27 +661,27 @@ const CreateCompetition = () => {
           color: #f3f4f6;
         }
         .dark-theme-datepicker .react-datepicker__day:hover {
-          background-color: #4b5563;
+          background-color: #1e293b;
         }
         .dark-theme-datepicker .react-datepicker__day--selected {
-          background-color: #7c3aed;
+          background-color: #0d9488;
           color: white;
         }
         .dark-theme-datepicker .react-datepicker__day--keyboard-selected {
-          background-color: #5b21b6;
+          background-color: #0f766e;
           color: white;
         }
         .dark-theme-datepicker .react-datepicker__time-container {
-          border-left-color: #374151;
+          border-left-color: #1f2937;
         }
         .dark-theme-datepicker .react-datepicker__time-box {
-          background-color: #1f2937;
+          background-color: #111827;
         }
         .dark-theme-datepicker .react-datepicker__time-list-item:hover {
-          background-color: #4b5563;
+          background-color: #1e293b;
         }
         .dark-theme-datepicker .react-datepicker__time-list-item--selected {
-          background-color: #7c3aed;
+          background-color: #0d9488;
           color: white;
         }
       `}</style>

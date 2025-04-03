@@ -24,7 +24,7 @@ import HostNavbar from "./components/Hosts/HostNavbar";
 import MentorSidebar from "./components/Mentor/MentorSidebar";
 import StudentSidebar from "./components/Students/StudentSidebar";
 import HostSidebar from "./components/Hosts/HostSidebar";
-import Layout from "./components/NavSideLayout";
+// import Layout from "./components/NavSideLayout";
 import Chat from "./components/Chat/Chat";
 
 function App() {
@@ -48,7 +48,7 @@ function App() {
         <>
         <BrowserRouter>
             <AuthProvider>
-                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
+                {/* <Layout navbar={getNavbar()} sidebar={getSidebar()}> */}
                     <Routes>
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={<LoginRegister />} />
@@ -70,7 +70,7 @@ function App() {
                         <Route path="/host-competitions" element={<HostCompetitions />} />
                         <Route path="/chat/:teamId" element = {<Chat />} />
                     </Routes>
-                </Layout>
+                {/* </Layout> */}
             </AuthProvider>
         </BrowserRouter>
         </>
