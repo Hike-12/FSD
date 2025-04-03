@@ -21,3 +21,5 @@ class JWTAuthenticationMiddleware:
         else:
             request.user = AnonymousUser()
         return self.get_response(request)
+    
+

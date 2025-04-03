@@ -93,7 +93,15 @@ WSGI_APPLICATION = 'fsd.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,
+            'check_same_thread': False,
+        },
+        'CONN_MAX_AGE': 300,  # Connection persistence
+        'TEST': {
+            'NAME': ':memory:',  # Test DB configuration
+        }
     }
 }
 
@@ -145,14 +153,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
-# CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]  # Uncomment for production
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    'https://b6a2-103-187-228-77.ngrok-free.app',
-    "https://15b0-103-187-228-77.ngrok-free.app"
 ]
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript access
 CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
@@ -168,3 +173,14 @@ SESSION_COOKIE_AGE = 1209600  # Two weeks in seconds
 # For development, you may need these explicitly set if running on non-standard ports
 SESSION_COOKIE_DOMAIN = None  # Default, uses current domain
 CSRF_COOKIE_DOMAIN = None     # Default, uses current domain
+
+
+class DebugMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        print(f"Request received: {request.method} {request.path}")
+        return self.get_response(request)
+
+MIDDLEWARE.insert(0, "fsd.settings.DebugMiddleware")

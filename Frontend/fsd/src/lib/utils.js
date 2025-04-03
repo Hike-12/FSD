@@ -1,4 +1,4 @@
-const DJANGO_BASE_URL = "https://15b0-103-187-228-77.ngrok-free.app";
+const DJANGO_BASE_URL ="http://127.0.0.1:8000" 
 export default DJANGO_BASE_URL;
 
 import clsx from "clsx";

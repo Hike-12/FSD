@@ -103,28 +103,41 @@ const CompetitionDetail = () => {
   const [userTeam, setUserTeam] = useState(null);
 
   const fetchUserTeam = async () => {
+    console.log("Fetching user team...");
     try {
-      const response = await fetch(`${DJANGO_BASE_URL}/api/student/get-student-teams/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
-        },
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        const team = data.teams.find((team) => team.competition_id === parseInt(id));
-        if (team) {
-          setUserTeam(team);
-          navigate(`/team/${team.team_id}`);
+        const response = await fetch(`${DJANGO_BASE_URL}/api/student/get-student-teams/`, {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${localStorage.getItem("authToken")}`,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        // Clone the response to inspect it
+        const clonedResponse = response.clone();
+
+        // Log the raw response body as text
+        const rawText = await clonedResponse.text();
+        console.log("Raw Response Body:", rawText);
+
+        // Parse the JSON response
+        const data = await response.json();
+        console.log("User teams:", data);
+
+        if (response.ok) {
+            const team = data.teams.find((team) => team.competition_id === parseInt(id));
+            if (team) {
+                setUserTeam(team);
+                navigate(`/team/${team.team_id}`);
+            }
+        } else {
+            console.error(data.error || "Failed to fetch user teams");
         }
-      } else {
-        console.error(data.error || "Failed to fetch user teams");
-      }
     } catch (err) {
-      console.error("An error occurred while fetching user teams:", err);
+        console.error("An error occurred while fetching user teams:", err);
     }
-  };
+};
 
   const handleCreateTeam = async () => {
     try {
@@ -137,8 +150,9 @@ const CompetitionDetail = () => {
       const response = await fetch(`${DJANGO_BASE_URL}/api/create-team/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${localStorage.getItem("authToken")}`,
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ competition_id: id, team_name: teamName }),
       });
@@ -166,8 +180,9 @@ const CompetitionDetail = () => {
       const response = await fetch(`${DJANGO_BASE_URL}/api/join-team/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${localStorage.getItem("authToken")}`,
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ team_code: teamCode }),
       });
@@ -185,12 +200,15 @@ const CompetitionDetail = () => {
   };
 
   useEffect(() => {
+    console.log("useEffect triggered with id:", id);
     const fetchCompetition = async () => {
       try {
         const response = await fetch(`${DJANGO_BASE_URL}/api/competitions/${id}/`, {
           method: "GET",
           headers: {
-            Authorization: `Token ${localStorage.getItem("authToken")}`,
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${localStorage.getItem("authToken")}`,
+            'X-Requested-With': 'XMLHttpRequest'
           },
           credentials: "include",
         });
@@ -210,6 +228,11 @@ const CompetitionDetail = () => {
     fetchCompetition();
     fetchUserTeam();
   }, [id]);
+
+  useEffect(() => {
+    console.log("Calling fetchUserTeam from second useEffect");
+    fetchUserTeam();
+}, [id]);
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen bg-gray-950 text-white">

@@ -319,9 +319,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
-const API_URL = window.location.hostname === 'localhost' 
-  ? "http://localhost:5000" 
-  : "https://2c79-103-187-228-77.ngrok-free.app";  // Your ngrok URL for the backend
+const API_URL = "http://localhost:5000" 
 const SOCKET_URL = API_URL;
 
 const Chat = () => {
