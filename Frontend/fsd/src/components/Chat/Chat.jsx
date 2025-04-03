@@ -333,7 +333,24 @@ const Chat = () => {
     const remoteVideoRef = useRef(null); // For remote video stream
     const peerConnection = useRef(null); // For WebRTC peer connection
     const localStreamRef = useRef(null); // For local media stream
+    const peerConnections = useRef({}); // For storing peer connections
 
+    useEffect(() => {
+        const initializeLocalStream = async () => {
+            try {
+                if (!localStreamRef.current) {
+                    localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    if (localVideoRef.current) {
+                        localVideoRef.current.srcObject = localStreamRef.current;
+                    }
+                }
+            } catch (error) {
+                console.error("Error initializing local media stream:", error);
+            }
+        };
+    
+        initializeLocalStream();
+    }, []);
     // Initialize socket connection
     useEffect(() => {
         socketRef.current = io(SOCKET_URL);
@@ -420,12 +437,11 @@ const Chat = () => {
         setIsVideoCallActive(true);
         socketRef.current.emit("joinCall", teamId);
     
-        await setupPeerConnection();
-    
-        const offer = await peerConnection.current.createOffer();
-        await peerConnection.current.setLocalDescription(offer);
-    
-        socketRef.current.emit("offer", { offer, roomId: teamId });
+        // Get local media stream
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStreamRef.current;
+        }
     };
     
     const endVideoCall = () => {
@@ -474,25 +490,85 @@ const Chat = () => {
         });
     };
 
+    const createPeerConnection = async (userId) => {
+        if (!localStreamRef.current) {
+            console.error("Local stream is not initialized. Cannot create peer connection.");
+            return null;
+        }
+    
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        });
+    
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log(`Received remote track from ${userId}`);
+            if (remoteVideoRef.current && event.streams[0]) {
+                remoteVideoRef.current.srcObject = event.streams[0];
+            }
+        };
+    
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                socketRef.current.emit("ice-candidate", { candidate: event.candidate, to: userId });
+            }
+        };
+    
+        // Add local tracks to the peer connection
+        localStreamRef.current.getTracks().forEach((track) => {
+            peerConnection.addTrack(track, localStreamRef.current);
+        });
+    
+        return peerConnection;
+    };
+
     useEffect(() => {
-        socketRef.current.on("offer", async ({ offer }) => {
-            if (!peerConnection.current) await setupPeerConnection();
-            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await peerConnection.current.createAnswer();
-            await peerConnection.current.setLocalDescription(answer);
-            socketRef.current.emit("answer", { answer, roomId: teamId });
+        socketRef.current.on("userJoined", async ({ userId }) => {
+            console.log(`User joined: ${userId}`);
+            const peerConnection = await createPeerConnection(userId);
+            peerConnections.current[userId] = peerConnection;
+    
+            // Create and send an offer to the new user
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socketRef.current.emit("offer", { offer, to: userId });
         });
     
-        socketRef.current.on("answer", async ({ answer }) => {
-            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-    
-        socketRef.current.on("ice-candidate", async ({ candidate }) => {
-            if (peerConnection.current) {
-                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+        socketRef.current.on("userLeft", ({ userId }) => {
+            console.log(`User left: ${userId}`);
+            if (peerConnections.current[userId]) {
+                peerConnections.current[userId].close();
+                delete peerConnections.current[userId];
             }
         });
-    }, [teamId]);
+    
+        socketRef.current.on("offer", async ({ offer, from }) => {
+            console.log(`Received offer from: ${from}`);
+            const peerConnection = await createPeerConnection(from);
+            peerConnections.current[from] = peerConnection;
+    
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socketRef.current.emit("answer", { answer, to: from });
+        });
+    
+        socketRef.current.on("answer", async ({ answer, from }) => {
+            console.log(`Received answer from: ${from}`);
+            await peerConnections.current[from].setRemoteDescription(new RTCSessionDescription(answer));
+        });
+    
+        socketRef.current.on("ice-candidate", async ({ candidate, from }) => {
+            console.log(`Received ICE candidate from: ${from}`);
+            if (peerConnections.current[from]) {
+                await peerConnections.current[from].addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        });
+    }, []);
 
     const startScreenShare = async () => {
         try {

@@ -181,33 +181,41 @@ app.use("/messages", messageRoutes);
 app.use("/chat-rooms", chatRoomRoutes);
 
 // WebRTC signaling
+const rooms = {}; // Track participants in each room
+
 io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+    // Handle user joining a call
+    socket.on("joinCall", (roomId) => {
+        if (!rooms[roomId]) rooms[roomId] = [];
+        rooms[roomId].push(socket.id);
+
+        // Notify all participants about the new user
+        rooms[roomId].forEach((participant) => {
+            if (participant !== socket.id) {
+                io.to(participant).emit("userJoined", { userId: socket.id });
+            }
+        });
+
+        socket.join(roomId);
+
+        // Handle user disconnecting
+        socket.on("disconnect", () => {
+            rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
+            socket.to(roomId).emit("userLeft", { userId: socket.id });
+        });
+    });
 
     // Handle WebRTC signaling
-    socket.on("joinCall", (roomId) => {
-        console.log(`User ${socket.id} joined room: ${roomId}`);
-        socket.join(roomId);
-        socket.to(roomId).emit("userJoined", { userId: socket.id });
+    socket.on("offer", ({ offer, to }) => {
+        io.to(to).emit("offer", { offer, from: socket.id });
     });
 
-    socket.on("offer", ({ offer, roomId }) => {
-        console.log(`Received offer from ${socket.id} for room ${roomId}`);
-        socket.to(roomId).emit("offer", { offer, from: socket.id });
+    socket.on("answer", ({ answer, to }) => {
+        io.to(to).emit("answer", { answer, from: socket.id });
     });
 
-    socket.on("answer", ({ answer, roomId }) => {
-        console.log(`Received answer from ${socket.id} for room ${roomId}`);
-        socket.to(roomId).emit("answer", { answer, from: socket.id });
-    });
-
-    socket.on("ice-candidate", ({ candidate, roomId }) => {
-        console.log(`ICE candidate from ${socket.id} for room ${roomId}`);
-        socket.to(roomId).emit("ice-candidate", { candidate, from: socket.id });
-    });
-
-    socket.on("disconnect", () => {
-        console.log("User disconnected:", socket.id);
+    socket.on("ice-candidate", ({ candidate, to }) => {
+        io.to(to).emit("ice-candidate", { candidate, from: socket.id });
     });
 });
 

@@ -1079,7 +1079,7 @@ def create_team(request):
 
         try:
             print(f"Notifying chat server at {node_server_url} with payload: {payload}")
-            response = requests.post(f"{node_server_url}/create-chat-room", json=payload)
+            response = requests.post(f"{node_server_url}/chat-rooms/create", json=payload)
             print(f"Response from chat server: {response.status_code}, {response.text}")
             if response.status_code != 201:
                 return JsonResponse({'error': 'Failed to create chat room'}, status=500)
@@ -1134,7 +1134,7 @@ def join_team(request):
         }
 
         try:
-            response = requests.post(f"{node_server_url}/update-chat-room", json=payload)
+            response = requests.post(f"{node_server_url}/chat-rooms/update", json=payload)
             if response.status_code != 200:
                 return JsonResponse({'error': 'Failed to update chat room'}, status=500)
         except Exception as e:
