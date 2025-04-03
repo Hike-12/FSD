@@ -329,6 +329,27 @@ const Chat = () => {
     const [message, setMessage] = useState("");
     const socketRef = useRef(null);
 
+    // Initialize socket connection
+    useEffect(() => {
+        socketRef.current = io(SOCKET_URL);
+    
+        // Join the chat room
+        socketRef.current.emit("joinRoom", { team_id: teamId, user_id: userId });
+    
+        // Listen for real-time messages
+        socketRef.current.on("receiveMessage", (data) => {
+            setMessages((prev) => [...prev, data]);
+        });
+    
+        // Handle errors
+        socketRef.current.on("error", (data) => {
+            alert(data.message);
+        });
+    
+        return () => {
+            socketRef.current.disconnect();
+        };
+    }, [teamId, userId]);
     // Fetch initial messages when the component mounts
     useEffect(() => {
         const fetchMessages = async () => {
@@ -343,31 +364,10 @@ const Chat = () => {
                 console.error("Error fetching messages:", error);
             }
         };
-
+    
         fetchMessages();
     }, [teamId]);
 
-    // Initialize socket connection
-    useEffect(() => {
-        socketRef.current = io(SOCKET_URL);
-
-        // Join the chat room
-        socketRef.current.emit("joinRoom", { team_id: teamId, user_id: userId });
-
-        // Listen for real-time messages
-        socketRef.current.on("receiveMessage", (data) => {
-            setMessages((prev) => [...prev, data]);
-        });
-
-        // Handle errors
-        socketRef.current.on("error", (data) => {
-            alert(data.message);
-        });
-
-        return () => {
-            socketRef.current.disconnect();
-        };
-    }, [teamId, userId]);
 
     // Send a message to the backend
     const sendMessage = async () => {

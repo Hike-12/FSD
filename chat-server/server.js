@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 require("dotenv").config();
 const axios = require("axios");
 
+const chatRoomRoutes = require("./routes/chatRoomRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const Message = require("./models/Message");
 const ChatRoom = require("./models/ChatRoom");
@@ -21,62 +23,16 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use("/chat-room", chatRoomRoutes);
+app.use("/messages", messageRoutes);
+
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/chatDB";
 mongoose.connect(MONGO_URI)
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
 
-// API Routes
-
-app.post("/create-chat-room", async (req, res) => {
-    try {
-        const { team_id, team_name, competition_id, competition_name, members } = req.body;
-
-        if (!team_id || !team_name || !competition_id || !members) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        // Save the chat room details in MongoDB
-        const chatRoom = new ChatRoom({
-            team_id,
-            team_name,
-            competition_id,
-            competition_name,
-            members, // List of user IDs
-        });
-        await chatRoom.save();
-
-        res.status(201).json({ message: "Chat room created successfully" });
-    } catch (error) {
-        console.error("Error creating chat room:", error);
-        res.status(500).json({ error: "Failed to create chat room" });
-    }
-});
-
-app.post("/update-chat-room", async (req, res) => {
-    try {
-        const { team_id, members } = req.body;
-
-        if (!team_id || !members) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        // Update the chat room in MongoDB
-        const chatRoom = await ChatRoom.findOne({ team_id });
-        if (!chatRoom) {
-            return res.status(404).json({ error: "Chat room not found" });
-        }
-
-        chatRoom.members = members; // Update the members list
-        await chatRoom.save();
-
-        res.status(200).json({ message: "Chat room updated successfully" });
-    } catch (error) {
-        console.error("Error updating chat room:", error);
-        res.status(500).json({ error: "Failed to update chat room" });
-    }
-});
 // Restrict access to chat rooms
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
@@ -85,15 +41,15 @@ io.on("connection", (socket) => {
         console.log("User joining room:", { team_id, user_id });
         try {
             const chatRoom = await ChatRoom.findOne({ team_id });
-
+    
             if (!chatRoom) {
                 return socket.emit("error", { message: "Chat room not found" });
             }
-
+    
             if (!chatRoom.members.includes(user_id)) {
                 return socket.emit("error", { message: "Access denied" });
             }
-
+    
             socket.join(team_id);
             console.log(`User ${user_id} joined room ${team_id}`);
         } catch (error) {
@@ -107,7 +63,6 @@ io.on("connection", (socket) => {
             // Fetch the userName from Django
             const djangoApiUrl = `${process.env.DJANGO_API_URL}/api/user/${sender}/`;
             const response = await axios.get(djangoApiUrl);
-            console.log("Django API response:", response.data);
     
             if (response.status !== 200) {
                 console.error("Failed to fetch userName from Django:", response.statusText);
@@ -119,8 +74,12 @@ io.on("connection", (socket) => {
     
             console.log("Broadcasting message:", { team_id, message, sender, userName });
     
-            // Broadcast the message with userName
-            io.to(team_id).emit("receiveMessage", { message, sender, userName });
+            // Save the message to MongoDB
+            const newMessage = new Message({ sender, content: message, team_id, userName });
+            await newMessage.save();
+    
+            // Broadcast the message to the specific team
+            io.to(team_id).emit("receiveMessage", { sender, content: message, userName });
         } catch (error) {
             console.error("Error in sendMessage event:", error);
         }
@@ -134,52 +93,6 @@ io.on("connection", (socket) => {
 app.get("/", (req, res) => {
     res.send("Server is running!");
   });
-  
-  // API Routes
-  app.get("/messages", async (req, res) => {
-    try {
-      const messages = await Message.find().sort({ createdAt: -1 }).limit(20);
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      res.status(500).json({ error: "Error fetching messages" });
-    }
-  });
-  
-  app.post("/messages", async (req, res) => {
-    try {
-        const { sender, content, team_id } = req.body;
-
-        if (!sender || !content || !team_id) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        // Fetch the userName from Django
-        const djangoApiUrl = `${process.env.DJANGO_API_URL}/api/user/${sender}/`;
-        const response = await axios.get(djangoApiUrl);
-
-        if (response.status !== 200) {
-            console.error("Failed to fetch userName from Django:", response.statusText);
-            throw new Error("Failed to fetch userName");
-        }
-
-        const data = response.data;
-        const userName = data.userName || "Unknown User";
-
-        // Save the message to MongoDB with userName
-        const message = new Message({ sender, content, team_id, userName });
-        console.log("Saving message to MongoDB:", message);
-        await message.save();
-
-        // Emit the message to all clients in the room
-        io.to(team_id).emit("receiveMessage", { sender, content, userName });
-
-        res.status(201).json(message);
-    } catch (error) {
-        console.error("Error saving message:", error);
-        res.status(500).json({ error: "Error saving message" });
-    }
-});
   
   // Debug endpoint
   app.get("/debug", (req, res) => {
