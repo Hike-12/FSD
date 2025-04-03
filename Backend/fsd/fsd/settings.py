@@ -128,6 +128,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+ALLOWED_HOSTS = ['*']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -150,6 +151,8 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    'https://b6a2-103-187-228-77.ngrok-free.app',
+    "https://15b0-103-187-228-77.ngrok-free.app"
 ]
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript access
 CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS

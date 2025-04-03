@@ -12,9 +12,27 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: [
+      'b6a2-103-187-228-77.ngrok-free.app', // Explicitly allow your ngrok host
+      'all' // Fallback to allow all hosts
+    ],
     host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    cors: true,
     proxy: {
-      '/api': 'http://localhost:8000', // Ensure this matches your backend URL
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
+    hmr: {
+      clientPort: 443,
+    },
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173, // Change this if needed
   },
 });

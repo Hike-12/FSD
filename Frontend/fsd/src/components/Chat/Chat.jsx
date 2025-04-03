@@ -319,337 +319,358 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
-const SOCKET_URL = "http://localhost:5000";
-const API_URL = "http://localhost:5000";
+const API_URL = window.location.hostname === 'localhost' 
+  ? "http://localhost:5000" 
+  : "https://2c79-103-187-228-77.ngrok-free.app";  // Your ngrok URL for the backend
+const SOCKET_URL = API_URL;
 
 const Chat = () => {
-    const { teamId } = useParams(); // Extract teamId from the URL
-    const userId = localStorage.getItem("userId"); // Retrieve userId from localStorage or session
+    const { teamId } = useParams();
+    const userId = localStorage.getItem("userId");
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
-    const [isVideoCallActive, setIsVideoCallActive] = useState(false); // Added missing state
-    const socketRef = useRef(null);
-    const localVideoRef = useRef(null); // For local video stream
-    const remoteVideoRef = useRef(null); // For remote video stream
-    const peerConnection = useRef(null); // For WebRTC peer connection
-    const localStreamRef = useRef(null); // For local media stream
-    const peerConnections = useRef({}); // For storing peer connections
+    const [isVideoCallActive, setIsVideoCallActive] = useState(false);
+    const [remoteUserIds, setRemoteUserIds] = useState([]);
 
-    useEffect(() => {
-        const initializeLocalStream = async () => {
-            try {
-                if (!localStreamRef.current) {
-                    localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                    if (localVideoRef.current) {
-                        localVideoRef.current.srcObject = localStreamRef.current;
-                    }
-                }
-            } catch (error) {
-                console.error("Error initializing local media stream:", error);
-            }
-        };
-    
-        initializeLocalStream();
-    }, []);
+    // Refs
+    const socketRef = useRef(null);
+    const localVideoRef = useRef(null);
+    const localStreamRef = useRef(null);
+    const peerConnections = useRef({});
+    const remoteVideoRefs = useRef({});
+
     // Initialize socket connection
     useEffect(() => {
         socketRef.current = io(SOCKET_URL);
-    
-        // Join the chat room
+        
         socketRef.current.emit("joinRoom", { team_id: teamId, user_id: userId });
-    
-        // Listen for real-time messages
+        
         socketRef.current.on("receiveMessage", (data) => {
-            console.log("Message received via WebSocket:", data);
             setMessages((prev) => [...prev, data]);
         });
-    
-        // Handle errors
+        
         socketRef.current.on("error", (data) => {
             alert(data.message);
         });
-    
+        
         return () => {
             socketRef.current.disconnect();
         };
     }, [teamId, userId]);
 
-    // Fetch initial messages when the component mounts
+    // Fetch initial messages
     useEffect(() => {
         const fetchMessages = async () => {
             try {
                 const response = await fetch(`${API_URL}/messages?team_id=${teamId}`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch messages");
-                }
                 const data = await response.json();
                 setMessages(data);
             } catch (error) {
                 console.error("Error fetching messages:", error);
             }
         };
-    
         fetchMessages();
     }, [teamId]);
 
-    // Send a message to the backend
-    const sendMessage = async () => {
-        if (!message.trim()) return;
-    
-        const newMessage = {
-            team_id: teamId,
-            sender: userId,
-            content: message,
-        };
-    
-        console.log("Sending message:", newMessage);
-        socketRef.current.emit("sendMessage", {
-            team_id: teamId,
-            message,
-            sender: userId,
+    // WebRTC signaling setup
+    useEffect(() => {
+        if (!socketRef.current) return;
+        
+        socketRef.current.on("userJoined", ({ userId: remoteUserId }) => {
+            setRemoteUserIds(prev => [...prev, remoteUserId]);
+            handleUserJoined(remoteUserId);
         });
+        
+        socketRef.current.on("userLeft", ({ userId: remoteUserId }) => {
+            setRemoteUserIds(prev => prev.filter(id => id !== remoteUserId));
+            if (peerConnections.current[remoteUserId]) {
+                peerConnections.current[remoteUserId].close();
+                delete peerConnections.current[remoteUserId];
+            }
+        });
+        
+        socketRef.current.on("offer", handleOffer);
+        socketRef.current.on("answer", handleAnswer);
+        socketRef.current.on("ice-candidate", handleICECandidate);
+
+        return () => {
+            socketRef.current.off("userJoined");
+            socketRef.current.off("userLeft");
+            socketRef.current.off("offer");
+            socketRef.current.off("answer");
+            socketRef.current.off("ice-candidate");
+        };
+    }, [isVideoCallActive]);
+
+    const handleUserJoined = async (remoteUserId) => {
+        if (isVideoCallActive && localStreamRef.current) {
+            const peerConnection = await createPeerConnection(remoteUserId);
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socketRef.current.emit("offer", { offer, to: remoteUserId });
+            } catch (error) {
+                console.error("Error creating offer:", error);
+            }
+        }
+    };
+
+    const handleOffer = async ({ offer, from }) => {
+        if (isVideoCallActive && localStreamRef.current) {
+            const peerConnection = await createPeerConnection(from);
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socketRef.current.emit("answer", { answer, to: from });
+            } catch (error) {
+                console.error("Error handling offer:", error);
+            }
+        }
+    };
+
+    const handleAnswer = async ({ answer, from }) => {
         try {
-            const response = await fetch(`${API_URL}/messages`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newMessage),
-            });
-    
-            if (!response.ok) {
-                throw new Error("Failed to send message");
+            if (peerConnections.current[from]) {
+                await peerConnections.current[from].setRemoteDescription(
+                    new RTCSessionDescription(answer)
+                );
             }
-    
-            setMessage("");
         } catch (error) {
-            console.error("Error sending message:", error);
+            console.error("Error handling answer:", error);
         }
     };
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    };
-
-    const startVideoCall = async () => {
-        setIsVideoCallActive(true);
-        socketRef.current.emit("joinCall", teamId);
-    
-        // Get local media stream
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (localVideoRef.current) {
-            localVideoRef.current.srcObject = localStreamRef.current;
-        }
-    };
-    
-    const endVideoCall = () => {
-        setIsVideoCallActive(false);
-        if (peerConnection.current) {
-            peerConnection.current.close();
-            peerConnection.current = null;
-        }
-        if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach((track) => track.stop());
-            localStreamRef.current = null;
-        }
-    };
-
-    const setupPeerConnection = async () => {
-        peerConnection.current = new RTCPeerConnection({
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" },
-            ],
-        });
-    
-        // Handle remote stream
-        peerConnection.current.ontrack = (event) => {
-            if (remoteVideoRef.current && event.streams[0]) {
-                remoteVideoRef.current.srcObject = event.streams[0];
+    const handleICECandidate = async ({ candidate, from }) => {
+        try {
+            if (peerConnections.current[from]) {
+                await peerConnections.current[from].addIceCandidate(
+                    new RTCIceCandidate(candidate)
+                );
             }
-        };
-    
-        // Handle ICE candidates
-        peerConnection.current.onicecandidate = (event) => {
-            if (event.candidate) {
-                socketRef.current.emit("ice-candidate", { candidate: event.candidate, roomId: teamId });
-            }
-        };
-    
-        // Get local media stream
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (localVideoRef.current) {
-            localVideoRef.current.srcObject = localStreamRef.current;
+        } catch (error) {
+            console.error("Error adding ICE candidate:", error);
         }
-    
-        // Add local tracks to the peer connection
-        localStreamRef.current.getTracks().forEach((track) => {
-            peerConnection.current.addTrack(track, localStreamRef.current);
-        });
     };
 
-    const createPeerConnection = async (userId) => {
-        if (!localStreamRef.current) {
-            console.error("Local stream is not initialized. Cannot create peer connection.");
-            return null;
+    const createPeerConnection = async (remoteUserId) => {
+        console.log("In create peer connection", remoteUserId ,"and localStreamRef", localStreamRef.current);
+        if (!localStreamRef.current) return null;
+
+        if (peerConnections.current[remoteUserId]) {
+            peerConnections.current[remoteUserId].close();
         }
-    
+
         const peerConnection = new RTCPeerConnection({
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun1.l.google.com:19302" },
             ],
         });
-    
-        // Handle remote stream
+
+        peerConnections.current[remoteUserId] = peerConnection;
+
         peerConnection.ontrack = (event) => {
-            console.log(`Received remote track from ${userId}`);
-            if (remoteVideoRef.current && event.streams[0]) {
-                remoteVideoRef.current.srcObject = event.streams[0];
+            if (event.streams[0]) {
+                setTimeout(() => {
+                    const remoteVideo = remoteVideoRefs.current[remoteUserId];
+                    if (remoteVideo && !remoteVideo.srcObject) {
+                        remoteVideo.srcObject = event.streams[0];
+                    }
+                }, 100);
             }
         };
-    
-        // Handle ICE candidates
+
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                socketRef.current.emit("ice-candidate", { candidate: event.candidate, to: userId });
+                socketRef.current.emit("ice-candidate", { 
+                    candidate: event.candidate, 
+                    to: remoteUserId 
+                });
             }
         };
-    
-        // Add local tracks to the peer connection
+
         localStreamRef.current.getTracks().forEach((track) => {
             peerConnection.addTrack(track, localStreamRef.current);
         });
-    
+
         return peerConnection;
     };
 
-    useEffect(() => {
-        socketRef.current.on("userJoined", async ({ userId }) => {
-            console.log(`User joined: ${userId}`);
-            const peerConnection = await createPeerConnection(userId);
-            peerConnections.current[userId] = peerConnection;
-    
-            // Create and send an offer to the new user
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socketRef.current.emit("offer", { offer, to: userId });
-        });
-    
-        socketRef.current.on("userLeft", ({ userId }) => {
-            console.log(`User left: ${userId}`);
-            if (peerConnections.current[userId]) {
-                peerConnections.current[userId].close();
-                delete peerConnections.current[userId];
-            }
-        });
-    
-        socketRef.current.on("offer", async ({ offer, from }) => {
-            console.log(`Received offer from: ${from}`);
-            const peerConnection = await createPeerConnection(from);
-            peerConnections.current[from] = peerConnection;
-    
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            socketRef.current.emit("answer", { answer, to: from });
-        });
-    
-        socketRef.current.on("answer", async ({ answer, from }) => {
-            console.log(`Received answer from: ${from}`);
-            await peerConnections.current[from].setRemoteDescription(new RTCSessionDescription(answer));
-        });
-    
-        socketRef.current.on("ice-candidate", async ({ candidate, from }) => {
-            console.log(`Received ICE candidate from: ${from}`);
-            if (peerConnections.current[from]) {
-                await peerConnections.current[from].addIceCandidate(new RTCIceCandidate(candidate));
-            }
-        });
-    }, []);
+    const sendMessage = async () => {
+        if (!message.trim()) return;
 
-    const startScreenShare = async () => {
+        const newMessage = {
+            team_id: teamId,
+            sender: userId,
+            content: message,
+        };
+
+        socketRef.current.emit("sendMessage", {
+            team_id: teamId,
+            message,
+            sender: userId,
+        });
+
         try {
-            // Get the screen stream
-            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    
-            // Replace the video track in the peer connection
-            const screenTrack = screenStream.getVideoTracks()[0];
-            const sender = peerConnection.current
-                .getSenders()
-                .find((s) => s.track.kind === "video");
-            if (sender) {
-                sender.replaceTrack(screenTrack);
-            }
-    
-            // Update the local video to show the screen
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = screenStream;
-            }
-    
-            // Stop screen sharing when the user stops sharing
-            screenTrack.onended = () => {
-                stopScreenShare();
-            };
+            await fetch(`${API_URL}/messages`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newMessage),
+            });
+            setMessage("");
         } catch (error) {
-            console.error("Error starting screen share:", error);
+            console.error("Error sending message:", error);
         }
     };
-    
-    const stopScreenShare = async () => {
+
+    const startVideoCall = async () => {
         try {
-            // Revert to the original camera stream
-            const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            const cameraTrack = cameraStream.getVideoTracks()[0];
-            const sender = peerConnection.current
-                .getSenders()
-                .find((s) => s.track.kind === "video");
-            if (sender) {
-                sender.replaceTrack(cameraTrack);
+            console.log("Starting video call...");
+    
+            // Initialize local media stream
+            if (!localStreamRef.current) {
+                localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true,
+                });
             }
     
-            // Update the local video to show the camera
+            // Assign the local stream to the local video element
             if (localVideoRef.current) {
-                localVideoRef.current.srcObject = cameraStream;
+                localVideoRef.current.srcObject = localStreamRef.current;
             }
+    
+            console.log("Local Stream Ref:", localStreamRef.current);
+    
+            setIsVideoCallActive(true);
+            socketRef.current.emit("joinCall", teamId);
+    
+            // Notify existing participants about the new user
+            remoteUserIds.forEach((remoteUserId) => {
+                handleUserJoined(remoteUserId);
+            });
         } catch (error) {
-            console.error("Error stopping screen share:", error);
+            console.error("Error starting video call:", error);
+            alert("Could not access camera/microphone. Please check permissions.");
         }
+    };
+
+    const endVideoCall = () => {
+        Object.values(peerConnections.current).forEach(connection => connection.close());
+        peerConnections.current = {};
+        setRemoteUserIds([]);
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+        }
+
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+        }
+
+        Object.values(remoteVideoRefs.current).forEach(video => {
+            if (video) video.srcObject = null;
+        });
+
+        setIsVideoCallActive(false);
+        socketRef.current.emit("leaveCall", teamId);
     };
 
     return (
-        <div>
-            <h2>Chat Room</h2>
-            <div className="message-container">
-                {messages.map((msg, index) => (
-                    <p key={index}>
-                        <strong>{msg.userName || msg.sender}:</strong> {msg.content}
-                    </p>
-                ))}
-            </div>
-            <div className="input-container">
-                <input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type a message"
-                />
-                <button onClick={sendMessage}>Send</button>
-                {!isVideoCallActive ? (
-                    <button onClick={startVideoCall}>Start Video Call</button>
-                ) : (
-                    <>
-                        <button onClick={endVideoCall}>End Video Call</button>
-                        <button onClick={startScreenShare}>Share Screen</button>
-                        <button onClick={stopScreenShare}>Stop Sharing</button>
-                    </>
-                )}
-            </div>
-            <div className="video-container">
-                <video ref={localVideoRef} autoPlay playsInline muted />
-                <video ref={remoteVideoRef} autoPlay playsInline />
+        <div className="flex flex-col h-screen bg-gray-100">
+            {/* Video Call Section */}
+            {isVideoCallActive && (
+                <div className="p-4 bg-gray-800">
+                    <div className="flex gap-4 flex-wrap">
+                        {/* Local Video */}
+                        <div className="relative w-64 h-48 bg-gray-700 rounded-lg overflow-hidden">
+                            <video 
+                                ref={localVideoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover"
+                            />
+                            <span className="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                                You
+                            </span>
+                        </div>
+
+                        {/* Remote Videos */}
+                        {remoteUserIds.map(remoteUserId => (
+                            <div key={remoteUserId} className="relative w-64 h-48 bg-gray-700 rounded-lg overflow-hidden">
+                                <video
+                                    ref={el => remoteVideoRefs.current[remoteUserId] = el}
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
+                                <span className="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                                    {remoteUserId}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Chat Section */}
+            <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                <div className="flex-1 bg-white rounded-lg shadow-lg overflow-y-auto p-4 mb-4">
+                    {messages.map((msg, index) => (
+                        <div 
+                            key={index}
+                            className={`mb-3 p-3 rounded-lg max-w-[70%] ${
+                                msg.sender === userId 
+                                    ? "bg-blue-500 text-white ml-auto"
+                                    : "bg-gray-200 mr-auto"
+                            }`}
+                        >
+                            <div className="font-semibold text-sm mb-1">
+                                {msg.userName || msg.sender}
+                            </div>
+                            <div className="text-sm">{msg.content}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Input Area */}
+                <div className="flex gap-2">
+                    <input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                        placeholder="Type a message..."
+                        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={sendMessage}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        Send
+                    </button>
+                    
+                    {/* Video Call Controls */}
+                    {!isVideoCallActive ? (
+                        <button
+                            onClick={startVideoCall}
+                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                            Start Call
+                        </button>
+                    ) : (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={endVideoCall}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                                End Call
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

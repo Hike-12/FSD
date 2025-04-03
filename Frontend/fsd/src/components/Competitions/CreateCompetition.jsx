@@ -24,7 +24,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { cn } from "@/lib/utils";
 
-const DJANGO_BASE_URL = "http://127.0.0.1:8000";
+// const DJANGO_BASE_URL = "http://127.0.0.1:8000";
+import DJANGO_BASE_URL from "@/lib/utils";
 
 const CreateCompetition = () => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import DJANGO_BASE_URL from "../../lib/utils";
+import DJANGO_BASE_URL from "@/lib/utils";
 import MentorCard from "@/components/Mentor/MentorCard";
 import { UserPlus, Search } from "lucide-react";
 

@@ -272,6 +272,7 @@ def mentor_detail(request, id):
 
 @api_token_required
 @require_http_methods(["POST"])
+@csrf_exempt
 def create_or_update_profile(request):
     try:
         data = json.loads(request.body)
@@ -402,6 +403,7 @@ def list_skills(request):
 
 ###################################################################################################################################################
 ###################################################################################################################################################
+@csrf_exempt
 def get_user_info(request, user_id):
     try:
         # Fetch the user
@@ -510,7 +512,7 @@ def clean_field_value(field_name, value):
             return None
     return value  # Default: return as-is
 
-
+@csrf_exempt
 def update_student_profile_fields(profile, data, files=None):
     fields_updated = []
     simple_fields = [
@@ -957,9 +959,8 @@ def list_competitions(request):
     ]
     return JsonResponse(competition_list, safe=False)
 
-from django.http import JsonResponse
-from .models import CompetitionType
 
+@csrf_exempt
 def competition_types_list(request):
     competition_types = CompetitionType.objects.all().values("id", "name", "description")
     return JsonResponse(list(competition_types), safe=False)
@@ -1001,6 +1002,7 @@ def create_or_update_host_profile(request):
     
 @api_token_required
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_host_competitions(request):
     try:
         # Get the logged-in host's profile
@@ -1147,7 +1149,7 @@ def join_team(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-    
+@csrf_exempt
 @api_token_required
 @require_http_methods(["GET"])
 def get_student_teams(request):
@@ -1180,6 +1182,7 @@ def get_student_teams(request):
     
 @api_token_required
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_user_competitions(request):
     try:
         # Get the logged-in user's student profile
@@ -1212,6 +1215,7 @@ def get_user_competitions(request):
 
 @api_token_required
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_team_details(request, team_id):
     try:
         # Fetch the team

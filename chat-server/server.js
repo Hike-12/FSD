@@ -163,7 +163,12 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+    origin: '*', // During development, you can use this. Restrict in production!
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  }));
 app.use(express.json());
 
 // Connect to MongoDB
@@ -188,16 +193,20 @@ io.on("connection", (socket) => {
     socket.on("joinCall", (roomId) => {
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push(socket.id);
-
+    
+        // Notify the new user about all existing participants
+        const existingParticipants = rooms[roomId].filter((participant) => participant !== socket.id);
+        socket.emit("existingParticipants", { participants: existingParticipants });
+    
         // Notify all participants about the new user
         rooms[roomId].forEach((participant) => {
             if (participant !== socket.id) {
                 io.to(participant).emit("userJoined", { userId: socket.id });
             }
         });
-
+    
         socket.join(roomId);
-
+    
         // Handle user disconnecting
         socket.on("disconnect", () => {
             rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
@@ -219,7 +228,9 @@ io.on("connection", (socket) => {
     });
 });
 
-
+app.get("/", (req, res) => {
+        res.send("Server is running!");
+      });
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

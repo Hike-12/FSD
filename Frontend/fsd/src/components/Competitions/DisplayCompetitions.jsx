@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-const DJANGO_BASE_URL = "http://127.0.0.1:8000";
+import DJANGO_BASE_URL from "@/lib/utils";
 
 // TypewriterEffectSmooth Component
 const TypewriterEffectSmooth = ({ words, className }) => {
