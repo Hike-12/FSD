@@ -180,6 +180,38 @@ const chatRoomRoutes = require("./routes/chatRoomRoutes");
 app.use("/messages", messageRoutes);
 app.use("/chat-rooms", chatRoomRoutes);
 
+// WebRTC signaling
+io.on("connection", (socket) => {
+    console.log("User connected:", socket.id);
+
+    // Handle WebRTC signaling
+    socket.on("joinCall", (roomId) => {
+        console.log(`User ${socket.id} joined room: ${roomId}`);
+        socket.join(roomId);
+        socket.to(roomId).emit("userJoined", { userId: socket.id });
+    });
+
+    socket.on("offer", ({ offer, roomId }) => {
+        console.log(`Received offer from ${socket.id} for room ${roomId}`);
+        socket.to(roomId).emit("offer", { offer, from: socket.id });
+    });
+
+    socket.on("answer", ({ answer, roomId }) => {
+        console.log(`Received answer from ${socket.id} for room ${roomId}`);
+        socket.to(roomId).emit("answer", { answer, from: socket.id });
+    });
+
+    socket.on("ice-candidate", ({ candidate, roomId }) => {
+        console.log(`ICE candidate from ${socket.id} for room ${roomId}`);
+        socket.to(roomId).emit("ice-candidate", { candidate, from: socket.id });
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
+});
+
+
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

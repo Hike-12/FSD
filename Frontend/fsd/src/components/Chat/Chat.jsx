@@ -329,6 +329,10 @@ const Chat = () => {
     const [message, setMessage] = useState("");
     const [isVideoCallActive, setIsVideoCallActive] = useState(false); // Added missing state
     const socketRef = useRef(null);
+    const localVideoRef = useRef(null); // For local video stream
+    const remoteVideoRef = useRef(null); // For remote video stream
+    const peerConnection = useRef(null); // For WebRTC peer connection
+    const localStreamRef = useRef(null); // For local media stream
 
     // Initialize socket connection
     useEffect(() => {
@@ -412,12 +416,131 @@ const Chat = () => {
         }
     };
 
-    const startVideoCall = () => {
+    const startVideoCall = async () => {
         setIsVideoCallActive(true);
+        socketRef.current.emit("joinCall", teamId);
+    
+        await setupPeerConnection();
+    
+        const offer = await peerConnection.current.createOffer();
+        await peerConnection.current.setLocalDescription(offer);
+    
+        socketRef.current.emit("offer", { offer, roomId: teamId });
     };
-
+    
     const endVideoCall = () => {
         setIsVideoCallActive(false);
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null;
+        }
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track) => track.stop());
+            localStreamRef.current = null;
+        }
+    };
+
+    const setupPeerConnection = async () => {
+        peerConnection.current = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        });
+    
+        // Handle remote stream
+        peerConnection.current.ontrack = (event) => {
+            if (remoteVideoRef.current && event.streams[0]) {
+                remoteVideoRef.current.srcObject = event.streams[0];
+            }
+        };
+    
+        // Handle ICE candidates
+        peerConnection.current.onicecandidate = (event) => {
+            if (event.candidate) {
+                socketRef.current.emit("ice-candidate", { candidate: event.candidate, roomId: teamId });
+            }
+        };
+    
+        // Get local media stream
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStreamRef.current;
+        }
+    
+        // Add local tracks to the peer connection
+        localStreamRef.current.getTracks().forEach((track) => {
+            peerConnection.current.addTrack(track, localStreamRef.current);
+        });
+    };
+
+    useEffect(() => {
+        socketRef.current.on("offer", async ({ offer }) => {
+            if (!peerConnection.current) await setupPeerConnection();
+            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+            socketRef.current.emit("answer", { answer, roomId: teamId });
+        });
+    
+        socketRef.current.on("answer", async ({ answer }) => {
+            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+    
+        socketRef.current.on("ice-candidate", async ({ candidate }) => {
+            if (peerConnection.current) {
+                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        });
+    }, [teamId]);
+
+    const startScreenShare = async () => {
+        try {
+            // Get the screen stream
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    
+            // Replace the video track in the peer connection
+            const screenTrack = screenStream.getVideoTracks()[0];
+            const sender = peerConnection.current
+                .getSenders()
+                .find((s) => s.track.kind === "video");
+            if (sender) {
+                sender.replaceTrack(screenTrack);
+            }
+    
+            // Update the local video to show the screen
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = screenStream;
+            }
+    
+            // Stop screen sharing when the user stops sharing
+            screenTrack.onended = () => {
+                stopScreenShare();
+            };
+        } catch (error) {
+            console.error("Error starting screen share:", error);
+        }
+    };
+    
+    const stopScreenShare = async () => {
+        try {
+            // Revert to the original camera stream
+            const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const cameraTrack = cameraStream.getVideoTracks()[0];
+            const sender = peerConnection.current
+                .getSenders()
+                .find((s) => s.track.kind === "video");
+            if (sender) {
+                sender.replaceTrack(cameraTrack);
+            }
+    
+            // Update the local video to show the camera
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = cameraStream;
+            }
+        } catch (error) {
+            console.error("Error stopping screen share:", error);
+        }
     };
 
     return (
@@ -434,15 +557,23 @@ const Chat = () => {
                 <input
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress} // Added missing event handler
+                    onKeyPress={handleKeyPress}
                     placeholder="Type a message"
                 />
                 <button onClick={sendMessage}>Send</button>
                 {!isVideoCallActive ? (
                     <button onClick={startVideoCall}>Start Video Call</button>
                 ) : (
-                    <button onClick={endVideoCall}>End Video Call</button>
+                    <>
+                        <button onClick={endVideoCall}>End Video Call</button>
+                        <button onClick={startScreenShare}>Share Screen</button>
+                        <button onClick={stopScreenShare}>Stop Sharing</button>
+                    </>
                 )}
+            </div>
+            <div className="video-container">
+                <video ref={localVideoRef} autoPlay playsInline muted />
+                <video ref={remoteVideoRef} autoPlay playsInline />
             </div>
         </div>
     );
