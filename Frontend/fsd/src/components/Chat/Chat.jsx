@@ -394,10 +394,6 @@ const Chat = () => {
                 throw new Error("Failed to send message");
             }
     
-            // No need to manually update the state here
-            // The WebSocket `receiveMessage` event will handle it
-            // socketRef.current.emit("sendMessage", newMessage); // Emit the event
-            // Clear the input field
             setMessage("");
         } catch (error) {
             console.error("Error sending message:", error);
