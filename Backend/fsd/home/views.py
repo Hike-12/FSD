@@ -851,9 +851,9 @@ def list_competition_types(request):
     if request.method == 'GET':
         comps = CompetitionType.objects.all()
         data = [{'id': comp.id, 'name': comp.name} for comp in comps]
-        return JsonResponse({'competition_types': data})
+        return JsonResponse({'competition_types': data}, status=200, safe=False)
 
-    return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
+    return JsonResponse({'error': 'Invalid HTTP method'}, status=405, safe=False)
 
 @api_token_required
 @csrf_exempt
@@ -883,10 +883,10 @@ def competition_detail(request, competition_id):
             'competition_picture': request.build_absolute_uri(comp.competition_picture.url) if comp.competition_picture else None,
         }
         
-        return JsonResponse(competition_data, safe=False)
+        return JsonResponse(competition_data, status=200, safe=False)
         
     except Competition.DoesNotExist:
-        return JsonResponse({'error': 'Competition not found'}, status=404)
+        return JsonResponse({'error': 'Competition not found'}, status=404, safe=False)
     
 @api_token_required
 @csrf_exempt
@@ -894,7 +894,7 @@ def create_competition(request):
     print(request)
     try:
         if request.method != "POST":
-            return JsonResponse({"error": "Invalid request method"}, status=405)
+            return JsonResponse({"error": "Invalid request method"}, status=405, safe=False)
 
         # ✅ Use request.POST for text data, request.FILES for file
         competition_type = CompetitionType.objects.get(id=request.POST["competition_type_id"])
@@ -926,13 +926,11 @@ def create_competition(request):
         competition.related_sdgs.set(related_sdgs)
         competition.save()
 
-        return JsonResponse({"message": "Competition created successfully!"}, status=201)
+        return JsonResponse({"message": "Competition created successfully!"}, status=201, safe=False)
 
     except Exception as e:
         print("Error:", e)
-        return JsonResponse({"error": str(e)}, status=400)
-
-from django.conf import settings
+        return JsonResponse({"error": str(e)}, status=400, safe=False)
 
 @api_token_required
 @csrf_exempt
@@ -957,13 +955,13 @@ def list_competitions(request):
         }
         for comp in competitions
     ]
-    return JsonResponse(competition_list, safe=False)
+    return JsonResponse(competition_list, status=200, safe=False)
 
 
 @csrf_exempt
 def competition_types_list(request):
     competition_types = CompetitionType.objects.all().values("id", "name", "description")
-    return JsonResponse(list(competition_types), safe=False)
+    return JsonResponse(list(competition_types), status=200, safe=False)
 
     
 ##################################################################################################################################################
@@ -1255,4 +1253,4 @@ def get_team_details(request, team_id):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
