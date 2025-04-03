@@ -336,6 +336,63 @@ const Chat = () => {
     const peerConnections = useRef({});
     const remoteVideoRefs = useRef({});
 
+    // Add this useEffect to handle setting the video source after render
+        useEffect(() => {
+            if (isVideoCallActive && localStreamRef.current && localVideoRef.current) {
+            console.log("Setting video source in useEffect");
+            localVideoRef.current.srcObject = localStreamRef.current;
+            }
+        }, [isVideoCallActive, localStreamRef.current]);
+
+    const startVideoCall = async () => {
+        try {
+          console.log("Starting video call...");
+          
+          // Initialize local media stream
+          if (!localStreamRef.current) {
+            console.log("Getting user media...");
+            localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: true,
+            });
+            console.log("Media stream obtained:", localStreamRef.current.id);
+          }
+          
+          // Set active state - the useEffect will handle setting the srcObject
+          setIsVideoCallActive(true);
+          socketRef.current.emit("joinCall", teamId);
+          
+          // Notify existing participants about the new user
+          remoteUserIds.forEach((remoteUserId) => {
+            handleUserJoined(remoteUserId);
+          });
+        } catch (error) {
+          console.error("Error starting video call:", error);
+          alert("Could not access camera/microphone. Please check permissions.");
+        }
+      };
+
+    const endVideoCall = () => {
+        Object.values(peerConnections.current).forEach(connection => connection.close());
+        peerConnections.current = {};
+        setRemoteUserIds([]);
+
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+        }
+
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+        }
+
+        Object.values(remoteVideoRefs.current).forEach(video => {
+            if (video) video.srcObject = null;
+        });
+
+        setIsVideoCallActive(false);
+        socketRef.current.emit("leaveCall", teamId);
+    };
     // Initialize socket connection
     useEffect(() => {
         socketRef.current = io(SOCKET_URL);
@@ -385,6 +442,27 @@ const Chat = () => {
                 delete peerConnections.current[remoteUserId];
             }
         });
+
+        socketRef.current.on("existingParticipants", async ({ participants }) => {
+            console.log("Existing participants:", participants);
+            
+            // Update state with existing users
+            setRemoteUserIds(prev => [...prev, ...participants]);
+            
+            // Create peer connections for each existing participant
+            if (isVideoCallActive && localStreamRef.current) {
+                for (const remoteUserId of participants) {
+                    const peerConnection = await createPeerConnection(remoteUserId);
+                    try {
+                        const offer = await peerConnection.createOffer();
+                        await peerConnection.setLocalDescription(offer);
+                        socketRef.current.emit("offer", { offer, to: remoteUserId });
+                    } catch (error) {
+                        console.error("Error creating offer for existing participant:", error);
+                    }
+                }
+            }
+        });
         
         socketRef.current.on("offer", handleOffer);
         socketRef.current.on("answer", handleAnswer);
@@ -396,8 +474,20 @@ const Chat = () => {
             socketRef.current.off("offer");
             socketRef.current.off("answer");
             socketRef.current.off("ice-candidate");
+            socketRef.current.off("existingParticipants");
         };
     }, [isVideoCallActive]);
+
+    useEffect(() => {
+        // Initialize refs for remote videos
+        remoteUserIds.forEach(id => {
+          if (!remoteVideoRefs.current[id]) {
+            remoteVideoRefs.current[id] = document.createElement('video');
+            remoteVideoRefs.current[id].autoplay = true;
+            remoteVideoRefs.current[id].playsInline = true;
+          }
+        });
+      }, [remoteUserIds]);
 
     const handleUserJoined = async (remoteUserId) => {
         if (isVideoCallActive && localStreamRef.current) {
@@ -521,59 +611,6 @@ const Chat = () => {
         }
     };
 
-    const startVideoCall = async () => {
-        try {
-            console.log("Starting video call...");
-    
-            // Initialize local media stream
-            if (!localStreamRef.current) {
-                localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true,
-                });
-            }
-    
-            // Assign the local stream to the local video element
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = localStreamRef.current;
-            }
-    
-            console.log("Local Stream Ref:", localStreamRef.current);
-    
-            setIsVideoCallActive(true);
-            socketRef.current.emit("joinCall", teamId);
-    
-            // Notify existing participants about the new user
-            remoteUserIds.forEach((remoteUserId) => {
-                handleUserJoined(remoteUserId);
-            });
-        } catch (error) {
-            console.error("Error starting video call:", error);
-            alert("Could not access camera/microphone. Please check permissions.");
-        }
-    };
-
-    const endVideoCall = () => {
-        Object.values(peerConnections.current).forEach(connection => connection.close());
-        peerConnections.current = {};
-        setRemoteUserIds([]);
-
-        if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-            localStreamRef.current = null;
-        }
-
-        if (localVideoRef.current) {
-            localVideoRef.current.srcObject = null;
-        }
-
-        Object.values(remoteVideoRefs.current).forEach(video => {
-            if (video) video.srcObject = null;
-        });
-
-        setIsVideoCallActive(false);
-        socketRef.current.emit("leaveCall", teamId);
-    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
@@ -584,14 +621,14 @@ const Chat = () => {
                         {/* Local Video */}
                         <div className="relative w-64 h-48 bg-gray-700 rounded-lg overflow-hidden">
                             <video 
-                                ref={localVideoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className="w-full h-full object-cover"
+                            ref={localVideoRef} 
+                            autoPlay 
+                            playsInline 
+                            muted 
+                            className="w-full h-full object-cover" 
                             />
                             <span className="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                                You
+                            You
                             </span>
                         </div>
 

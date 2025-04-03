@@ -187,31 +187,41 @@ app.use("/chat-rooms", chatRoomRoutes);
 
 // WebRTC signaling
 const rooms = {}; // Track participants in each room
+const userSocketMap = {}; // Map socket IDs to user IDs
 
 io.on("connection", (socket) => {
+    // Store user ID when they connect
+    socket.on("joinRoom", ({ team_id, user_id }) => {
+        userSocketMap[socket.id] = user_id;
+        socket.join(team_id);
+    });
+
     // Handle user joining a call
     socket.on("joinCall", (roomId) => {
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push(socket.id);
-    
+        
         // Notify the new user about all existing participants
-        const existingParticipants = rooms[roomId].filter((participant) => participant !== socket.id);
+        const existingParticipants = rooms[roomId].filter(id => id !== socket.id);
         socket.emit("existingParticipants", { participants: existingParticipants });
-    
+        
         // Notify all participants about the new user
-        rooms[roomId].forEach((participant) => {
-            if (participant !== socket.id) {
-                io.to(participant).emit("userJoined", { userId: socket.id });
+        rooms[roomId].forEach(participantId => {
+            if (participantId !== socket.id) {
+                io.to(participantId).emit("userJoined", { userId: socket.id });
             }
         });
+        
+        socket.join(roomId + "-call");
+    });
     
-        socket.join(roomId);
-    
-        // Handle user disconnecting
-        socket.on("disconnect", () => {
-            rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
-            socket.to(roomId).emit("userLeft", { userId: socket.id });
-        });
+    // Handle user leaving a call
+    socket.on("leaveCall", (roomId) => {
+        if (rooms[roomId]) {
+            rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+            socket.to(roomId + "-call").emit("userLeft", { userId: socket.id });
+            socket.leave(roomId + "-call");
+        }
     });
 
     // Handle WebRTC signaling
@@ -226,8 +236,19 @@ io.on("connection", (socket) => {
     socket.on("ice-candidate", ({ candidate, to }) => {
         io.to(to).emit("ice-candidate", { candidate, from: socket.id });
     });
-});
 
+    // Handle disconnections
+    socket.on("disconnect", () => {
+        // Find all rooms this socket was in and notify others
+        Object.keys(rooms).forEach(roomId => {
+            if (rooms[roomId].includes(socket.id)) {
+                rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+                socket.to(roomId + "-call").emit("userLeft", { userId: socket.id });
+            }
+        });
+        delete userSocketMap[socket.id];
+    });
+});
 app.get("/", (req, res) => {
         res.send("Server is running!");
       });
