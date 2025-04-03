@@ -167,7 +167,8 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+console.log("MOngo URL", process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/chat_app")
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("MongoDB connection error:", err));
 
