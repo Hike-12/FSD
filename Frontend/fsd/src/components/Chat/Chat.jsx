@@ -327,8 +327,30 @@ const Chat = () => {
     const userId = localStorage.getItem("userId"); // Retrieve userId from localStorage or session
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
+    const [isVideoCallActive, setIsVideoCallActive] = useState(false); // Added missing state
     const socketRef = useRef(null);
+    const localVideoRef = useRef(null); // For local video stream
+    const remoteVideoRef = useRef(null); // For remote video stream
+    const peerConnection = useRef(null); // For WebRTC peer connection
+    const localStreamRef = useRef(null); // For local media stream
+    const peerConnections = useRef({}); // For storing peer connections
 
+    useEffect(() => {
+        const initializeLocalStream = async () => {
+            try {
+                if (!localStreamRef.current) {
+                    localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    if (localVideoRef.current) {
+                        localVideoRef.current.srcObject = localStreamRef.current;
+                    }
+                }
+            } catch (error) {
+                console.error("Error initializing local media stream:", error);
+            }
+        };
+    
+        initializeLocalStream();
+    }, []);
     // Initialize socket connection
     useEffect(() => {
         socketRef.current = io(SOCKET_URL);
@@ -338,6 +360,7 @@ const Chat = () => {
     
         // Listen for real-time messages
         socketRef.current.on("receiveMessage", (data) => {
+            console.log("Message received via WebSocket:", data);
             setMessages((prev) => [...prev, data]);
         });
     
@@ -350,6 +373,7 @@ const Chat = () => {
             socketRef.current.disconnect();
         };
     }, [teamId, userId]);
+
     // Fetch initial messages when the component mounts
     useEffect(() => {
         const fetchMessages = async () => {
@@ -368,7 +392,6 @@ const Chat = () => {
         fetchMessages();
     }, [teamId]);
 
-
     // Send a message to the backend
     const sendMessage = async () => {
         if (!message.trim()) return;
@@ -380,7 +403,11 @@ const Chat = () => {
         };
     
         console.log("Sending message:", newMessage);
-    
+        socketRef.current.emit("sendMessage", {
+            team_id: teamId,
+            message,
+            sender: userId,
+        });
         try {
             const response = await fetch(`${API_URL}/messages`, {
                 method: "POST",
@@ -406,30 +433,224 @@ const Chat = () => {
         }
     };
 
-    const startVideoCall = () => {
+    const startVideoCall = async () => {
         setIsVideoCallActive(true);
+        socketRef.current.emit("joinCall", teamId);
+    
+        // Get local media stream
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStreamRef.current;
+        }
     };
-
+    
     const endVideoCall = () => {
         setIsVideoCallActive(false);
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null;
+        }
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track) => track.stop());
+            localStreamRef.current = null;
+        }
+    };
+
+    const setupPeerConnection = async () => {
+        peerConnection.current = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        });
+    
+        // Handle remote stream
+        peerConnection.current.ontrack = (event) => {
+            if (remoteVideoRef.current && event.streams[0]) {
+                remoteVideoRef.current.srcObject = event.streams[0];
+            }
+        };
+    
+        // Handle ICE candidates
+        peerConnection.current.onicecandidate = (event) => {
+            if (event.candidate) {
+                socketRef.current.emit("ice-candidate", { candidate: event.candidate, roomId: teamId });
+            }
+        };
+    
+        // Get local media stream
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStreamRef.current;
+        }
+    
+        // Add local tracks to the peer connection
+        localStreamRef.current.getTracks().forEach((track) => {
+            peerConnection.current.addTrack(track, localStreamRef.current);
+        });
+    };
+
+    const createPeerConnection = async (userId) => {
+        if (!localStreamRef.current) {
+            console.error("Local stream is not initialized. Cannot create peer connection.");
+            return null;
+        }
+    
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        });
+    
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log(`Received remote track from ${userId}`);
+            if (remoteVideoRef.current && event.streams[0]) {
+                remoteVideoRef.current.srcObject = event.streams[0];
+            }
+        };
+    
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                socketRef.current.emit("ice-candidate", { candidate: event.candidate, to: userId });
+            }
+        };
+    
+        // Add local tracks to the peer connection
+        localStreamRef.current.getTracks().forEach((track) => {
+            peerConnection.addTrack(track, localStreamRef.current);
+        });
+    
+        return peerConnection;
+    };
+
+    useEffect(() => {
+        socketRef.current.on("userJoined", async ({ userId }) => {
+            console.log(`User joined: ${userId}`);
+            const peerConnection = await createPeerConnection(userId);
+            peerConnections.current[userId] = peerConnection;
+    
+            // Create and send an offer to the new user
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socketRef.current.emit("offer", { offer, to: userId });
+        });
+    
+        socketRef.current.on("userLeft", ({ userId }) => {
+            console.log(`User left: ${userId}`);
+            if (peerConnections.current[userId]) {
+                peerConnections.current[userId].close();
+                delete peerConnections.current[userId];
+            }
+        });
+    
+        socketRef.current.on("offer", async ({ offer, from }) => {
+            console.log(`Received offer from: ${from}`);
+            const peerConnection = await createPeerConnection(from);
+            peerConnections.current[from] = peerConnection;
+    
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socketRef.current.emit("answer", { answer, to: from });
+        });
+    
+        socketRef.current.on("answer", async ({ answer, from }) => {
+            console.log(`Received answer from: ${from}`);
+            await peerConnections.current[from].setRemoteDescription(new RTCSessionDescription(answer));
+        });
+    
+        socketRef.current.on("ice-candidate", async ({ candidate, from }) => {
+            console.log(`Received ICE candidate from: ${from}`);
+            if (peerConnections.current[from]) {
+                await peerConnections.current[from].addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        });
+    }, []);
+
+    const startScreenShare = async () => {
+        try {
+            // Get the screen stream
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    
+            // Replace the video track in the peer connection
+            const screenTrack = screenStream.getVideoTracks()[0];
+            const sender = peerConnection.current
+                .getSenders()
+                .find((s) => s.track.kind === "video");
+            if (sender) {
+                sender.replaceTrack(screenTrack);
+            }
+    
+            // Update the local video to show the screen
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = screenStream;
+            }
+    
+            // Stop screen sharing when the user stops sharing
+            screenTrack.onended = () => {
+                stopScreenShare();
+            };
+        } catch (error) {
+            console.error("Error starting screen share:", error);
+        }
+    };
+    
+    const stopScreenShare = async () => {
+        try {
+            // Revert to the original camera stream
+            const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const cameraTrack = cameraStream.getVideoTracks()[0];
+            const sender = peerConnection.current
+                .getSenders()
+                .find((s) => s.track.kind === "video");
+            if (sender) {
+                sender.replaceTrack(cameraTrack);
+            }
+    
+            // Update the local video to show the camera
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = cameraStream;
+            }
+        } catch (error) {
+            console.error("Error stopping screen share:", error);
+        }
     };
 
     return (
         <div>
             <h2>Chat Room</h2>
-            <div>
+            <div className="message-container">
                 {messages.map((msg, index) => (
                     <p key={index}>
-                        <strong>{msg.userName}:</strong> {msg.content}
+                        <strong>{msg.userName || msg.sender}:</strong> {msg.content}
                     </p>
                 ))}
             </div>
-            <input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message"
-            />
-            <button onClick={sendMessage}>Send</button>
+            <div className="input-container">
+                <input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type a message"
+                />
+                <button onClick={sendMessage}>Send</button>
+                {!isVideoCallActive ? (
+                    <button onClick={startVideoCall}>Start Video Call</button>
+                ) : (
+                    <>
+                        <button onClick={endVideoCall}>End Video Call</button>
+                        <button onClick={startScreenShare}>Share Screen</button>
+                        <button onClick={stopScreenShare}>Stop Sharing</button>
+                    </>
+                )}
+            </div>
+            <div className="video-container">
+                <video ref={localVideoRef} autoPlay playsInline muted />
+                <video ref={remoteVideoRef} autoPlay playsInline />
+            </div>
         </div>
     );
 };
