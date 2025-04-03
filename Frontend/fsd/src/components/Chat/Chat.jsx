@@ -327,6 +327,7 @@ const Chat = () => {
     const userId = localStorage.getItem("userId"); // Retrieve userId from localStorage or session
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
+    const [isVideoCallActive, setIsVideoCallActive] = useState(false); // Added missing state
     const socketRef = useRef(null);
 
     // Initialize socket connection
@@ -338,6 +339,7 @@ const Chat = () => {
     
         // Listen for real-time messages
         socketRef.current.on("receiveMessage", (data) => {
+            console.log("Message received via WebSocket:", data);
             setMessages((prev) => [...prev, data]);
         });
     
@@ -350,6 +352,7 @@ const Chat = () => {
             socketRef.current.disconnect();
         };
     }, [teamId, userId]);
+
     // Fetch initial messages when the component mounts
     useEffect(() => {
         const fetchMessages = async () => {
@@ -367,7 +370,6 @@ const Chat = () => {
     
         fetchMessages();
     }, [teamId]);
-
 
     // Send a message to the backend
     const sendMessage = async () => {
@@ -417,19 +419,27 @@ const Chat = () => {
     return (
         <div>
             <h2>Chat Room</h2>
-            <div>
+            <div className="message-container">
                 {messages.map((msg, index) => (
                     <p key={index}>
-                        <strong>{msg.userName}:</strong> {msg.content}
+                        <strong>{msg.userName || msg.sender}:</strong> {msg.content}
                     </p>
                 ))}
             </div>
-            <input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message"
-            />
-            <button onClick={sendMessage}>Send</button>
+            <div className="input-container">
+                <input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress} // Added missing event handler
+                    placeholder="Type a message"
+                />
+                <button onClick={sendMessage}>Send</button>
+                {!isVideoCallActive ? (
+                    <button onClick={startVideoCall}>Start Video Call</button>
+                ) : (
+                    <button onClick={endVideoCall}>End Video Call</button>
+                )}
+            </div>
         </div>
     );
 };
