@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/skills/', views.list_skills, name='list_skills'),
     path('api/competition-types/', views.list_competition_types, name='list_competition_types'),
     
-    path('api/user/', views.get_user_info, name='get_user_info'),
+    path('api/user/<int:user_id>/', views.get_user_info, name='get_user_info'),
     
     # Student Profile
     path('api/recommended-students/', views.get_recommended_students, name='get_recommended_students'),

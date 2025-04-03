@@ -14,6 +14,9 @@ import os
 import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+import requests
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 # Dynamically construct the base directory and model path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Get the base directory
@@ -399,16 +402,29 @@ def list_skills(request):
 
 ###################################################################################################################################################
 ###################################################################################################################################################
+def get_user_info(request, user_id):
+    try:
+        # Fetch the user
+        user = CustomUser.objects.get(id=user_id)
 
-@require_http_methods(["GET"])
-@csrf_exempt
-def get_user_info(request):
-    return JsonResponse({
-        'id': request.user.id,
-        'username': request.user.username,
-        'email': request.user.email,
-        'role': request.user.role
-    })
+        # Check if the user is a student
+        if hasattr(user, 'student_profile'):
+            student_profile = StudentProfile.objects.get(user=user)
+            return JsonResponse({"userName": student_profile.full_name}, status=200)
+
+        # Check if the user is a mentor
+        elif hasattr(user, 'mentor_profile'):
+            mentor_profile = MentorProfile.objects.get(user=user)
+            return JsonResponse({"userName": mentor_profile.name}, status=200)
+
+        # If the user is neither a student nor a mentor, return the username (e.g., for admins)
+        else:
+            return JsonResponse({"userName": user.username}, status=200)
+
+    except CustomUser.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 ##############################################################################################################################################
 ##############################################################################################################################################
@@ -1049,6 +1065,27 @@ def create_team(request):
         # Add the team leader as a member
         team.members.add(request.user.student_profile)
 
+        # Get the Node.js server URL from the environment variable
+        node_server_url = os.getenv('NODE_SERVER_URL')
+
+        # Construct the payload after adding the team leader
+        payload = {
+            "team_id": team.id,
+            "team_name": team.name,
+            "competition_id": competition.id,
+            "competition_name": competition.name,
+            "members": list(team.members.values_list('user__id', flat=True)),  # List of user IDs
+        }
+
+        try:
+            print(f"Notifying chat server at {node_server_url} with payload: {payload}")
+            response = requests.post(f"{node_server_url}/create-chat-room", json=payload)
+            print(f"Response from chat server: {response.status_code}, {response.text}")
+            if response.status_code != 201:
+                return JsonResponse({'error': 'Failed to create chat room'}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': f'Error notifying chat server: {str(e)}'}, status=500)
+
         return JsonResponse({
             'message': 'Team created successfully',
             'team_code': team.team_code,
@@ -1072,6 +1109,7 @@ def join_team(request):
         if not team_code:
             return JsonResponse({'error': 'Team code is required'}, status=400)
 
+        # Fetch the team using the team code
         team = Team.objects.filter(team_code=team_code).first()
         if not team:
             return JsonResponse({'error': 'Invalid team code'}, status=404)
@@ -1082,13 +1120,27 @@ def join_team(request):
             return JsonResponse({'error': 'You are already in a team for this competition'}, status=400)
 
         # Check if the team size limit is reached
-        if team.members.count() >= team.max_team_size:
+        if team.members.count() >= team.competition.max_team_size:
             return JsonResponse({'error': 'Team size limit reached'}, status=403)
 
-        # Add the user to the team
+        # Add the user to the team in Django
         team.members.add(student_profile)
 
-        return JsonResponse({'message': 'Successfully joined the team','team_id': team.id}, status=200)
+        # Notify the Node.js server to update the chat room
+        node_server_url = os.getenv('NODE_SERVER_URL')
+        payload = {
+            "team_id": team.id,
+            "members": list(team.members.values_list('user__id', flat=True)),  # List of user IDs
+        }
+
+        try:
+            response = requests.post(f"{node_server_url}/update-chat-room", json=payload)
+            if response.status_code != 200:
+                return JsonResponse({'error': 'Failed to update chat room'}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': f'Error notifying chat server: {str(e)}'}, status=500)
+
+        return JsonResponse({'message': 'Successfully joined the team', 'team_id': team.id}, status=200)
 
     except StudentProfile.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)

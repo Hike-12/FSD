@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import  Chat from "@/components/Chat/Chat";
 
 const DJANGO_BASE_URL = "http://127.0.0.1:8000";
 
@@ -380,56 +381,7 @@ const TeamDetail = () => {
               </div>
             )}
 
-            {activeTab === "chat" && (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 flex flex-col h-[500px]">
-                {/* Chat Header */}
-                <div className="p-4 border-b border-gray-700">
-                  <h2 className="text-xl font-bold">Team Chat</h2>
-                </div>
-                
-                {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto">
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div 
-                        key={msg.id} 
-                        className={`flex ${msg.isCurrentUser ? "justify-end" : "justify-start"}`}
-                      >
-                        <div 
-                          className={`max-w-xs md:max-w-md rounded-lg px-4 py-2 ${msg.isCurrentUser ? "bg-purple-600 rounded-br-none" : "bg-gray-700 rounded-bl-none"}`}
-                        >
-                          {!msg.isCurrentUser && (
-                            <p className="text-xs font-medium text-gray-300 mb-1">{msg.sender}</p>
-                          )}
-                          <p className="text-white">{msg.message}</p>
-                          <p className="text-xs text-gray-300 text-right mt-1">{msg.time}</p>
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </div>
-                
-                {/* Message Input */}
-                <div className="p-4 border-t border-gray-700">
-                  <form onSubmit={handleSendMessage} className="flex">
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 bg-gray-700 rounded-l-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <button 
-                      type="submit"
-                      className="bg-purple-600 hover:bg-purple-700 rounded-r-lg px-4 py-2 text-white font-medium"
-                    >
-                      Send
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
+            {activeTab === "chat" && (<Chat />)}
           </div>
 
           {/* Sidebar */}

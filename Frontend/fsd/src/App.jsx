@@ -68,7 +68,7 @@ function App() {
                         <Route path="/student-teams" element={<StudentTeams />} />
                         <Route path="/student-competitions" element={<StudentCompetitions />} />
                         <Route path="/host-competitions" element={<HostCompetitions />} />
-                        <Route path="/chat" element = {<Chat />} />
+                        <Route path="/chat/:teamId" element = {<Chat />} />
                     </Routes>
                 </Layout>
             </AuthProvider>
