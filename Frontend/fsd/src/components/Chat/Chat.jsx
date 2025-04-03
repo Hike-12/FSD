@@ -4,7 +4,7 @@
 // import { env } from "echarts";
 
 // // Use environment variables or a configuration file for production
-// const API_URL = "http://localhost:5000";
+// const DJANGO_BASE_URL = "http://localhost:5000";
 // const SOCKET_URL =  "http://localhost:5000";
 
 // const Chat = () => {
@@ -67,7 +67,7 @@
 //         if (!socketRef.current) return;
         
 //         // Test server connectivity
-//         axios.get(`${API_URL}/debug`)
+//         axios.get(`${DJANGO_BASE_URL}/debug`)
 //             .then(res => {
 //                 console.log("Server debug info:", res.data);
 //                 setServerStatus(`Server connected (${res.data.socketConnections} active connections)`);
@@ -78,7 +78,7 @@
 //             });
             
 //         // Fetch initial messages
-//         axios.get(`${API_URL}/messages`)
+//         axios.get(`${DJANGO_BASE_URL}/messages`)
 //             .then(res => {
 //                 console.log("Messages loaded:", res.data.length);
 //                 setMessages(res.data);
@@ -142,7 +142,7 @@
 //         if (!message.trim()) return;
         
 //         try {
-//             await axios.post(`${API_URL}/messages`, { 
+//             await axios.post(`${DJANGO_BASE_URL}/messages`, { 
 //                 sender: "User", 
 //                 content: message 
 //             });
@@ -318,10 +318,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
+import DJANGO_BASE_URL from "@/lib/utils";
 
-const API_URL = "http://localhost:5000" 
-const SOCKET_URL = API_URL;
-
+const SOCKET_URL = window.location.hostname === "localhost" ? "http://localhost:5000":   "http://192.168.0.110:5000/";
 const Chat = () => {
     const { teamId } = useParams();
     const userId = localStorage.getItem("userId");
@@ -360,7 +359,7 @@ const Chat = () => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await fetch(`${API_URL}/messages?team_id=${teamId}`);
+                const response = await fetch(`${DJANGO_BASE_URL}/messages?team_id=${teamId}`);
                 const data = await response.json();
                 setMessages(data);
             } catch (error) {
@@ -511,7 +510,7 @@ const Chat = () => {
         });
 
         try {
-            await fetch(`${API_URL}/messages`, {
+            await fetch(`${DJANGO_BASE_URL}/messages`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newMessage),

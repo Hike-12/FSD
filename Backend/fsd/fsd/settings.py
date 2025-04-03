@@ -158,6 +158,9 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://192.168.0.110:5173/",
+    "http://192.168.0.110:5000/",
+    "http://192.168.0.110:8000/",
 ]
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript access
 CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
