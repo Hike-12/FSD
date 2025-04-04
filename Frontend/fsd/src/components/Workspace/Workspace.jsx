@@ -1,12 +1,13 @@
 import React from 'react'
 import Chat from './Chat'
 import TaskManager from './TaskManager'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const Workspace = () => {
+    const teamId = useParams().teamId; // Get the team ID from the URL parameters
     const navigate = useNavigate();
     const handleGoBack = () => {
-        navigate(-1); // Go back to the previous page
+        navigate(`/team/${teamId}`); // Go back to the previous page
     }
   return (
     <div>
