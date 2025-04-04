@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task, TeamFile
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +15,7 @@ import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
+from django.http import FileResponse,HttpResponse
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
@@ -1520,4 +1521,135 @@ def edit_task(request, task_id):
         return JsonResponse({"error": "Task not found"}, status=404)
     except Exception as e:
         print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+    
+#############################################################################################################################
+#FILES KA PART
+
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def upload_file(request, team_id):
+    """
+    Upload a file for a team.
+    """
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        uploaded_by = request.user.student_profile  # Correctly access the StudentProfile
+        file = request.FILES.get("file")
+        name = request.POST.get("name")
+
+        if not file or not name:
+            return JsonResponse({"error": "File and name are required"}, status=400)
+
+        team_file = TeamFile.objects.create(
+            team=team,
+            uploaded_by=uploaded_by,
+            file=file,
+            name=name,
+        )
+
+        return JsonResponse({"message": "File uploaded successfully!", "file_id": team_file.id}, status=201)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except AttributeError:
+        return JsonResponse({"error": "User does not have a student profile"}, status=400)
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_team_files(request, team_id):
+    """
+    Retrieve all files for a specific team.
+    """
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        files = TeamFile.objects.filter(team=team)
+
+        file_list = [
+            {
+                "id": file.id,
+                "name": file.name,
+                "uploaded_by": file.uploaded_by.full_name if file.uploaded_by else "Unknown",
+                "uploaded_at": file.uploaded_at.isoformat(),
+                "file_url": file.file.url,
+            }
+            for file in files
+        ]
+
+        return JsonResponse({"files": file_list}, status=200)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def delete_file(request, file_id):
+    """
+    Delete a file for a team.
+    """
+    try:
+        team_file = get_object_or_404(TeamFile, id=file_id)
+        team_file.delete()
+        return JsonResponse({"message": "File deleted successfully!"}, status=200)
+
+    except TeamFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def serve_file(request, file_id):
+    """
+    Serve a file for viewing in the browser.
+    """
+    try:
+        team_file = get_object_or_404(TeamFile, id=file_id)
+        
+        # Determine content type based on file extension
+        file_name = team_file.file.name
+        content_type = None
+        print("File name:", file_name)
+        # Map common file extensions to MIME types
+        if file_name.endswith('.pdf'):
+            content_type = 'application/pdf'
+        elif file_name.endswith(('.jpg', '.jpeg')):
+            content_type = 'image/jpeg'
+        elif file_name.endswith('.png'):
+            content_type = 'image/png'
+        elif file_name.endswith('.txt'):
+            content_type = 'text/plain'
+        elif file_name.endswith('.doc') or file_name.endswith('.docx'):
+            file_url = request.build_absolute_uri(team_file.file.url)
+            viewer_url = f"https://docs.google.com/viewer?url={file_url}&embedded=true"
+            html = f'<iframe src="{viewer_url}" width="100%" height="100%" style="border: none;"></iframe>'
+            return HttpResponse(html, content_type='text/html')
+        elif file_name.endswith('.xls') or file_name.endswith('.xlsx'):
+            content_type = 'application/vnd.ms-excel'
+        elif file_name.endswith('.csv'):
+            content_type = 'text/csv'
+        else:
+            # Default to binary if no specific type is found
+            content_type = 'application/octet-stream'
+        
+        # Open file and create response with proper content type
+        response = FileResponse(team_file.file.open(), content_type=content_type)
+        
+        # Set to inline for viewing in browser
+        response["Content-Disposition"] = f"inline; filename=\"{team_file.name}\""
+        
+        return response
+    except TeamFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+    except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
