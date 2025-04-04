@@ -1329,4 +1329,57 @@ def get_team_details(request, team_id):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def submit_project(request, team_id):
+    """
+    Handle project submission for a team.
+    """
+    try:
+        # Fetch the team
+        team = get_object_or_404(Team, id=team_id)
 
+        # Check if the team is part of a competition
+        if not team.competition:
+            return JsonResponse({"error": "Team is not part of any competition"}, status=400)
+
+        # Get submission data from the request
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        project_file = request.FILES.get("project_file")  # Correct field name
+        presentation_file = request.FILES.get("presentation_file")  # Correct field name
+
+        if not title or not description:
+            return JsonResponse({"error": "Title and description are required"}, status=400)
+
+        # Create a new project submission
+        submission = ProjectSubmission.objects.create(
+            team=team,
+            competition=team.competition,
+            title=title,
+            description=description,
+            project_file=project_file,  # Save the project file
+            presentation_file=presentation_file,  # Save the presentation file
+            status="submitted",
+        )
+
+        return JsonResponse(
+            {
+                "message": "Project submitted successfully!",
+                "submission": {
+                    "id": submission.id,
+                    "title": submission.title,
+                    "description": submission.description,
+                    "submission_date": submission.submission_date.isoformat(),
+                    "status": submission.status,
+                },
+            },
+            status=201,
+        )
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

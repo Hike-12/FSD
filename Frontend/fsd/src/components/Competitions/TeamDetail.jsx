@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -17,7 +15,44 @@ const TeamDetail = () => {
   const [messages, setMessages] = useState([]);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const messagesEndRef = useRef(null);
+  const [showModal, setShowModal] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [projectFile, setProjectFile] = useState(null);
+  const [presentationFile, setPresentationFile] = useState(null);
+  const [submissionMessage, setSubmissionMessage] = useState("");
 
+  const handleSubmitProject = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    if (projectFile) {
+      formData.append("project_file", projectFile); // Correct field name
+    }
+    if (presentationFile) {
+      formData.append("presentation_file", presentationFile); // Correct field name
+    }
+
+    try {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/teams/${teamId}/submit-project/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to submit project");
+
+      const data = await response.json();
+      setSubmissionMessage(data.message);
+      setShowModal(false);
+    } catch (err) {
+      setSubmissionMessage(`Error: ${err.message}`);
+    }
+  };
   // Mock data for development
   // const mockTeam = {
   //   id: teamId,
@@ -423,12 +458,106 @@ const TeamDetail = () => {
             <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
               <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                <button className="w-full flex items-center justify-between px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-                  <span>Submit Project</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
+              <div>
+      {/* Submit Project Button */}
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+        onClick={() => setShowModal(true)}
+      >
+        <span>Submit Project</span>
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </button>
+
+      {/* Modal for Submitting Project */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Submit Project</h2>
+            <form onSubmit={handleSubmitProject}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Project File (optional)
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => setProjectFile(e.target.files[0])}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Presentation File (optional)
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => setPresentationFile(e.target.files[0])}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white"
+                >
+                  Cancel
                 </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Submission Message */}
+      {submissionMessage && (
+        <div className="mt-4 text-center text-sm text-gray-300">
+          {submissionMessage}
+        </div>
+      )}
+    </div>
                 <button className="w-full flex items-center justify-between px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
                   <span>View Leaderboard</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
