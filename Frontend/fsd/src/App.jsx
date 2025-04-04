@@ -26,6 +26,7 @@ import StudentSidebar from "./components/Students/StudentSidebar";
 import HostSidebar from "./components/Hosts/HostSidebar";
 // import Layout from "./components/NavSideLayout";
 import Chat from "./components/Chat/Chat";
+import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -50,6 +51,7 @@ function App() {
             <AuthProvider>
                 {/* <Layout navbar={getNavbar()} sidebar={getSidebar()}> */}
                     <Routes>
+
                         {/* LANDING PAGE */}
                         <Route path="/" element={<LandingPage />} />
 
@@ -73,6 +75,7 @@ function App() {
                         <Route path="/admin-landing" element={<AdminLandingPage />} />
                         <Route path="/admin-profile" element={<HostProfileForm/>} />
                         <Route path="/admin-competitions" element={<HostCompetitions />} />
+                        <Route path="/admin-competitions/:competitionId" element={<HostCompetitionDetails />} />
 
                         {/* COMPETITION/TEAM */}
                         <Route path="/competition-create" element={<CreateCompetition />} />
@@ -81,7 +84,7 @@ function App() {
                         <Route path="/team/:teamId" element={<TeamDetail />} />
                         <Route path="/chat/:teamId" element = {<Chat />} />
 
-                        
+
                     </Routes>
                 {/* </Layout> */}
             </AuthProvider>

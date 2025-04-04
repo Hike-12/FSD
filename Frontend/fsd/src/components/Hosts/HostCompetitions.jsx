@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate from React Router DOM
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"; // Keep icons for better UI
-import DJANGO_BASE_URL from "../../lib/utils";
+import DJANGO_BASE_URL from "@/lib/utils"; // Adjust the import path as necessary
 
 const HostCompetitions = () => {
   const navigate = useNavigate(); // Use navigate for routing
@@ -90,7 +90,7 @@ const HostCompetitions = () => {
   };
 
   const handleCompetitionClick = (competitionId) => {
-    navigate(`/admin-competition/${competitionId}`);
+    navigate(`/admin-competitions/${competitionId}`);
   };
 
   if (loading)

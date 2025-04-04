@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -969,6 +969,74 @@ def list_competitions(request):
 def competition_types_list(request):
     competition_types = CompetitionType.objects.all().values("id", "name", "description")
     return JsonResponse(list(competition_types), status=200, safe=False)
+
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_competition_submissions(request, competition_id):
+    """
+    Fetch all submissions for a specific competition.
+    """
+    try:
+        # Fetch the competition
+        competition = get_object_or_404(Competition, id=competition_id)
+
+        # Fetch submissions related to the competition
+        submissions = ProjectSubmission.objects.filter(competition=competition)
+
+        # Prepare the response data
+        submission_list = [
+            {
+                "id": submission.id,
+                "team_name": submission.team.name,
+                "title": submission.title,
+                "description": submission.description,
+                "submission_date": submission.submission_date.isoformat(),
+                "status": submission.status,
+            }
+            for submission in submissions
+        ]
+
+        return JsonResponse({"submissions": submission_list}, status=200)
+
+    except Competition.DoesNotExist:
+        return JsonResponse({"error": "Competition not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_competition_team_members(request, competition_id):
+    """
+    Fetch all team members for a specific competition.
+    """
+    try:
+        # Fetch the competition
+        competition = get_object_or_404(Competition, id=competition_id)
+
+        # Fetch all teams in the competition
+        teams = Team.objects.filter(competition=competition)
+
+        # Prepare the response data
+        team_members = []
+        for team in teams:
+            for member in team.members.all():
+                team_members.append({
+                    "team_id": team.id,
+                    "team_name": team.name,
+                    "member_id": member.id,
+                    "member_name": member.full_name,
+                    "member_email": member.user.email,
+                })
+
+        return JsonResponse({"team_members": team_members}, status=200)
+
+    except Competition.DoesNotExist:
+        return JsonResponse({"error": "Competition not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
     
 ##################################################################################################################################################
