@@ -50,25 +50,38 @@ function App() {
             <AuthProvider>
                 {/* <Layout navbar={getNavbar()} sidebar={getSidebar()}> */}
                     <Routes>
+                        {/* LANDING PAGE */}
                         <Route path="/" element={<LandingPage />} />
+
+                        {/* LOGIN/REGISTER */}
                         <Route path="/login" element={<LoginRegister />} />
-                        <Route path="/mentor-profile" element={<MentorProfileForm/>} />
+
+                        {/* STUDENTS */}
+                        <Route path="/student-landing" element={<StudentLandingPage />} />
                         <Route path="/student-profile" element={<StudentProfileForm/>} />
-                        <Route path="/admin-profile" element={<HostProfileForm/>} />
-                        <Route path="/mentors" element={<AllMentors />} />
-                        <Route path="/mentor/:id" element={<MentorProfile />} />
                         <Route path="/students" element={<RecommendedStudents />} />
                         <Route path="/students/:id" element={<StudentProfile />} />
+                        <Route path="/student-teams" element={<StudentTeams />} />
+                        <Route path="/student-competitions" element={<StudentCompetitions />} />
+
+                        {/* MENTORS */}
+                        <Route path="/mentor-profile" element={<MentorProfileForm/>} />
+                        <Route path="/mentors" element={<AllMentors />} />
+                        <Route path="/mentor/:id" element={<MentorProfile />} />
+
+                        {/* ADMIN */}
+                        <Route path="/admin-landing" element={<AdminLandingPage />} />
+                        <Route path="/admin-profile" element={<HostProfileForm/>} />
+                        <Route path="/admin-competitions" element={<HostCompetitions />} />
+
+                        {/* COMPETITION/TEAM */}
                         <Route path="/competition-create" element={<CreateCompetition />} />
                         <Route path="/competitions" element={<CompetitionsList />} />
                         <Route path="/competitions/:id" element={<CompetitionDetail />} />
-                        <Route path="/student-landing" element={<StudentLandingPage />} />
-                        <Route path="/admin-landing" element={<AdminLandingPage />} />
                         <Route path="/team/:teamId" element={<TeamDetail />} />
-                        <Route path="/student-teams" element={<StudentTeams />} />
-                        <Route path="/student-competitions" element={<StudentCompetitions />} />
-                        <Route path="/host-competitions" element={<HostCompetitions />} />
                         <Route path="/chat/:teamId" element = {<Chat />} />
+
+                        
                     </Routes>
                 {/* </Layout> */}
             </AuthProvider>
