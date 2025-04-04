@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
+import {NODE_BASE_URL} from "@/lib/utils";
 
 const SOCKET_URL = window.location.hostname === "localhost" ? "http://localhost:5000":   "http://192.168.0.110:5000/";
 const Chat = () => {
@@ -99,7 +100,7 @@ const Chat = () => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await fetch(`${DJANGO_BASE_URL}/messages?team_id=${teamId}`);
+                const response = await fetch(`${NODE_BASE_URL}/messages?team_id=${teamId}`);
                 const data = await response.json();
                 setMessages(data);
             } catch (error) {
@@ -283,7 +284,7 @@ const Chat = () => {
         });
 
         try {
-            await fetch(`${DJANGO_BASE_URL}/messages`, {
+            await fetch(`${NODE_BASE_URL}/messages`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newMessage),

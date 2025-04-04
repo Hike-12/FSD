@@ -29,4 +29,5 @@ admin.site.register(TeamInvitation, DefaultAdmin)
 admin.site.register(MentorshipSession, DefaultAdmin)
 admin.site.register(ProjectSubmission, DefaultAdmin)
 admin.site.register(Host, DefaultAdmin)
+admin.site.register(Task, DefaultAdmin)
 

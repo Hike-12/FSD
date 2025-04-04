@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
 
 const HostCompetitionDetails = () => {
   const { competitionId } = useParams();

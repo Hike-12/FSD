@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Box, Trophy, Users, Calendar, MapPin, Globe, PlusCircle, LogIn } from "lucide-react";
 
 // const DJANGO_BASE_URL = "http://127.0.0.1:8000";
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
 
 // Glowing Effect Component
 const GlowingEffect = ({ spread = 40, glow = true, disabled = false, proximity = 64, inactiveZone = 0.01 }) => {

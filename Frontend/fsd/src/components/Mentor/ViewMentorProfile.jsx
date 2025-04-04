@@ -18,7 +18,7 @@ import {
   Github,
   Globe2
 } from "lucide-react";
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
 // import PageLayout from "../components/PageLayout";
 
 const MentorProfile = () => {

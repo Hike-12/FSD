@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import  Chat from "@/components/Chat/Chat";
+import  Chat from "@/components/Workspace/Chat";
+import { useNavigate } from "react-router-dom";
 
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -21,6 +22,14 @@ const TeamDetail = () => {
   const [projectFile, setProjectFile] = useState(null);
   const [presentationFile, setPresentationFile] = useState(null);
   const [submissionMessage, setSubmissionMessage] = useState("");
+  const navigate = useNavigate(); // Use navigate for routing
+
+  useEffect(() => {
+    // Redirect to workspace when activeTab is "chat"
+    if (activeTab === "chat") {
+      navigate(`/workspace/${teamId}`); // Redirect to the workspace page
+    }
+  }, [activeTab, navigate, teamId]);
 
   const handleSubmitProject = async (e) => {
     e.preventDefault();
@@ -415,8 +424,6 @@ const TeamDetail = () => {
                 </div>
               </div>
             )}
-
-            {activeTab === "chat" && (<Chat />)}
           </div>
 
           {/* Sidebar */}

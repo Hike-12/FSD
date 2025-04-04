@@ -482,4 +482,18 @@ class Host(models.Model):
         return self.full_name
 
 
+class Task(models.Model):
+    id = models.AutoField(primary_key=True)
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='tasks')
+    assigned_by = models.ForeignKey('StudentProfile', on_delete=models.SET_NULL, null=True, related_name='assigned_tasks')
+    assigned_to = models.ForeignKey('StudentProfile', on_delete=models.SET_NULL, null=True, related_name='tasks')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} (Assigned to: {self.assigned_to.full_name if self.assigned_to else 'Unassigned'})"

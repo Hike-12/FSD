@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import DJANGO_BASE_URL from "@/lib/utils";
+import {DJANGO_BASE_URL} from "@/lib/utils";
 
 const StudentCompetitions = () => {
   const [competitions, setCompetitions] = useState([]);

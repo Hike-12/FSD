@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -1382,4 +1382,142 @@ def submit_project(request, team_id):
     except Team.DoesNotExist:
         return JsonResponse({"error": "Team not found"}, status=404)
     except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+#######################################################################################################################################
+# TASKS KA PART
+
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_team_tasks(request, team_id):
+    """
+    Fetch all tasks for a specific team.
+    """
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        tasks = Task.objects.filter(team=team)
+
+        task_list = [
+            {
+                "id": task.id,
+                "title": task.title,
+                "description": task.description,
+                "is_completed": task.is_completed,
+                "assigned_to": task.assigned_to.full_name if task.assigned_to else None,
+                "assigned_by": task.assigned_by.full_name if task.assigned_by else None,
+            }
+            for task in tasks
+        ]
+
+        return JsonResponse({"tasks": task_list}, status=200)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def create_task(request, team_id):
+    """
+    Create a new task for a team.
+    """
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        assigned_by = get_object_or_404(StudentProfile, user=request.user)
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        assigned_to_id = request.POST.get("assigned_to")
+
+        if not title or not description:
+            return JsonResponse({"error": "Title and description are required"}, status=400)
+
+        assigned_to = StudentProfile.objects.filter(id=assigned_to_id).first()
+
+        task = Task.objects.create(
+            team=team,
+            assigned_by=assigned_by,
+            assigned_to=assigned_to,
+            title=title,
+            description=description,
+        )
+
+        return JsonResponse({"message": "Task created successfully!", "task_id": task.id}, status=201)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_token_required
+@require_http_methods(["PATCH"])
+@csrf_exempt
+def update_task_status(request, task_id):
+    """
+    Update the status of a task (mark as complete/incomplete).
+    """
+    try:
+        task = get_object_or_404(Task, id=task_id)
+        is_completed = request.POST.get("is_completed") == "true"
+
+        task.is_completed = is_completed
+        task.save()
+
+        return JsonResponse({"message": "Task status updated successfully!"}, status=200)
+
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def delete_task(request, task_id):
+    """
+    Delete an existing task.
+    """
+    try:
+        task = get_object_or_404(Task, id=task_id)
+        task.delete()
+        return JsonResponse({"message": "Task deleted successfully!"}, status=200)
+
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def edit_task(request, task_id):
+    """
+    Edit an existing task.
+    """
+    try:
+        task = get_object_or_404(Task, id=task_id)
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        assigned_to_id = request.POST.get("assigned_to")
+
+        if title:
+            task.title = title
+        if description:
+            task.description = description
+        if assigned_to_id:
+            assigned_to = StudentProfile.objects.filter(id=assigned_to_id).first()
+            task.assigned_to = assigned_to
+
+        task.save()
+
+        return JsonResponse({"message": "Task updated successfully!"}, status=200)
+
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found"}, status=404)
+    except Exception as e:
+        print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
