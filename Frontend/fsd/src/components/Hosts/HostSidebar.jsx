@@ -16,7 +16,7 @@ const HostSidebar = () => {
       <h2 className="text-lg font-bold mb-4">My Info</h2>
       <ul className="space-y-2">
         <li>
-          <Link to="/host-competitions" className="hover:underline">
+          <Link to="/admin-competitions" className="hover:underline">
             My Competitions
           </Link>
         </li>

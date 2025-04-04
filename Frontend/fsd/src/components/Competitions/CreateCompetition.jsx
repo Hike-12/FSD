@@ -187,7 +187,7 @@ const CreateCompetition = () => {
   
       if (response.ok) {
         toast.success("Competition created successfully!");
-        navigate('/admin/competitions');
+        navigate('/admin-competitions');
       } else {
         const errorData = await response.json();
         console.error("Server Error:", errorData);
