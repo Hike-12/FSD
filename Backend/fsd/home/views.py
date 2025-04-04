@@ -571,7 +571,7 @@ def get_recommended_students(request):
                 'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
                 'address', 'country', 'state', 'city', 'postal_code',
                 'education_level', 'student_id', 'department', 'year_of_study', 'gpa',
-                'extracurricular_activities', 'achievements',
+                'extracurricular_activities', 'achievements', 'certifications','internships','projects',
                 'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
                 'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
                 'profile_picture', 'linkedin', 'github', 'portfolio',
