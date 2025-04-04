@@ -57,6 +57,12 @@ urlpatterns = [
     path('api/tasks/<int:task_id>/update-status/', views.update_task_status, name='update_task_status'),
     path('api/tasks/<int:task_id>/edit/', views.edit_task, name='edit_task'),
     path('api/tasks/<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    
+    #FILES
+    path('api/teams/<int:team_id>/files/upload/', views.upload_file, name='upload_file'),
+    path('api/teams/<int:team_id>/files/', views.get_team_files, name='get_team_files'),
+    path('api/files/<int:file_id>/delete/', views.delete_file, name='delete_file'),
+    path('api/files/<int:file_id>/view/', views.serve_file, name='serve_file'),
 ]
 
 

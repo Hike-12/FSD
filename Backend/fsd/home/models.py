@@ -497,3 +497,15 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} (Assigned to: {self.assigned_to.full_name if self.assigned_to else 'Unassigned'})"
+
+class TeamFile(models.Model):
+    id = models.AutoField(primary_key=True)
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='files')
+    uploaded_by = models.ForeignKey('StudentProfile', on_delete=models.SET_NULL, null=True, related_name='uploaded_files')
+    file = models.FileField(upload_to='team_files/')
+    name = models.CharField(max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} uploaded by {self.uploaded_by.full_name if self.uploaded_by else 'Unknown'}"
+    
