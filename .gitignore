@@ -1,0 +1,17 @@
+# Ignore all .env files in the project
+*.env
+
+# Ignore specific .env files in subdirectories
+Frontend/.env
+Backend/.env
+
+# Ignore node_modules and Python virtual environments
+node_modules/
+venv/
+
+# Ignore build artifacts
+dist/
+build/
+
+# Ignore logs
+*.log
