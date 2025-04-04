@@ -229,7 +229,7 @@ const StudentProfileForm = () => {
       let response;
       if (existingProfile) {
         console.log(`Sending POST request to /api/student/profile/${existingProfile.id}/update/`);
-        
+        console.log("The form data to send in profile form ",formDataToSend);
         response = await fetch(`${DJANGO_BASE_URL}/api/student/profile/${existingProfile.id}/update/`, {
           method: 'POST',
           headers: {

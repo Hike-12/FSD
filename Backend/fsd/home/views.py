@@ -519,7 +519,8 @@ def update_student_profile_fields(profile, data, files=None):
         'full_name', 'date_of_birth', 'gender', 'phone_number', 
         'address', 'country', 'state', 'city', 'postal_code',
         'education_level', 'student_id', 'department', 'year_of_study',
-        'gpa', 'extracurricular_activities', 'achievements',
+        'gpa', 'extracurricular_activities', 'achievements', 'internships',
+        'certifications','projects',
         'preferred_team_roles', 'emergency_contact_name', 'emergency_contact_number',
         'hobbies', 'career_goal', 'languages_spoken', 'learning_style',
         'linkedin', 'github', 'portfolio', 'is_active'
@@ -779,11 +780,17 @@ def create_or_update_student_profile(request):
 def update_student_profile(request, student_id):
     print("Request content type:", request.content_type)
     print("Student ID:", student_id)
+    
 
     try:
         put_data = request.POST.copy()
         files_data = request.FILES
 
+        print("PUT data keys:", list(put_data.keys()))
+        print("Achievements:", put_data.get("achievements"))
+        print("Projects:", put_data.get("projects"))
+        print("Certifications:", put_data.get("certifications"))
+        print("Internships:", put_data.get("internships"))
         # Log incoming data
         print("PUT data keys:", list(put_data.keys()))
         print("FILES keys:", list(files_data.keys()))
