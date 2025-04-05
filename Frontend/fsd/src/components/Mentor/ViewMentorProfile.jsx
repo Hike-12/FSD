@@ -18,8 +18,7 @@ import {
   Github,
   Globe2
 } from "lucide-react";
-import {DJANGO_BASE_URL} from "@/lib/utils";
-// import PageLayout from "../components/PageLayout";
+import { DJANGO_BASE_URL } from "@/lib/utils";
 
 const MentorProfile = () => {
     const { id } = useParams();
@@ -36,7 +35,6 @@ const MentorProfile = () => {
                     credentials: "include",
                 });
                 const data = await response.json();
-                console.log(data);
                 setMentor(data);
             } catch (error) {
                 console.error("Error fetching mentor data:", error);
@@ -50,32 +48,34 @@ const MentorProfile = () => {
 
     if (loading) {
       return (
-        // <PageLayout title="Mentor Profile" subtitle="Loading mentor information...">
-          <div className="flex justify-center items-center h-64">
-            <motion.div
-              className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
-          </div>
-        // </PageLayout>
+        <div className="min-h-screen bg-gray-900 flex justify-center items-center">
+          <motion.div
+            className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
       );
     }
 
     if (!mentor) {
       return (
-        // <PageLayout title="Mentor Not Found" subtitle="We couldn't find the mentor you're looking for">
+        <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
           <motion.div 
-            className="flex flex-col items-center justify-center h-64"
+            className="text-center p-8 max-w-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.p className="text-xl text-gray-600">
+            <div className="bg-blue-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Mentor Not Found</h2>
+            <p className="text-gray-400">
               The mentor you're looking for doesn't exist or has been removed.
-            </motion.p>
+            </p>
           </motion.div>
-        // </PageLayout>
+        </div>
       );
     }
 
@@ -95,19 +95,16 @@ const MentorProfile = () => {
     };
 
     return (
-    //   <PageLayout 
-    //     title={mentor.full_name} 
-    //     subtitle={`${mentor.mentor_type}${mentor.department ? ` • ${mentor.department}` : ''}`}
-    //   >
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           {/* Profile Header */}
           <motion.div 
-            className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-8 mb-6 relative overflow-hidden"
+            className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-xl p-8 mb-8 relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100 rounded-full -mt-20 -mr-20 opacity-50 z-0"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full -mt-20 -mr-20 opacity-50 z-0"></div>
             
             <div className="flex flex-col md:flex-row items-center md:items-start relative z-10">
               {mentor.profile_picture && (
@@ -121,15 +118,15 @@ const MentorProfile = () => {
                     className="relative"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-md"></div>
+                    <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-md"></div>
                     <img
                       src={mentor.profile_picture.startsWith("http") ? mentor.profile_picture : `${DJANGO_BASE_URL}${mentor.profile_picture}`}
                       alt="Profile"
-                      className="w-36 h-36 object-cover rounded-full shadow-lg ring-4 ring-white relative z-10"
+                      className="w-36 h-36 object-cover rounded-full shadow-lg ring-4 ring-gray-800 relative z-10"
                     />
                     {mentor.is_verified && (
                       <motion.div 
-                        className="absolute bottom-0 right-0 bg-green-500 p-1 rounded-full z-20 ring-2 ring-white"
+                        className="absolute bottom-0 right-0 bg-teal-500 p-1 rounded-full z-20 ring-2 ring-gray-800"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.5, type: "spring" }}
@@ -142,6 +139,23 @@ const MentorProfile = () => {
               )}
               
               <div className="text-center md:text-left flex-1">
+                <motion.h1
+                  className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-400 mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {mentor.full_name}
+                </motion.h1>
+                <motion.p 
+                  className="text-gray-400 mb-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  {mentor.mentor_type}{mentor.department ? ` • ${mentor.department}` : ''}
+                </motion.p>
+
                 <motion.div
                   className="flex flex-col md:flex-row md:items-center md:justify-between"
                   initial={{ opacity: 0 }}
@@ -151,12 +165,12 @@ const MentorProfile = () => {
                   <div>
                     <div className="flex items-center justify-center md:justify-start">
                       <motion.div 
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
                           mentor.availability_status?.toLowerCase() === "available" 
-                            ? "bg-green-100 text-green-800" 
+                            ? "bg-teal-600/20 text-teal-400" 
                             : mentor.availability_status?.toLowerCase() === "busy" 
-                              ? "bg-yellow-100 text-yellow-800" 
-                              : "bg-gray-100 text-gray-800"
+                              ? "bg-yellow-600/20 text-yellow-400" 
+                              : "bg-gray-700 text-gray-300"
                         } mb-2`}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -178,7 +192,7 @@ const MentorProfile = () => {
                         href={mentor.linkedin} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="bg-blue-100 p-2 rounded-full text-blue-700 hover:bg-blue-200 transition-colors"
+                        className="bg-gray-700 p-2 rounded-lg text-blue-400 hover:bg-gray-600 transition-colors"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -190,7 +204,7 @@ const MentorProfile = () => {
                         href={mentor.github} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="bg-gray-100 p-2 rounded-full text-gray-700 hover:bg-gray-200 transition-colors"
+                        className="bg-gray-700 p-2 rounded-lg text-gray-300 hover:bg-gray-600 transition-colors"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -202,7 +216,7 @@ const MentorProfile = () => {
                         href={mentor.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="bg-green-100 p-2 rounded-full text-green-700 hover:bg-green-200 transition-colors"
+                        className="bg-gray-700 p-2 rounded-lg text-teal-400 hover:bg-gray-600 transition-colors"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -219,23 +233,23 @@ const MentorProfile = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-full">
-                      <Star className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm font-medium text-gray-700">
+                    <div className="flex items-center space-x-1 bg-gray-700 px-3 py-1 rounded-lg">
+                      <Star className="w-4 h-4 text-amber-400" />
+                      <span className="text-sm font-medium text-gray-100">
                         {mentor.average_rating || "N/A"} Rating
                       </span>
                     </div>
                     
-                    <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-full">
-                      <Briefcase className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium text-gray-700">
+                    <div className="flex items-center space-x-1 bg-gray-700 px-3 py-1 rounded-lg">
+                      <Briefcase className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm font-medium text-gray-100">
                         {mentor.years_of_experience} Years
                       </span>
                     </div>
                     
-                    <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-full">
-                      <Users className="w-4 h-4 text-indigo-500" />
-                      <span className="text-sm font-medium text-gray-700">
+                    <div className="flex items-center space-x-1 bg-gray-700 px-3 py-1 rounded-lg">
+                      <Users className="w-4 h-4 text-purple-400" />
+                      <span className="text-sm font-medium text-gray-100">
                         {mentor.past_mentorship_count || "0"} Mentorships
                       </span>
                     </div>
@@ -249,24 +263,24 @@ const MentorProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left Column - Contact & Personal Info */}
             <motion.div 
-              className="md:col-span-1"
+              className="md:col-span-1 space-y-6"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <Mail className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                  <Mail className="w-5 h-5 mr-2 text-blue-400" />
                   Contact Information
                 </h3>
                 
-                <motion.div className="space-y-3" variants={container} initial="hidden" animate="show">
+                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
                   {mentor.user?.email && (
                     <motion.div className="flex items-start" variants={item}>
                       <Mail className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Email</div>
-                        <div className="text-gray-700">{mentor.user.email}</div>
+                        <div className="text-sm text-gray-400">Email</div>
+                        <div className="text-gray-100">{mentor.user.email}</div>
                       </div>
                     </motion.div>
                   )}
@@ -275,8 +289,8 @@ const MentorProfile = () => {
                     <motion.div className="flex items-start" variants={item}>
                       <Phone className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Phone</div>
-                        <div className="text-gray-700">{mentor.phone_number}</div>
+                        <div className="text-sm text-gray-400">Phone</div>
+                        <div className="text-gray-100">{mentor.phone_number}</div>
                       </div>
                     </motion.div>
                   )}
@@ -285,8 +299,8 @@ const MentorProfile = () => {
                     <motion.div className="flex items-start" variants={item}>
                       <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Location</div>
-                        <div className="text-gray-700">
+                        <div className="text-sm text-gray-400">Location</div>
+                        <div className="text-gray-100">
                           {[mentor.city, mentor.state, mentor.country].filter(Boolean).join(", ")}
                         </div>
                       </div>
@@ -297,27 +311,27 @@ const MentorProfile = () => {
                     <motion.div className="flex items-start" variants={item}>
                       <Globe className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Languages</div>
-                        <div className="text-gray-700">{mentor.languages_spoken}</div>
+                        <div className="text-sm text-gray-400">Languages</div>
+                        <div className="text-gray-100">{mentor.languages_spoken}</div>
                       </div>
                     </motion.div>
                   )}
                 </motion.div>
               </div>
               
-              <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-blue-400" />
                   Availability
                 </h3>
                 
-                <motion.div className="space-y-3" variants={container} initial="hidden" animate="show">
+                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
                   {mentor.available_days && (
                     <motion.div className="flex items-start" variants={item}>
                       <Calendar className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Available Days</div>
-                        <div className="text-gray-700">{mentor.available_days}</div>
+                        <div className="text-sm text-gray-400">Available Days</div>
+                        <div className="text-gray-100">{mentor.available_days}</div>
                       </div>
                     </motion.div>
                   )}
@@ -326,8 +340,8 @@ const MentorProfile = () => {
                     <motion.div className="flex items-start" variants={item}>
                       <Clock className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                       <div>
-                        <div className="text-sm text-gray-500">Available Times</div>
-                        <div className="text-gray-700">{mentor.available_times}</div>
+                        <div className="text-sm text-gray-400">Available Times</div>
+                        <div className="text-gray-100">{mentor.available_times}</div>
                       </div>
                     </motion.div>
                   )}
@@ -335,8 +349,8 @@ const MentorProfile = () => {
                   <motion.div className="flex items-start" variants={item}>
                     <Users className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                     <div>
-                      <div className="text-sm text-gray-500">Current Teams</div>
-                      <div className="text-gray-700">
+                      <div className="text-sm text-gray-400">Current Teams</div>
+                      <div className="text-gray-100">
                         {mentor.current_teams_count || "0"} / {mentor.max_teams || "N/A"}
                       </div>
                     </div>
@@ -347,106 +361,106 @@ const MentorProfile = () => {
             
             {/* Right Column - Bio & Professional Info */}
             <motion.div 
-              className="md:col-span-2"
+              className="md:col-span-2 space-y-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               {mentor.bio && (
-                <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 mb-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <FileText className="w-5 h-5 mr-2 text-blue-500" />
+                <div className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6">
+                  <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-blue-400" />
                     Biography
                   </h3>
-                  <p className="text-gray-700 whitespace-pre-line">{mentor.bio}</p>
+                  <p className="text-gray-300 whitespace-pre-line">{mentor.bio}</p>
                 </div>
               )}
               
-              <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <Briefcase className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                  <Briefcase className="w-5 h-5 mr-2 text-blue-400" />
                   Professional Information
                 </h3>
                 
-                <motion.div className="space-y-5" variants={container} initial="hidden" animate="show">
+                <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
                   <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-4" variants={item}>
                     {mentor.current_position && (
                       <div>
-                        <div className="text-sm text-gray-500">Current Position</div>
-                        <div className="text-gray-700 font-medium">
+                        <div className="text-sm text-gray-400">Current Position</div>
+                        <div className="text-gray-100 font-medium">
                           {mentor.current_position} 
-                          {mentor.current_company && <span> at {mentor.current_company}</span>}
+                          {mentor.current_company && <span className="text-gray-300"> at {mentor.current_company}</span>}
                         </div>
                       </div>
                     )}
                     
                     {mentor.expertise && (
                       <div>
-                        <div className="text-sm text-gray-500">Expertise</div>
-                        <div className="text-gray-700 font-medium">{mentor.expertise}</div>
+                        <div className="text-sm text-gray-400">Expertise</div>
+                        <div className="text-gray-100 font-medium">{mentor.expertise}</div>
                       </div>
                     )}
                   </motion.div>
                   
                   {mentor.certifications && (
                     <motion.div variants={item}>
-                      <h4 className="text-md font-medium text-gray-900 mb-2 flex items-center">
-                        <Award className="w-4 h-4 mr-2 text-indigo-500" />
+                      <h4 className="text-md font-medium text-white mb-2 flex items-center">
+                        <Award className="w-4 h-4 mr-2 text-purple-400" />
                         Certifications
                       </h4>
-                      <p className="text-gray-700 whitespace-pre-line">{mentor.certifications}</p>
+                      <p className="text-gray-300 whitespace-pre-line">{mentor.certifications}</p>
                     </motion.div>
                   )}
                   
                   {mentor.achievements && (
                     <motion.div variants={item}>
-                      <h4 className="text-md font-medium text-gray-900 mb-2 flex items-center">
-                        <Star className="w-4 h-4 mr-2 text-amber-500" />
+                      <h4 className="text-md font-medium text-white mb-2 flex items-center">
+                        <Star className="w-4 h-4 mr-2 text-amber-400" />
                         Achievements
                       </h4>
-                      <p className="text-gray-700 whitespace-pre-line">{mentor.achievements}</p>
+                      <p className="text-gray-300 whitespace-pre-line">{mentor.achievements}</p>
                     </motion.div>
                   )}
                 </motion.div>
               </div>
               
               <motion.div 
-                className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6"
+                className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6"
                 variants={container}
                 initial="hidden"
                 animate="show"
               >
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <FileText className="w-5 h-5 mr-2 text-blue-500" />
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                  <FileText className="w-5 h-5 mr-2 text-blue-400" />
                   Additional Information
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {mentor.gender && (
                     <motion.div variants={item}>
-                      <div className="text-sm text-gray-500">Gender</div>
-                      <div className="text-gray-700">{mentor.gender}</div>
+                      <div className="text-sm text-gray-400">Gender</div>
+                      <div className="text-gray-100">{mentor.gender}</div>
                     </motion.div>
                   )}
                   
                   {mentor.date_of_birth && (
                     <motion.div variants={item}>
-                      <div className="text-sm text-gray-500">Date of Birth</div>
-                      <div className="text-gray-700">{mentor.date_of_birth}</div>
+                      <div className="text-sm text-gray-400">Date of Birth</div>
+                      <div className="text-gray-100">{mentor.date_of_birth}</div>
                     </motion.div>
                   )}
                   
                   {mentor.created_at && (
                     <motion.div variants={item}>
-                      <div className="text-sm text-gray-500">Member Since</div>
-                      <div className="text-gray-700">{new Date(mentor.created_at).toLocaleDateString()}</div>
+                      <div className="text-sm text-gray-400">Member Since</div>
+                      <div className="text-gray-100">{new Date(mentor.created_at).toLocaleDateString()}</div>
                     </motion.div>
                   )}
                   
                   {mentor.updated_at && (
                     <motion.div variants={item}>
-                      <div className="text-sm text-gray-500">Last Updated</div>
-                      <div className="text-gray-700">{new Date(mentor.updated_at).toLocaleDateString()}</div>
+                      <div className="text-sm text-gray-400">Last Updated</div>
+                      <div className="text-gray-100">{new Date(mentor.updated_at).toLocaleDateString()}</div>
                     </motion.div>
                   )}
                 </div>
@@ -454,7 +468,7 @@ const MentorProfile = () => {
             </motion.div>
           </div>
         </div>
-    //   </PageLayout>
+      </div>
     );
 };
 
