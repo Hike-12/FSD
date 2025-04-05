@@ -1,30 +1,26 @@
+// AllMentors.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {DJANGO_BASE_URL} from "@/lib/utils";
+import { DJANGO_BASE_URL } from "@/lib/utils";
 import MentorCard from "@/components/Mentor/MentorCard";
 import { UserPlus, Search } from "lucide-react";
 
 const SkeletonMentorCard = () => (
-  <motion.div 
-    className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl p-6 transform transition-all duration-300 hover:scale-[1.02]"
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.3 }}
-  >
-    <div className="flex flex-col items-center">
-      <div className="w-28 h-28 rounded-full bg-gray-200 animate-pulse mb-6" />
-      <div className="h-5 w-20 bg-gray-300 rounded-full mb-2 animate-pulse" />
-      <div className="h-6 w-40 bg-gray-300 animate-pulse mb-1" />
-      <div className="h-4 w-32 bg-gray-300 animate-pulse mb-4" />
+  <div className="bg-white/80 shadow-lg rounded-xl h-[420px] overflow-hidden">
+    <div className="p-6 flex flex-col items-center">
+      <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse mb-4" />
+      <div className="h-6 w-40 bg-gray-300 animate-pulse mb-2" />
+      <div className="h-5 w-32 bg-gray-300 animate-pulse mb-3" />
+      <div className="flex space-x-1 mb-3">
+        {Array(5).fill(0).map((_, i) => (
+          <div key={i} className="w-4 h-4 bg-gray-300 rounded-full animate-pulse" />
+        ))}
+      </div>
+      <div className="h-4 w-24 bg-gray-300 animate-pulse" />
+      <div className="h-5 w-5 bg-gray-300 animate-pulse mt-4" />
     </div>
-    <div className="space-y-2 mb-5">
-      <div className="h-4 w-full bg-gray-300 animate-pulse" />
-      <div className="h-4 w-full bg-gray-300 animate-pulse" />
-      <div className="h-4 w-full bg-gray-300 animate-pulse" />
-    </div>
-    <div className="h-10 w-full bg-gray-300 rounded-xl animate-pulse" />
-  </motion.div>
+  </div>
 );
 
 const AllMentors = () => {
@@ -43,34 +39,30 @@ const AllMentors = () => {
           credentials: "include",
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
         const data = await response.json();
-        console.log("Fetched mentors:", data);
         setMentors(data);
       } catch (error) {
         console.error("Error fetching mentor data:", error);
       } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
+        setTimeout(() => setLoading(false), 500);
       }
     };
 
     fetchMentors();
   }, []);
 
-  // Filter mentors with null checks
   const filteredMentors = mentors.filter(mentor => {
     const name = mentor.full_name || '';
-    const specialty = mentor.specialty || '';
+    const specialty = mentor.specialty || mentor.designation || '';
     const searchTermLower = searchTerm.toLowerCase();
-    
     return name.toLowerCase().includes(searchTermLower) || 
-    specialty.toLowerCase().includes(searchTermLower);
+           specialty.toLowerCase().includes(searchTermLower);
   });
+
+  const handleViewProfile = (id) => navigate(`/mentor/${id}`);
+  const handleRequestConsultation = (id) => navigate(`/request-consultation/${id}`);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
@@ -93,7 +85,6 @@ const AllMentors = () => {
             Connect with experienced professionals who can guide your career journey.
           </motion.p>
 
-          {/* Search Input */}
           <motion.div 
             className="max-w-md mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -164,7 +155,12 @@ const AllMentors = () => {
             transition={{ staggerChildren: 0.1 }}
           >
             {filteredMentors.map((mentor) => (
-              <MentorCard key={mentor.id} mentor={mentor} onViewProfile={(id) => navigate(`/mentors/${id}`)} />
+              <MentorCard 
+                key={mentor.id}
+                mentor={mentor}
+                onViewProfile={handleViewProfile}
+                onRequestConsultation={handleRequestConsultation}
+              />
             ))}
           </motion.div>
         )}
