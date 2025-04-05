@@ -1,157 +1,191 @@
-import React from "react";
-import { 
-  MapPin, Star, Calendar, ArrowRight, Briefcase, 
-  MessageSquare, Coffee, UserCheck 
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
-import { 
-  Expandable, 
-  ExpandableCard, 
-  ExpandableCardContent, 
-  ExpandableCardHeader, 
-  ExpandableContent,
-  ExpandableTrigger 
-} from "@/components/ui/expandable";
+// MentorCard.jsx
+import React, { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, MapPin, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const getAvailabilityBadgeColor = (status) => {
-  switch (status.toLowerCase()) {
-    case "available":
-      return "bg-green-100 text-green-800";
-    case "busy":
-      return "bg-yellow-100 text-yellow-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
+const MentorCard = ({ 
+  mentor = {}, // Default empty object to prevent undefined errors
+  onViewProfile = () => {}, // Default empty function
+  onRequestConsultation = () => {}, // Default empty function
+  className = "" 
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-const MentorCard = ({ mentor, index = 0 }) => {
-  const navigate = useNavigate();
-  const shouldReduceMotion = useReducedMotion();
+  // Safely destructure with defaults
+  const {
+    id = '',
+    full_name = "Unnamed Mentor",
+    specialty = "General Mentor",
+    designation = specialty,
+    avatar_url = "/default-avatar.png",
+    location = "Remote",
+    rating = 0,
+    expertise = [],
+    skills = [],
+    availability = true,
+    bio = "No bio provided yet."
+  } = mentor;
 
-  return (
-    <Expandable 
-      expandDirection="both" 
-      expandBehavior="replace"
-    >
-      <ExpandableTrigger>
-        <ExpandableCard
-          className="w-full relative"
-          collapsedSize={{ width: 320, height: 420 }}
-          expandedSize={{ width: 420, height: 620 }}
-          hoverToExpand={false}
-          expandDelay={200}
-          collapseDelay={300}
+  try {
+    const allSkills = [...(expertise || []), ...(skills || [])].filter(Boolean);
+    const hasSkills = allSkills.length > 0;
+
+    const toggleExpand = () => setIsExpanded(!isExpanded);
+
+    const initials = (full_name || '')
+      .split(" ")
+      .slice(0, 2)
+      .map(n => n[0]?.toUpperCase() || '')
+      .join("");
+
+    const renderStars = () => {
+      const numericRating = Number(rating) || 0;
+      return Array(5).fill(0).map((_, i) => (
+        <Star
+          key={i}
+          size={16}
+          className={`${
+            i < Math.floor(numericRating) 
+              ? "text-yellow-400 fill-yellow-400" 
+              : "text-gray-300"
+          }`}
+        />
+      ));
+    };
+
+    return (
+      <motion.div
+        layout
+        className={`bg-white shadow-lg rounded-xl overflow-hidden h-[420px] flex flex-col ${className}`}
+        initial={{ borderRadius: 12 }}
+        animate={{ 
+          height: isExpanded ? "auto" : "420px",
+          boxShadow: isExpanded 
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+            : "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Card Header - Always visible */}
+        <div 
+          className="p-6 cursor-pointer flex flex-col items-center text-center"
+          onClick={toggleExpand}
         >
-          <ExpandableCardHeader>
-            <motion.div 
-              className="flex flex-col items-center"
-              initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.43, 0.13, 0.23, 0.96] }}
+          <Avatar className="w-24 h-24 mb-4 border-2 border-white shadow-md">
+            <AvatarImage src={avatar_url} />
+            <AvatarFallback className="bg-blue-100 text-blue-600 text-xl font-medium">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          
+          <h3 className="font-semibold text-xl text-gray-900 mb-1">
+            {full_name}
+          </h3>
+          
+          <Badge variant="outline" className="mb-3 text-sm">
+            {designation}
+          </Badge>
+          
+          <div className="flex items-center justify-center space-x-1 mb-3">
+            {renderStars()}
+            <span className="text-sm text-gray-500 ml-1">({(Number(rating) || 0).toFixed(1)})</span>
+          </div>
+          
+          <div className="flex items-center text-sm text-gray-500">
+            <MapPin size={14} className="mr-1" />
+            <span>{location}</span>
+          </div>
+
+          <motion.div
+            className="mt-4"
+            initial={false}
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {isExpanded ? (
+              <ChevronUp size={20} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={20} className="text-gray-400" />
+            )}
+          </motion.div>
+        </div>
+        
+        {/* Expandable content */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="px-6 pb-6"
             >
-              {/* Profile Picture */}
-              <div className="relative mb-4">
-                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                  <AvatarImage 
-                    src={mentor.profile_picture || "/placeholder.svg"} 
-                    alt={mentor.full_name}
-                  />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 text-3xl">
-                    {mentor.full_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-
-              {/* Availability Status */}
-              <Badge 
-                variant="secondary" 
-                className={`${getAvailabilityBadgeColor(mentor.availability_status)} mb-2`}
-              >
-                {mentor.availability_status}
-              </Badge>
-
-              {/* Mentor Name */}
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                {mentor.full_name}
-              </h3>
-
-              {/* Mentor Type and Department */}
-              <p className="text-gray-600 font-medium">
-                {mentor.mentor_type} {mentor.department && `· ${mentor.department}`}
-              </p>
-            </motion.div>
-          </ExpandableCardHeader>
-
-          <ExpandableCardContent>
-            <div className="space-y-4 text-sm">
-              {/* Basic Details */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Star className="w-4 h-4 text-amber-500" />
-                  <span>{mentor.years_of_experience} years</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <span>
-                    {[mentor.city, mentor.state, mentor.country]
-                      .filter(Boolean)
-                      .join(", ") || "Location unavailable"}
+              <div className="pt-4 border-t border-gray-100">
+                {hasSkills && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Expertise</h4>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {allSkills.slice(0, 5).map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mb-4 flex items-center justify-center">
+                  <Calendar size={16} className="mr-2 text-gray-400" />
+                  <span className={`text-sm ${availability ? "text-green-600" : "text-red-600"}`}>
+                    {availability ? "Available for mentorship" : "Currently unavailable"}
                   </span>
                 </div>
-              </div>
-
-              {/* Expanded Content */}
-              <ExpandableContent 
-                preset="fade" 
-                stagger 
-                staggerChildren={0.1}
-              >
-                <div className="space-y-3 mt-4">
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Briefcase className="w-5 h-5 text-blue-500" />
-                    <span>Expertise: {mentor.mentor_type}</span>
+                
+                {bio && bio !== "No bio provided yet." && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">About</h4>
+                    <p className="text-sm text-gray-600 text-center">{bio}</p>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <UserCheck className="w-5 h-5 text-green-500" />
-                    <span>Preferred Mentorship: {mentor.availability_status}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Coffee className="w-5 h-5 text-orange-500" />
-                    <span>Consultation Style: Collaborative</span>
-                  </div>
+                )}
+                
+                <div className="flex flex-col gap-2 mt-6">
+                  <Button 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewProfile(id);
+                    }}
+                  >
+                    View Full Profile
+                  </Button>
+                  <Button 
+                    disabled={!availability}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRequestConsultation(id);
+                    }}
+                  >
+                    Request Consultation
+                  </Button>
                 </div>
-              </ExpandableContent>
-            </div>
-          </ExpandableCardContent>
-
-          {/* Footer */}
-          <ExpandableContent preset="slide-up">
-            <div className="mt-4 space-y-3">
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => navigate(`/mentor/${mentor.id}`)}
-              >
-                <ArrowRight className="w-4 h-4 mr-2" />
-                View Full Profile
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Request Consultation
-              </Button>
-            </div>
-          </ExpandableContent>
-        </ExpandableCard>
-      </ExpandableTrigger>
-    </Expandable>
-  );
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  } catch (error) {
+    console.error("Error rendering MentorCard:", error);
+    return (
+      <div className="bg-white shadow-lg rounded-xl p-6 h-[420px] flex flex-col items-center justify-center text-center text-red-500">
+        <div className="text-lg font-medium mb-2">Error displaying mentor</div>
+        <div className="text-sm">Please try again later</div>
+      </div>
+    );
+  }
 };
 
 export default MentorCard;

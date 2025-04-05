@@ -87,6 +87,15 @@ const HostCompetitionDetails = () => {
     }
   };
 
+  // Function to format date as dd-mm-yyyy
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -120,11 +129,11 @@ const HostCompetitionDetails = () => {
             <div className="mt-4 flex flex-wrap gap-4">
               <div className="bg-blue-900 bg-opacity-40 px-3 py-1 rounded">
                 <span className="text-xs uppercase tracking-wide">Start Date</span>
-                <p className="font-medium">{new Date(competition.start_date).toLocaleDateString()}</p>
+                <p className="font-medium">{formatDate(competition.start_date)}</p>
               </div>
               <div className="bg-blue-900 bg-opacity-40 px-3 py-1 rounded">
                 <span className="text-xs uppercase tracking-wide">End Date</span>
-                <p className="font-medium">{new Date(competition.end_date).toLocaleDateString()}</p>
+                <p className="font-medium">{formatDate(competition.end_date)}</p>
               </div>
               <div className="bg-blue-900 bg-opacity-40 px-3 py-1 rounded">
                 <span className="text-xs uppercase tracking-wide">Status</span>
@@ -167,7 +176,7 @@ const HostCompetitionDetails = () => {
                       </div>
                     </div>
                     <div className="mt-2 text-sm text-gray-500 flex justify-between">
-                      <span>Submitted: {new Date(submission.submission_date).toLocaleString()}</span>
+                      <span>Submitted: {formatDate(submission.submission_date)}</span>
                       <span>ID: {submission.id}</span>
                     </div>
                     <div className="mt-2 flex justify-end space-x-2">
