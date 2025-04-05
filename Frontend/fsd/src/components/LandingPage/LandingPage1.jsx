@@ -831,9 +831,9 @@ const LandingPage = () => {
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
-              <a href="/students" className="text-sm text-blue-100 hover:text-white transition-colors">Students</a>
-              <a href="/mentors" className="text-sm text-blue-100 hover:text-white transition-colors">Mentors</a>
-              <a href="/competitions" className="text-sm text-blue-100 hover:text-white transition-colors">Competitions</a>
+              <a href="#features" className="text-sm text-blue-100 hover:text-white transition-colors">Features</a>
+              <a href="#testimonials" className="text-sm text-blue-100 hover:text-white transition-colors">Testimonials</a>
+              <a href="#pricing" className="text-sm text-blue-100 hover:text-white transition-colors">Pricing</a>
               <button onClick={() => navigate('/contact')} className="text-sm text-blue-100 hover:text-white transition-colors">Contact</button>
             </div>
             
@@ -842,7 +842,7 @@ const LandingPage = () => {
                 Sign In
               </button>
               <button 
-                onClick={() => navigate('/how-it-works')} 
+                onClick={() => navigate('/signup')} 
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   scrolled 
                     ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50" 
@@ -857,86 +857,102 @@ const LandingPage = () => {
       </motion.header>
 
       {/* Hero section with globe */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="relative min-h-screen flex flex-col items-center overflow-hidden">
         {/* Background texture and gradient effects */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM3ODdiZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ij48cGF0aCBkPSJNMCAwaDQwdjQwSDB6TTIwIDIwaDIwdjIwSDIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-40 pointer-events-none"></div>
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/90 pointer-events-none"></div>
-        
-        {/* Animated floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(30)].map((_, i) => (
-            <div 
-              key={i}
-              className="absolute rounded-full bg-blue-500/30 blur-xl"
-              style={{
-                width: `${Math.random() * 12 + 5}px`,
-                height: `${Math.random() * 12 + 5}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.5,
-                animation: `float ${Math.random() * 20 + 10}s linear infinite`,
-                animationDelay: `${Math.random() * -20}s`
+
+        {/* Interactive 3D Globe */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.5 }}
+          className="relative h-[500px] lg:h-[600px] w-full"
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div 
+              className="absolute w-[140%] h-[140%] rounded-full bg-blue-500/10 blur-3xl pointer-events-none"
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.6, 0.3] 
+              }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: 10,
+                ease: "easeInOut"
               }}
             />
-          ))}
-        </div>
-        
-        {/* Globe and hero content */}
-        <div className="relative w-full h-[700px] lg:h-[900px] flex items-center justify-center">
-  {/* Ensure the Canvas is on top */}
-  <div className="absolute inset-0 z-10">
-    <Canvas camera={{ position: [0, 0, 18], fov: 50 }}>
-      <color attach="background" args={['#030718']} />
-      <ambientLight intensity={0.8} />
-      <directionalLight
-        position={[10, 10, 5]}
-        intensity={1.2}
-        color={colors.primary}
-      />
-      <pointLight position={[0, 0, 0]} intensity={0.8} color="#3b82f6" />
-      <pointLight position={[-10, -5, -5]} intensity={0.5} color="#7c3aed" />
+            
+            <Canvas camera={{ position: [0, 0, 14], fov: 45 }}>
+              <color attach="background" args={['#030718']} />
+              <ambientLight intensity={0.8} />
+              <directionalLight
+                position={[10, 10, 5]}
+                intensity={1.2}
+                color={colors.primary}
+              />
+              <pointLight position={[0, 0, 0]} intensity={0.8} color="#3b82f6" />
+              <pointLight position={[-10, -5, -5]} intensity={0.5} color="#7c3aed" />
 
-      {/* Globe Component */}
-      <Globe onCitySelect={handleCitySelect} />
+              <Globe onCitySelect={handleCitySelect} />
+              <OrbitControls
+                enableZoom={false}
+                enablePan={false}
+                minPolarAngle={Math.PI / 2.1}
+                maxPolarAngle={Math.PI / 2.1}
+                enableDamping
+                dampingFactor={0.05}
+                autoRotate
+                autoRotateSpeed={0.9}
+                makeDefault
+              />
+            </Canvas>
+          </div>
+        </motion.div>
 
-      {/* OrbitControls */}
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        minPolarAngle={Math.PI / 2.1}
-        maxPolarAngle={Math.PI / 2.1}
-        enableDamping
-        dampingFactor={0.05}
-        autoRotate
-        autoRotateSpeed={0.9}
-        makeDefault
-      />
-    </Canvas>
-</div>
-    {/* Tooltip */}
-<div className="absolute top-20 left-5 z-20 text-center">
-  <p className="text-sm text-blue-100/80 bg-blue-900/50 px-4 py-2 rounded-lg shadow-lg">
-    Click on the glowing dots to see testimonials!
-  </p>
-  </div>
-  
-  {/* Hero Content */}
-  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="text-white"
-    >
-      <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-100 via-blue-200 to-indigo-100 leading-tight">
-        Connect with global students and mentors in minutes, <span className="text-blue-400">not months</span>
-      </h1>
-      <p className="text-blue-100/80 text-lg mb-8 max-w-lg mx-auto">
-        Our platform connects students and mentors globally, fostering collaboration, learning, and competition.
-      </p>
-    </motion.div>
-  </div>
-</div>
+        {/* Left side - Hero text */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center lg:text-left mt-12 px-6"
+        >
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm border border-blue-500/20">
+            <span className="text-xs font-medium text-blue-300">
+              Empowering students and mentors globally
+            </span>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-100 via-blue-200 to-indigo-100 leading-tight">
+            Connect with global students and mentors in minutes, <span className="text-blue-400">not months</span>
+          </h1>
+          
+          <p className="text-blue-100/80 text-lg mb-8 max-w-lg mx-auto lg:mx-0">
+            Our platform connects students and mentors globally, fostering collaboration, learning, and competition.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+            <button 
+              onClick={() => navigate('/login')}
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg font-medium text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 flex items-center justify-center"
+            >
+              Register <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => navigate('/how-it-works')}
+              className="px-8 py-3 bg-white/10 backdrop-blur-sm border border-blue-400/30 rounded-lg font-medium text-blue-100 hover:bg-blue-500/20 transition-all duration-300"
+            >
+              How It Works
+            </button>
+          </div>
+          
+          {/* Logos and social proof */}
+          <div className="mt-12">
+            <p className="text-blue-200/60 mb-4 text-sm">
+              Trusted by leading mentors and students worldwide
+            </p>
+          </div>
+        </motion.div>
       </div>
 
       {/* Stats section */}
