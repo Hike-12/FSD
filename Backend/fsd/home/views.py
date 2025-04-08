@@ -679,7 +679,7 @@ def student_profile(request):
     if request.method == 'GET':
         try:
             profile = StudentProfile.objects.get(user=request.user)
-
+            
             data = {
                 'id': profile.id,
                 'full_name': profile.full_name,
