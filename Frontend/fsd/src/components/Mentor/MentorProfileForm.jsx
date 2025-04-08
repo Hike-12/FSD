@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MentorNavbar from "@/components/Mentor/MentorNavbar";
 
 const MentorProfileForm = () => {
   const navigate = useNavigate();
@@ -605,47 +606,49 @@ const MentorProfileForm = () => {
 
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">Mentor Profile Form</h1>
-      
-      <div className="bg-white border border-[#e1bb80] rounded-md p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-[#233d4d] text-white flex items-center justify-center rounded-full mr-2">{currentStep + 1}</div>
-            <h2 className="text-lg font-semibold text-[#233d4d]">{steps[currentStep].label}</h2>
+    <MentorNavbar>
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6 text-center">Mentor Profile Form</h1>
+        
+        <div className="bg-white border border-[#e1bb80] rounded-md p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-[#233d4d] text-white flex items-center justify-center rounded-full mr-2">{currentStep + 1}</div>
+              <h2 className="text-lg font-semibold text-[#233d4d]">{steps[currentStep].label}</h2>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={handlePrevious}
+                disabled={currentStep === 0}
+                className={`px-4 py-2 mr-2 rounded-md ${currentStep === 0 ? 'bg-gray-200 text-gray-500' : 'bg-[#233d4d] text-white'}`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={currentStep === steps.length - 1}
+                className={`px-4 py-2 rounded-md ${currentStep === steps.length - 1 ? 'bg-gray-200 text-gray-500' : 'bg-[#233d4d] text-white'}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
-          <div className="flex items-center">
-            <button
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              className={`px-4 py-2 mr-2 rounded-md ${currentStep === 0 ? 'bg-gray-200 text-gray-500' : 'bg-[#233d4d] text-white'}`}
-            >
-              Previous
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={currentStep === steps.length - 1}
-              className={`px-4 py-2 rounded-md ${currentStep === steps.length - 1 ? 'bg-gray-200 text-gray-500' : 'bg-[#233d4d] text-white'}`}
-            >
-              Next
-            </button>
+          <div className="h-1 bg-gray-200 my-4 rounded-full">
+          <div className="h-1 bg-[#e1bb80] rounded-full" style={{ width: `${progressPercentage}%` }}></div>
           </div>
+          {renderForm()}
         </div>
-        <div className="h-1 bg-gray-200 my-4 rounded-full">
-        <div className="h-1 bg-[#e1bb80] rounded-full" style={{ width: `${progressPercentage}%` }}></div>
-        </div>
-        {renderForm()}
+        
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-[#e1bb80] text-[#233d4d] py-3 px-11 rounded-full text-xs font-bold uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none"
+        >
+          {currentStep === steps.length - 1 ? 'Submit' : 'Save & Continue'}
+        </button>
+        
+        {submitMessage && <p className="text-[#233d4d] text-center mt-4">{submitMessage}</p>}
       </div>
-      
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-[#e1bb80] text-[#233d4d] py-3 px-11 rounded-full text-xs font-bold uppercase tracking-wider transition duration-80 ease-in-out active:scale-95 focus:outline-none"
-      >
-        {currentStep === steps.length - 1 ? 'Submit' : 'Save & Continue'}
-      </button>
-      
-      {submitMessage && <p className="text-[#233d4d] text-center mt-4">{submitMessage}</p>}
-    </div>
+    </MentorNavbar>
   );
 };
   export default MentorProfileForm;
