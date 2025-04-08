@@ -22,6 +22,7 @@ const TeamDetail = () => {
   const [projectFile, setProjectFile] = useState(null);
   const [presentationFile, setPresentationFile] = useState(null);
   const [submissionMessage, setSubmissionMessage] = useState("");
+  const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate(); // Use navigate for routing
 
   useEffect(() => {
@@ -62,47 +63,29 @@ const TeamDetail = () => {
       setSubmissionMessage(`Error: ${err.message}`);
     }
   };
-  // Mock data for development
-  // const mockTeam = {
-  //   id: teamId,
-  //   name: "Quantum Coders",
-  //   competition_name: "AI Innovation Hackathon",
-  //   competition_description: "Develop AI solutions for real-world problems in healthcare.",
-  //   competition_start_date: "2025-03-15",
-  //   competition_end_date: "2025-04-30",
-  //   competition_registration_deadline: "2025-03-10",
-  //   competition_min_team_size: 2,
-  //   competition_max_team_size: 5,
-  //   competition_organizer: "Tech Innovators Inc.",
-  //   competition_venue: "Virtual",
-  //   competition_website: "https://ai-hackathon.example.com",
-  //   team_code: "QUANT-2025",
-  //   status: "Active",
-  //   progress: 65,
-  //   members: [
-  //     { id: 1, full_name: "Alex Johnson", role: "Team Lead", avatar: "AJ", online: true },
-  //     { id: 2, full_name: "Sam Wilson", role: "Backend Developer", avatar: "SW", online: false },
-  //     { id: 3, full_name: "Taylor Smith", role: "UI/UX Designer", avatar: "TS", online: true },
-  //   ],
-  //   tasks: [
-  //     { id: 1, title: "Project Proposal", completed: true, due_date: "2025-03-20" },
-  //     { id: 2, title: "Initial Prototype", completed: true, due_date: "2025-04-05" },
-  //     { id: 3, title: "Final Submission", completed: false, due_date: "2025-04-30" },
-  //   ],
-  //   files: [
-  //     { id: 1, name: "Project_Spec.pdf", uploaded_by: "Alex Johnson", date: "2025-03-18" },
-  //     { id: 2, name: "Wireframes.sketch", uploaded_by: "Taylor Smith", date: "2025-03-22" },
-  //   ]
-  // };
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await fetch(`${DJANGO_BASE_URL}/api/teams/${teamId}/submissions/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${localStorage.getItem("authToken")}`,
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch submissions");
+          const data = await response.json();
+          console.log(data);
+          setSubmissions(data.submissions);
+      } catch (err) {
+        setError(err.message);
+      }}
+    fetchSubmissions();
+    },[]);
 
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        // For development, using mock data
-        // setTeam(mockTeam);
-        
-        // Uncomment for production
-  
         const response = await fetch(`${DJANGO_BASE_URL}/api/teams/${teamId}/`, {
           method: "GET",
           headers: {
@@ -241,10 +224,10 @@ const TeamDetail = () => {
               Tasks
             </button>
             <button
-              onClick={() => setActiveTab("files")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "files" ? "border-purple-500 text-white" : "border-transparent text-gray-400 hover:text-gray-300"}`}
+              onClick={() => setActiveTab("submissions")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "submissions" ? "border-purple-500 text-white" : "border-transparent text-gray-400 hover:text-gray-300"}`}
             >
-              Files
+              Submissions
             </button>
             <button
               onClick={() => setActiveTab("chat")}
@@ -385,26 +368,24 @@ const TeamDetail = () => {
               </div>
             )}
 
-            {activeTab === "files" && (
+            {activeTab === "submissions" && (
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Shared Files</h2>
-                  <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-sm font-medium">
-                    Upload File
-                  </button>
+                  <h2 className="text-xl font-bold">Shared submissions</h2>
+                  
                 </div>
                 <div className="space-y-4">
-                  {team.files.map((file) => (
-                    <div key={file.id} className="flex items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                  {submissions.map((submission) => (
+                    <div key={submission.id} className="flex items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
                       <div className="p-2 rounded bg-gray-600">
                         <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                       </div>
                       <div className="ml-4 flex-1">
-                        <p className="font-medium">{file.name}</p>
+                        <p className="font-medium">{submission.title}</p>
                         <p className="text-sm text-gray-400">
-                          Uploaded by {file.uploaded_by} on {new Date(file.date).toLocaleDateString()}
+                          Uploaded by {submission.uploaded_by} on {new Date(submission.submission_date).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex space-x-2">
@@ -524,7 +505,7 @@ const TeamDetail = () => {
                 </label>
                 <input
                   type="file"
-                  onChange={(e) => setProjectFile(e.target.files[0])}
+                  onChange={(e) => setProjectFile(e.target.submissions[0])}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -534,7 +515,7 @@ const TeamDetail = () => {
                 </label>
                 <input
                   type="file"
-                  onChange={(e) => setPresentationFile(e.target.files[0])}
+                  onChange={(e) => setPresentationFile(e.target.submissions[0])}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
