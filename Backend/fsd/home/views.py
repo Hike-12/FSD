@@ -1523,6 +1523,37 @@ def edit_task(request, task_id):
         print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
     
+@csrf_exempt
+@api_token_required
+def get_team_submission(request,team_id):
+    try:
+        # Get the logged-in user's student profile
+        student_profile = StudentProfile.objects.get(user=request.user)
+
+        # Fetch all submissions where the user is a member of the team
+        submissions = ProjectSubmission.objects.filter(team__members=student_profile)
+
+        # Prepare the response data
+        submission_list = [
+            {
+                'submission_id': submission.id,
+                'team_name': submission.team.name,
+                'competition_name': submission.competition.name,
+                'title': submission.title,
+                'description': submission.description,
+                'submission_date': submission.submission_date.isoformat() if submission.submission_date else None,
+                'status': submission.status,
+            }
+            for submission in submissions
+        ]
+
+        return JsonResponse({'submissions': submission_list}, status=200)
+
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
 #############################################################################################################################
 #FILES KA PART
 
