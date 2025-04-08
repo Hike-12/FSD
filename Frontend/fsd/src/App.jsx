@@ -28,6 +28,8 @@ import HostSidebar from "./components/Hosts/HostSidebar";
 import Chat from "./components/Workspace/Chat";
 import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 import Workspace from "./components/Workspace/Workspace";
+import LandingPageAliqyaan from "./components/LandingPage/LandingPageAliqyaan";
+import HowItWorks from "./components/LandingPage/Working";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -55,6 +57,8 @@ function App() {
 
                         {/* LANDING PAGE */}
                         <Route path="/" element={<LandingPage />} />
+                        <Route path="/landing" element={<LandingPageAliqyaan />} />
+                        <Route path="/how-it-works" element={<HowItWorks/>}/>
 
                         {/* LOGIN/REGISTER */}
                         <Route path="/login" element={<LoginRegister />} />
