@@ -12,9 +12,6 @@ const MentorNavbar = ({ children }) => {
     logout();
     navigate("/login");
   };
-  const handleMentor =() => {
-    navigate("/mentors");
-  }
 
   return (
     <div className="relative flex h-screen overflow-hidden">
@@ -77,23 +74,21 @@ const MentorNavbar = ({ children }) => {
             </div>
             <div className="p-4">
               <nav className="space-y-2">
-                <a href="/mentor-profile" className="flex items-center py-2 px-4 text-white bg-[#121F1F] rounded-lg hover:bg-[#00C4B8]/10 transition-colors">
+                <a href="/mentors" className="flex items-center py-2 px-4 text-white bg-[#121F1F] rounded-lg hover:bg-[#00C4B8]/10 transition-colors">
                   <User className="w-5 h-5 mr-3" />
                   Profile
                 </a>
-                <a href="/mentor-competitions" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/competitions" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Trophy className="w-5 h-5 mr-3" />
                   Competitions
                 </a>
-                <a href="/mentors" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/team-detail" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Users className="w-5 h-5 mr-3" />
                   Teams
-                 
-                    
                 </a>
-                <a href="/mentor-teams" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/student-team" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Users className="w-5 h-5 mr-3" />
-                  Student
+                  Students
                 </a>
                 <button
                   onClick={handleLogout}
