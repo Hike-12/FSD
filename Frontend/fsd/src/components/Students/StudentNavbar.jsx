@@ -32,7 +32,7 @@ const StudentNavbar = ({ children }) => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#00C4B8] to-[#006D66]"></div>
-                <span className="text-white font-bold">DevCompete</span>
+                <span className="text-white font-bold">HUHUHUH</span>
               </div>
             </div>
 

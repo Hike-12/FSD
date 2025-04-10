@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { DJANGO_BASE_URL } from "@/lib/utils";
 import MentorCard from "@/components/Mentor/MentorCard";
 import { UserPlus, Search, Award, Users, Clock } from "lucide-react";
-import MentorNavbar from "@/components/Mentor/MentorNavbar";
 
 const SkeletonMentorCard = () => (
   <div className="bg-gray-800/50 border border-gray-700 rounded-xl h-[420px] overflow-hidden animate-pulse">
@@ -79,7 +78,7 @@ const AllMentors = () => {
   const handleRequestConsultation = (id) => navigate(`/request-consultation/${id}`);
 
   return (
-    <MentorNavbar>
+    
       <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         {/* Animated Header */}
         <div className="relative overflow-hidden bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-700 rounded-xl shadow-xl p-6 mb-8 group">
@@ -249,7 +248,6 @@ const AllMentors = () => {
           </motion.div>
         )}
       </div>
-    </MentorNavbar>
   );
 };
 

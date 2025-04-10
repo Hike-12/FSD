@@ -24,7 +24,7 @@ import HostNavbar from "./components/Hosts/HostNavbar";
 import MentorSidebar from "./components/Mentor/MentorSidebar";
 import StudentSidebar from "./components/Students/StudentSidebar";
 import HostSidebar from "./components/Hosts/HostSidebar";
-// import Layout from "./components/NavSideLayout";
+import Layout from "./components/Students/StudentNavbar";
 import Chat from "./components/Workspace/Chat";
 import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 import Workspace from "./components/Workspace/Workspace";
@@ -36,15 +36,15 @@ function App() {
 
     const getNavbar = () => {
         if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <MentorNavbar />;
-        if (userRole === "HOST") return <HostNavbar />;
+        if (userRole === "MENTOR") return <StudentNavbar />;
+        if (userRole === "HOST") return <StudentNavbar />;
         return null;
       };
     
       const getSidebar = () => {
-        if (userRole === "STUDENT") return <StudentSidebar />;
-        if (userRole === "MENTOR") return <MentorSidebar />;
-        if (userRole === "HOST") return <HostSidebar />;
+        if (userRole === "STUDENT") return <StudentNavbar />;
+        if (userRole === "MENTOR") return <StudentNavbar />;
+        if (userRole === "HOST") return <StudentNavbar />;
         return null;
       };
 
@@ -52,7 +52,7 @@ function App() {
         <>
         <BrowserRouter>
             <AuthProvider>
-                {/* <Layout navbar={getNavbar()} sidebar={getSidebar()}> */}
+                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
                     <Routes>
 
                         {/* LANDING PAGE */}
@@ -91,7 +91,7 @@ function App() {
                         <Route path="/workspace/:teamId" element = {<Workspace />} />
 
                     </Routes>
-                {/* </Layout> */}
+                </Layout>
             </AuthProvider>
         </BrowserRouter>
         </>

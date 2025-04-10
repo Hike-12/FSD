@@ -21,7 +21,7 @@ const StudentSidebar = () => {
           </Link>
         </li>
         <li>
-          <Link to="/competitions" className="hover:underline">
+          <Link to="/student-competitions" className="hover:underline">
             My Competitions
           </Link>
         </li>

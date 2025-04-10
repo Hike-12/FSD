@@ -19,7 +19,6 @@ import {
   Globe2
 } from "lucide-react";
 import { DJANGO_BASE_URL } from "@/lib/utils";
-import MentorNavbar from "@/components/Mentor/MentorNavbar";
 
 const MentorProfile = () => {
     const { id } = useParams();
@@ -96,7 +95,6 @@ const MentorProfile = () => {
     };
 
     return (
-      <MentorNavbar>
         <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             {/* Profile Header */}
@@ -471,7 +469,6 @@ const MentorProfile = () => {
             </div>
           </div>
         </div>
-      </MentorNavbar>
     );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MentorNavbar from "@/components/Mentor/MentorNavbar";
 
 const MentorProfileForm = () => {
   const navigate = useNavigate();
@@ -606,7 +605,6 @@ const MentorProfileForm = () => {
 
 
   return (
-    <MentorNavbar>
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-6 text-center">Mentor Profile Form</h1>
         
@@ -648,7 +646,6 @@ const MentorProfileForm = () => {
         
         {submitMessage && <p className="text-[#233d4d] text-center mt-4">{submitMessage}</p>}
       </div>
-    </MentorNavbar>
   );
 };
   export default MentorProfileForm;
