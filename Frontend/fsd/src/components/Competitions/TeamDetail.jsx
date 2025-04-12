@@ -217,12 +217,12 @@ const TeamDetail = () => {
             >
               Members
             </button>
-            <button
+            {/* <button
               onClick={() => setActiveTab("tasks")}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "tasks" ? "border-purple-500 text-white" : "border-transparent text-gray-400 hover:text-gray-300"}`}
             >
               Tasks
-            </button>
+            </button> */}
             <button
               onClick={() => setActiveTab("submissions")}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "submissions" ? "border-purple-500 text-white" : "border-transparent text-gray-400 hover:text-gray-300"}`}
@@ -324,7 +324,7 @@ const TeamDetail = () => {
               </div>
             )}
 
-            {activeTab === "tasks" && (
+            {/* {activeTab === "tasks" && (
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold">Team Tasks</h2>
@@ -366,7 +366,7 @@ const TeamDetail = () => {
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
 
             {activeTab === "submissions" && (
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
