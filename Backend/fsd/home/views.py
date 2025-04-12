@@ -1385,6 +1385,109 @@ def submit_project(request, team_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_team_submission(request, team_id):
+    """
+    Fetch all submissions for a specific team.
+    """
+    try:
+        team = get_object_or_404(Team, id=team_id)
+        submissions = ProjectSubmission.objects.filter(team=team)
+
+        submission_list = [
+            {
+                "id": submission.id,
+                "title": submission.title,
+                "description": submission.description,
+                "submission_date": submission.submission_date.isoformat(),
+                # Removed 'uploaded_by' since it doesn't exist
+                "project_file_url": request.build_absolute_uri(submission.project_file.url) if submission.project_file else None,
+                "presentation_file_url": request.build_absolute_uri(submission.presentation_file.url) if submission.presentation_file else None,
+            }
+            for submission in submissions
+        ]
+
+        return JsonResponse({"submissions": submission_list}, status=200)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+
+@api_token_required
+@require_http_methods(["DELETE"])
+@csrf_exempt
+def delete_submission(request, submission_id):
+    """
+    Delete a specific submission.
+    """
+    try:
+        submission = get_object_or_404(ProjectSubmission, id=submission_id)
+        submission.delete()
+        return JsonResponse({"message": "Submission deleted successfully!"}, status=200)
+    except ProjectSubmission.DoesNotExist:
+        return JsonResponse({"error": "Submission not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_competition_submissions_grouped(request, competition_id):
+    """
+    Fetch all submissions for a specific competition grouped by teams.
+    """
+    try:
+        competition = get_object_or_404(Competition, id=competition_id)
+        submissions = ProjectSubmission.objects.filter(competition=competition)
+        # Group submissions by team
+        grouped_submissions = {}
+        for submission in submissions:
+            print("Submission:", {
+    "id": submission.id,
+    "title": submission.title,
+    "description": submission.description,
+    "submission_date": submission.submission_date.isoformat(),
+    "status": submission.status,
+    "team_name": submission.team.name,
+    "project_file_url": request.build_absolute_uri(submission.project_file.url) if submission.project_file else None,
+    "presentation_file_url": request.build_absolute_uri(submission.presentation_file.url) if submission.presentation_file else None,
+})
+            team_name = submission.team.name
+            if team_name not in grouped_submissions:
+                grouped_submissions[team_name] = []
+            
+            # Add file URLs to the submission data
+            submission_data = {
+                "id": submission.id,
+                "title": submission.title,
+                "description": submission.description,
+                "submission_date": submission.submission_date.isoformat(),
+                "status": submission.status,
+            }
+            
+            # Add project file URL if exists
+            if submission.project_file:
+                submission_data["project_file_url"] = request.build_absolute_uri(submission.project_file.url)
+                submission_data["project_file_name"] = submission.project_file.name.split('/')[-1]
+            
+            # Add presentation file URL if exists
+            if submission.presentation_file:
+                submission_data["presentation_file_url"] = request.build_absolute_uri(submission.presentation_file.url)
+                submission_data["presentation_file_name"] = submission.presentation_file.name.split('/')[-1]
+                
+            grouped_submissions[team_name].append(submission_data)
+
+        return JsonResponse({"submissions": grouped_submissions}, status=200)
+
+    except Competition.DoesNotExist:
+        return JsonResponse({"error": "Competition not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
 #######################################################################################################################################
 # TASKS KA PART
 
@@ -1523,92 +1626,7 @@ def edit_task(request, task_id):
         print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
     
-@api_token_required
-@require_http_methods(["GET"])
-@csrf_exempt
-def get_team_submission(request, team_id):
-    """
-    Fetch all submissions for a specific team.
-    """
-    try:
-        team = get_object_or_404(Team, id=team_id)
-        submissions = ProjectSubmission.objects.filter(team=team)
 
-        submission_list = [
-            {
-                "id": submission.id,
-                "title": submission.title,
-                "description": submission.description,
-                "submission_date": submission.submission_date.isoformat(),
-                # Removed 'uploaded_by' since it doesn't exist
-                "project_file_url": request.build_absolute_uri(submission.project_file.url) if submission.project_file else None,
-                "presentation_file_url": request.build_absolute_uri(submission.presentation_file.url) if submission.presentation_file else None,
-            }
-            for submission in submissions
-        ]
-
-        return JsonResponse({"submissions": submission_list}, status=200)
-
-    except Team.DoesNotExist:
-        return JsonResponse({"error": "Team not found"}, status=404)
-    except Exception as e:
-        print("Error:", str(e))
-        return JsonResponse({"error": str(e)}, status=500)
-    
-@api_token_required
-@require_http_methods(["GET"])
-@csrf_exempt
-def get_competition_submissions_grouped(request, competition_id):
-    """
-    Fetch all submissions for a specific competition grouped by teams.
-    """
-    try:
-        competition = get_object_or_404(Competition, id=competition_id)
-        submissions = ProjectSubmission.objects.filter(competition=competition)
-        # Group submissions by team
-        grouped_submissions = {}
-        for submission in submissions:
-            print("Submission:", {
-    "id": submission.id,
-    "title": submission.title,
-    "description": submission.description,
-    "submission_date": submission.submission_date.isoformat(),
-    "status": submission.status,
-    "team_name": submission.team.name,
-    "project_file_url": request.build_absolute_uri(submission.project_file.url) if submission.project_file else None,
-    "presentation_file_url": request.build_absolute_uri(submission.presentation_file.url) if submission.presentation_file else None,
-})
-            team_name = submission.team.name
-            if team_name not in grouped_submissions:
-                grouped_submissions[team_name] = []
-            
-            # Add file URLs to the submission data
-            submission_data = {
-                "id": submission.id,
-                "title": submission.title,
-                "description": submission.description,
-                "submission_date": submission.submission_date.isoformat(),
-                "status": submission.status,
-            }
-            
-            # Add project file URL if exists
-            if submission.project_file:
-                submission_data["project_file_url"] = request.build_absolute_uri(submission.project_file.url)
-                submission_data["project_file_name"] = submission.project_file.name.split('/')[-1]
-            
-            # Add presentation file URL if exists
-            if submission.presentation_file:
-                submission_data["presentation_file_url"] = request.build_absolute_uri(submission.presentation_file.url)
-                submission_data["presentation_file_name"] = submission.presentation_file.name.split('/')[-1]
-                
-            grouped_submissions[team_name].append(submission_data)
-
-        return JsonResponse({"submissions": grouped_submissions}, status=200)
-
-    except Competition.DoesNotExist:
-        return JsonResponse({"error": "Competition not found"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
     
 #############################################################################################################################
 #FILES KA PART

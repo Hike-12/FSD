@@ -25,6 +25,25 @@ const TeamDetail = () => {
   const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate(); // Use navigate for routing
 
+  const handleDeleteSubmission = async (submissionId) => {
+    if (!window.confirm("Are you sure you want to delete this submission?")) return;
+  
+    try {
+      const response = await fetch(`${DJANGO_BASE_URL}/api/submissions/${submissionId}/delete/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+      });
+  
+      if (!response.ok) throw new Error("Failed to delete submission");
+  
+      setSubmissions((prev) => prev.filter((submission) => submission.id !== submissionId));
+      alert("Submission deleted successfully!");
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
   useEffect(() => {
     // Redirect to workspace when activeTab is "chat"
     if (activeTab === "chat") {
@@ -376,34 +395,60 @@ const TeamDetail = () => {
                   
                 </div>
                 <div className="space-y-4">
-                  {submissions.map((submission) => (
-                    <div key={submission.id} className="flex items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
-                      <div className="p-2 rounded bg-gray-600">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                      </div>
-                      <div className="ml-4 flex-1">
-                        <p className="font-medium">{submission.title}</p>
-                        <p className="text-sm text-gray-400">
-                          Uploaded by {submission.uploaded_by} on {new Date(submission.submission_date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button className="text-gray-400 hover:text-white">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                          </svg>
-                        </button>
-                        <button className="text-gray-400 hover:text-white">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+  {submissions.map((submission) => (
+    <div key={submission.id} className="flex items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+      <div className="ml-4 flex-1">
+        <p className="font-medium">{submission.title}</p>
+        <p className="text-sm text-gray-400">
+          Submitted on {new Date(submission.submission_date).toLocaleDateString()}
+        </p>
+        <div className="mt-2 space-y-2">
+          {submission.project_file_url && (
+            <a
+              href={submission.project_file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              View Project File
+            </a>
+          )}
+          {submission.presentation_file_url && (
+            <a
+              href={submission.presentation_file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              View Presentation File
+            </a>
+          )}
+        </div>
+      </div>
+      <div className="ml-auto">
+        <button
+          onClick={() => handleDeleteSubmission(submission.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
               </div>
             )}
           </div>
