@@ -50,9 +50,9 @@ const Chat = () => {
   };
 
   // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+//   useEffect(() => {
+//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+//   }, [messages]);
 
   // Add this useEffect to handle setting the video source after render
   useEffect(() => {
@@ -143,6 +143,7 @@ const Chat = () => {
       try {
         const response = await fetch(`${NODE_BASE_URL}/messages?team_id=${teamId}`);
         const data = await response.json();
+        console.log("Fetched messages:", data);
         setMessages(data);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -607,53 +608,64 @@ const Chat = () => {
       {/* Chat Area */}
       <div className="flex-1 container mx-auto p-6 flex flex-col">
         {/* Messages Container */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
+        // Update the Messages Container section with improved formatting and timestamps
+
+{/* Messages Container */}
+<motion.div 
+  initial={{ y: 20, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ delay: 0.1 }}
+  className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
+>
+  {messages.length === 0 ? (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      className="h-full flex items-center justify-center text-blue-100/50"
+    >
+      No messages yet. Start the conversation!
+    </motion.div>
+  ) : (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col space-y-4"
+    >
+      {messages.map((msg, index) => (
+        <motion.div
+          key={msg._id || index}
+          variants={itemVariants}
+          custom={index}
+          className={`flex ${msg.sender === userId ? 'justify-end' : 'justify-start'}`}
         >
-          {messages.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="h-full flex items-center justify-center text-blue-100/50"
-            >
-              No messages yet. Start the conversation!
-            </motion.div>
-          ) : (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  custom={index}
-                  className={`mb-4 max-w-[80%] ${msg.sender === userId ? 'ml-auto' : 'mr-auto'}`}
-                >
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className={`p-3 rounded-xl shadow-md ${
-                      msg.sender === userId
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
-                        : 'backdrop-blur-md bg-white/10 text-blue-100'
-                    }`}
-                  >
-                    <div className="font-medium text-xs mb-1 opacity-80">
-                      {msg.userName || (msg.sender === userId ? 'You' : msg.sender)}
-                    </div>
-                    <div className="text-sm">{msg.content}</div>
-                  </motion.div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-          <div ref={messagesEndRef} />
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className={`max-w-[85%] p-3 rounded-xl shadow-md ${
+              msg.sender === userId
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                : 'backdrop-blur-md bg-white/10 text-blue-100'
+            }`}
+          >
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-medium text-xs opacity-80">
+                {msg.userName || (msg.sender === userId ? 'You' : msg.sender)}
+              </span>
+              {msg.timestamp && (
+                <span className="text-xs opacity-60 ml-2">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              )}
+            </div>
+            <div className="text-sm break-words">{msg.content}</div>
+          </motion.div>
         </motion.div>
+      ))}
+    </motion.div>
+  )}
+  <div ref={messagesEndRef} />
+</motion.div>
 
         {/* Message Input */}
         <motion.div 
