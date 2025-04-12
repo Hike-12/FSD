@@ -231,6 +231,10 @@ const StudentProfile = () => {
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
                     <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 mb-6">
+                    <div className="flex items-center gap-2 text-gray-600">
+                              <Users className="w-4 h-4 text-blue-500" />
+                              <span>{student.total_collaborators || 0} Collaborators</span>
+                            </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                             <Mail className="w-5 h-5 mr-2 text-blue-500" />
                             Contact Information

@@ -16,6 +16,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
 from django.http import FileResponse,HttpResponse
+from django.db.models import Q
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
@@ -630,9 +631,16 @@ def get_recommended_students(request):
 def get_student_detail(request, student_id):
     student = get_object_or_404(StudentProfile, id=student_id)
     
+    
+    total_collaborators = CollaborationRequest.objects.filter(
+        (Q(from_student=student) | Q(to_student=student)) & Q(status="accepted")
+    ).count()
+    
+    
     student_data = {
         "id": student.id,
         "full_name": student.full_name,
+        "total_collaborators": total_collaborators,
         "date_of_birth": student.date_of_birth,
         "gender": student.gender,
         "phone_number": student.phone_number,
@@ -1840,5 +1848,34 @@ def handle_collaboration_request(request):
 
     except CollaborationRequest.DoesNotExist:
         return JsonResponse({"error": "Collaboration request not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_collaborators(request):
+    try:
+        student = request.user.student_profile
+
+        # Fetch all accepted collaboration requests
+        collaborators = CollaborationRequest.objects.filter(
+            (Q(from_student=student) | Q(to_student=student)) & Q(status="accepted")
+        )
+
+        # Prepare the list of collaborators
+        collaborator_list = []
+        for collab in collaborators:
+            other_student = collab.from_student if collab.to_student == student else collab.to_student
+            collaborator_list.append({
+                "id": other_student.id,
+                "full_name": other_student.full_name,
+                "profile_picture": other_student.profile_picture.url if other_student.profile_picture else None,
+                "department": other_student.department,
+                "year_of_study": other_student.year_of_study,
+            })
+
+        return JsonResponse({"collaborators": collaborator_list}, status=200)
+
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

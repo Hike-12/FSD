@@ -90,10 +90,7 @@ const StudentCard = ({ student, index }) => {
           <Star className="w-4 h-4 text-amber-500" />
           <span>GPA: {student.gpa || "N/A"}</span>
         </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <Users className="w-4 h-4 text-blue-500" />
-          <span>{student.total_collaborators || 0} Collaborators</span>
-        </div>
+        
         <div className="flex items-center gap-2 text-gray-600">
           <MapPin className="w-4 h-4 text-gray-400" />
           <span>{student.city || "Location"}, {student.state || "State"}</span>
