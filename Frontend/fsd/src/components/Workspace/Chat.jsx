@@ -3,6 +3,9 @@ import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { Camera, Mic, MicOff, Monitor, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
 import { DJANGO_BASE_URL, NODE_BASE_URL } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SOCKET_URL = window.location.hostname === "localhost" ? "http://localhost:5000" : "http://192.168.0.110:5000/";
 
@@ -27,6 +30,24 @@ const Chat = () => {
   const peerConnections = useRef({});
   const remoteVideoRefs = useRef({});
   const remoteUsers = useRef({});
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 }
+    }
+  };
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -63,9 +84,11 @@ const Chat = () => {
       remoteUserIds.forEach((remoteUserId) => {
         handleUserJoined(remoteUserId);
       });
+
+      toast.success("Video call started successfully!");
     } catch (error) {
       console.error("Error starting video call:", error);
-      alert("Could not access camera/microphone. Please check permissions.");
+      toast.error("Could not access camera/microphone. Please check permissions.");
     }
   };
 
@@ -89,6 +112,7 @@ const Chat = () => {
 
     setIsVideoCallActive(false);
     socketRef.current.emit("leaveCall", teamId);
+    toast.info("Video call ended");
   };
 
   // Initialize socket connection
@@ -99,10 +123,13 @@ const Chat = () => {
     
     socketRef.current.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
+      if (data.sender !== userId) {
+        toast.info(`New message from ${data.userName || data.sender}`, { autoClose: 2000 });
+      }
     });
     
     socketRef.current.on("error", (data) => {
-      alert(data.message);
+      toast.error(data.message);
     });
     
     return () => {
@@ -119,6 +146,7 @@ const Chat = () => {
         setMessages(data);
       } catch (error) {
         console.error("Error fetching messages:", error);
+        toast.error("Failed to load messages");
       }
     };
     fetchMessages();
@@ -131,6 +159,7 @@ const Chat = () => {
     socketRef.current.on("userJoined", ({ userId: remoteUserId }) => {
       setRemoteUserIds(prev => [...prev, remoteUserId]);
       handleUserJoined(remoteUserId);
+      toast.info(`${remoteUserId} joined the call`);
     });
     
     socketRef.current.on("userLeft", ({ userId: remoteUserId }) => {
@@ -139,6 +168,7 @@ const Chat = () => {
         peerConnections.current[remoteUserId].close();
         delete peerConnections.current[remoteUserId];
       }
+      toast.info(`${remoteUserId} left the call`);
     });
 
     socketRef.current.on("existingParticipants", async ({ participants }) => {
@@ -157,6 +187,7 @@ const Chat = () => {
             socketRef.current.emit("offer", { offer, to: remoteUserId });
           } catch (error) {
             console.error("Error creating offer for existing participant:", error);
+            toast.error("Connection error");
           }
         }
       }
@@ -196,6 +227,7 @@ const Chat = () => {
         socketRef.current.emit("offer", { offer, to: remoteUserId });
       } catch (error) {
         console.error("Error creating offer:", error);
+        toast.error("Failed to connect with new participant");
       }
     }
   };
@@ -210,6 +242,7 @@ const Chat = () => {
         socketRef.current.emit("answer", { answer, to: from });
       } catch (error) {
         console.error("Error handling offer:", error);
+        toast.error("Connection error");
       }
     }
   };
@@ -223,6 +256,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error handling answer:", error);
+      toast.error("Connection error");
     }
   };
 
@@ -306,6 +340,7 @@ const Chat = () => {
       setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
+      toast.error("Failed to send message");
     }
   };
 
@@ -319,6 +354,7 @@ const Chat = () => {
     });
 
     setIsCameraEnabled(prev => !prev);
+    toast.info(videoTracks[0].enabled ? "Camera turned on" : "Camera turned off", { autoClose: 1500 });
   };
 
   // Add microphone toggle functionality
@@ -331,6 +367,7 @@ const Chat = () => {
     });
 
     setIsMicEnabled(prev => !prev);
+    toast.info(audioTracks[0].enabled ? "Microphone unmuted" : "Microphone muted", { autoClose: 1500 });
   };
 
   // Add functionality to check users in call
@@ -358,6 +395,7 @@ const Chat = () => {
 
         // Update the local video element
         localVideoRef.current.srcObject = localStreamRef.current;
+        toast.info("Screen sharing stopped", { autoClose: 1500 });
       }
     } else {
       try {
@@ -377,6 +415,7 @@ const Chat = () => {
 
         // Update the local video element
         localVideoRef.current.srcObject = stream;
+        toast.success("Screen sharing started", { autoClose: 1500 });
 
         // Handle screen share ending
         screenTrack.onended = () => {
@@ -384,52 +423,96 @@ const Chat = () => {
         };
       } catch (error) {
         console.error("Error sharing screen:", error);
+        toast.error("Failed to share screen");
       }
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen flex flex-col">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen flex flex-col"
+    >
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+      
       {/* Header */}
-      <div className="py-4 px-6 bg-[#030718]/90 backdrop-blur-lg shadow-lg">
+      <motion.div 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="py-4 px-6 bg-[#030718]/90 backdrop-blur-lg shadow-lg"
+      >
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"
+            >
               <Video className="h-6 w-6 text-white" />
-            </div>
+            </motion.div>
             <h1 className="ml-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
               VideoPulse Chat
             </h1>
           </div>
-          <div>
+          <motion.div whileHover={{ scale: 1.05 }}>
             {!isVideoCallActive ? (
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={startVideoCall}
                 className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg hover:shadow-green-500/30 transition-all duration-300 flex items-center"
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Start Video Call
-              </button>
+              </motion.button>
             ) : (
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={endVideoCall}
                 className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg hover:shadow-red-500/30 transition-all duration-300 flex items-center"
               >
                 <PhoneOff className="w-4 h-4 mr-2" />
                 End Call
-              </button>
+              </motion.button>
             )}
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Video Call Area */}
       {isVideoCallActive && (
-        <div className="bg-[#030718]/80 p-6 border-b border-blue-500/20">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-[#030718]/80 p-6 border-b border-blue-500/20"
+        >
           <div className="container mx-auto">
-            <div className="flex gap-4 flex-wrap justify-center">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="flex gap-4 flex-wrap justify-center"
+            >
               {/* Local Video */}
-              <div className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300">
+              <motion.div
+                variants={itemVariants}
+                className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300"
+                whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(59, 130, 246, 0.3)" }}
+              >
                 <video 
                   ref={localVideoRef} 
                   autoPlay 
@@ -437,18 +520,25 @@ const Chat = () => {
                   muted 
                   className="w-full h-full object-cover" 
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2"
+                >
                   <span className="text-white text-sm font-medium">
                     You {isScreenSharing ? '(Screen)' : ''}
                   </span>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Remote Videos */}
-              {remoteUserIds.map(remoteUserId => (
-                <div 
-                  key={remoteUserId} 
+              {remoteUserIds.map((remoteUserId, index) => (
+                <motion.div 
+                  key={remoteUserId}
+                  variants={itemVariants}
                   className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300"
+                  whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(59, 130, 246, 0.3)" }}
                 >
                   <video
                     ref={el => remoteVideoRefs.current[remoteUserId] = el}
@@ -456,18 +546,30 @@ const Chat = () => {
                     playsInline
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2"
+                  >
                     <span className="text-white text-sm font-medium">
                       {remoteUserId}
                     </span>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             
             {/* Video Controls */}
-            <div className="flex justify-center mt-4 space-x-3">
-              <button
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex justify-center mt-4 space-x-3"
+            >
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={toggleCamera}
                 className={`p-3 rounded-full ${isCameraEnabled ? 'bg-blue-500/40' : 'bg-red-500/40'} hover:bg-blue-600/60 transition-colors`}
               >
@@ -476,8 +578,10 @@ const Chat = () => {
                 ) : (
                   <VideoOff className="h-5 w-5 text-white" />
                 )}
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={toggleMic}
                 className={`p-3 rounded-full ${isMicEnabled ? 'bg-blue-500/40' : 'bg-red-500/40'} hover:bg-blue-600/60 transition-colors`}
               >
@@ -486,50 +590,78 @@ const Chat = () => {
                 ) : (
                   <MicOff className="h-5 w-5 text-white" />
                 )}
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={toggleScreenShare}
                 className={`p-3 rounded-full ${isScreenSharing ? 'bg-green-500/40' : 'bg-blue-500/40'} hover:bg-green-600/60 transition-colors`}
               >
                 <Monitor className="h-5 w-5 text-white" />
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Chat Area */}
       <div className="flex-1 container mx-auto p-6 flex flex-col">
         {/* Messages Container */}
-        <div className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
+        >
           {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-blue-100/50">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="h-full flex items-center justify-center text-blue-100/50"
+            >
               No messages yet. Start the conversation!
-            </div>
+            </motion.div>
           ) : (
-            messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`mb-4 max-w-[80%] ${msg.sender === userId ? 'ml-auto' : 'mr-auto'}`}
-              >
-                <div className={`p-3 rounded-xl shadow-md ${
-                  msg.sender === userId
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
-                    : 'backdrop-blur-md bg-white/10 text-blue-100'
-                }`}>
-                  <div className="font-medium text-xs mb-1 opacity-80">
-                    {msg.userName || (msg.sender === userId ? 'You' : msg.sender)}
-                  </div>
-                  <div className="text-sm">{msg.content}</div>
-                </div>
-              </div>
-            ))
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {messages.map((msg, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  custom={index}
+                  className={`mb-4 max-w-[80%] ${msg.sender === userId ? 'ml-auto' : 'mr-auto'}`}
+                >
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className={`p-3 rounded-xl shadow-md ${
+                      msg.sender === userId
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                        : 'backdrop-blur-md bg-white/10 text-blue-100'
+                    }`}
+                  >
+                    <div className="font-medium text-xs mb-1 opacity-80">
+                      {msg.userName || (msg.sender === userId ? 'You' : msg.sender)}
+                    </div>
+                    <div className="text-sm">{msg.content}</div>
+                  </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
           )}
           <div ref={messagesEndRef} />
-        </div>
+        </motion.div>
 
         {/* Message Input */}
-        <div className="flex">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex"
+        >
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -537,15 +669,17 @@ const Chat = () => {
             placeholder="Type your message..."
             className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-l-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400"
           />
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={sendMessage}
             className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-r-xl hover:opacity-90 transition-opacity"
           >
             Send
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
