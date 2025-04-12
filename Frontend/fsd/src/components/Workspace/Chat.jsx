@@ -12,6 +12,9 @@ const Chat = () => {
     const [message, setMessage] = useState("");
     const [isVideoCallActive, setIsVideoCallActive] = useState(false);
     const [remoteUserIds, setRemoteUserIds] = useState([]);
+    const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
+    const [screenStream, setScreenStream] = useState(null);
 
     // Refs
     const socketRef = useRef(null);
@@ -19,6 +22,7 @@ const Chat = () => {
     const localStreamRef = useRef(null);
     const peerConnections = useRef({});
     const remoteVideoRefs = useRef({});
+    const remoteUsers = useRef({});
 
     // Add this useEffect to handle setting the video source after render
         useEffect(() => {
@@ -295,6 +299,72 @@ const Chat = () => {
         }
     };
 
+    // Add camera toggle functionality
+    const toggleCamera = () => {
+        if (!localStreamRef.current) return;
+
+        const videoTracks = localStreamRef.current.getVideoTracks();
+        videoTracks.forEach(track => {
+            track.enabled = !track.enabled;
+        });
+
+        setIsCameraEnabled(prev => !prev);
+    };
+
+    // Add functionality to check users in call
+    const getUsersInCall = () => {
+        return remoteUserIds.map(id => remoteUsers[id]?.name || id);
+    };
+
+    // Update the toggleScreenShare function to ensure the screen stream is sent to peers
+    const toggleScreenShare = async () => {
+        if (isScreenSharing) {
+            // Stop screen sharing
+            screenStream.getTracks().forEach(track => track.stop());
+            setScreenStream(null);
+            setIsScreenSharing(false);
+
+            // Revert to the camera stream
+            if (localStreamRef.current) {
+                const videoTrack = localStreamRef.current.getVideoTracks()[0];
+                Object.values(peerConnections.current).forEach(pc => {
+                    const sender = pc.getSenders().find(s => s.track.kind === 'video');
+                    if (sender) {
+                        sender.replaceTrack(videoTrack);
+                    }
+                });
+
+                // Update the local video element
+                localVideoRef.current.srcObject = localStreamRef.current;
+            }
+        } else {
+            try {
+                // Start screen sharing
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                setScreenStream(stream);
+                setIsScreenSharing(true);
+
+                // Replace the video track with the screen track
+                const screenTrack = stream.getVideoTracks()[0];
+                Object.values(peerConnections.current).forEach(pc => {
+                    const sender = pc.getSenders().find(s => s.track.kind === 'video');
+                    if (sender) {
+                        sender.replaceTrack(screenTrack);
+                    }
+                });
+
+                // Update the local video element
+                localVideoRef.current.srcObject = stream;
+
+                // Handle screen share ending
+                screenTrack.onended = () => {
+                    toggleScreenShare();
+                };
+            } catch (error) {
+                console.error("Error sharing screen:", error);
+            }
+        }
+    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
@@ -385,6 +455,18 @@ const Chat = () => {
                                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                             >
                                 End Call
+                            </button>
+                            <button
+                                onClick={toggleCamera}
+                                className={`px-4 py-2 ${isCameraEnabled ? 'bg-blue-500' : 'bg-red-500'} text-white rounded-lg hover:bg-blue-600 transition-colors`}
+                            >
+                                {isCameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}
+                            </button>
+                            <button
+                                onClick={toggleScreenShare}
+                                className={`px-4 py-2 ${isScreenSharing ? 'bg-green-500' : 'bg-blue-500'} text-white rounded-lg hover:bg-green-600 transition-colors`}
+                            >
+                                {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
                             </button>
                         </div>
                     )}
