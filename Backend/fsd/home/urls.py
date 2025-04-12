@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/competitions/create/', views.create_competition, name='create_competition'),
     path('api/competitions/<int:competition_id>/submissions/', views.get_competition_submissions, name='get_competition_submissions'),
     path('api/competitions/<int:competition_id>/team-members/', views.get_competition_team_members, name='get_competition_team_members'),
+    path('api/competitions/<int:competition_id>/submissions-grouped/', views.get_competition_submissions_grouped, name='get_competition_submissions_grouped'),
     
     #Hosts
     path('api/hosts/profile/', views.create_or_update_host_profile, name='host-detail'),
