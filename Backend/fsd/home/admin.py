@@ -31,4 +31,5 @@ admin.site.register(ProjectSubmission, DefaultAdmin)
 admin.site.register(Host, DefaultAdmin)
 admin.site.register(Task, DefaultAdmin)
 admin.site.register(TeamFile, DefaultAdmin)
+admin.site.register(CollaborationRequest, DefaultAdmin)
 

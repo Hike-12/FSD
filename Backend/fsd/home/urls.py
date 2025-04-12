@@ -67,6 +67,9 @@ urlpatterns = [
     path('api/teams/<int:team_id>/files/', views.get_team_files, name='get_team_files'),
     path('api/files/<int:file_id>/delete/', views.delete_file, name='delete_file'),
     path('api/files/<int:file_id>/view/', views.serve_file, name='serve_file'),
+    
+    #Collaboration
+    path("api/collaboration-requests/", views.send_collaboration_request, name="send_collaboration_request"),
 ]
 
 

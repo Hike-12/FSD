@@ -5,6 +5,26 @@ import { UserPlus, Search, Users, Star, MapPin, Calendar } from "lucide-react";
 import {DJANGO_BASE_URL} from "@/lib/utils";
 import { useAuth } from "../../context/AuthContext";
 
+const sendCollaborationRequest = async (studentId) => {
+  try {
+    const response = await fetch(`${DJANGO_BASE_URL}/api/collaboration-requests/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ to_student_id: studentId }),
+    });
+
+    if (!response.ok) throw new Error("Failed to send collaboration request");
+
+    alert("Collaboration request sent successfully!");
+  } catch (error) {
+    console.error("Error sending collaboration request:", error);
+    alert("Failed to send collaboration request. Please try again.");
+  }
+};
+
 const SkeletonStudentCard = () => (
   <motion.div 
     className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 transform transition-all duration-300 hover:scale-105"
@@ -81,7 +101,12 @@ const StudentCard = ({ student, index }) => {
           <span>Student ID: {student.student_id || "N/A"}</span>
         </div>
       </div>
-
+      <button
+        className="w-full mt-2 group relative overflow-hidden rounded-xl bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+        onClick={() => sendCollaborationRequest(student.id)} // Call the function here
+      >
+        Send Collaboration Request
+      </button>
       {/* View Profile Button */}
       <button
         className="w-full mt-2 group relative overflow-hidden rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"

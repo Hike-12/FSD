@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task, TeamFile
+from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task, TeamFile,CollaborationRequest
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -1756,5 +1756,37 @@ def serve_file(request, file_id):
         return response
     except TeamFile.DoesNotExist:
         return JsonResponse({"error": "File not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+########################################################################################################################################
+#############################################################################################################################################
+#Collaborators ka part
+
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def send_collaboration_request(request):
+    try:
+        data = json.loads(request.body)
+        to_student_id = data.get("to_student_id")
+
+        if not to_student_id:
+            return JsonResponse({"error": "Recipient student ID is required"}, status=400)
+
+        from_student = request.user.student_profile
+        to_student = StudentProfile.objects.get(id=to_student_id)
+
+        # Check if a request already exists
+        if CollaborationRequest.objects.filter(from_student=from_student, to_student=to_student).exists():
+            return JsonResponse({"error": "Collaboration request already sent"}, status=400)
+
+        # Create the collaboration request
+        CollaborationRequest.objects.create(from_student=from_student, to_student=to_student)
+
+        return JsonResponse({"message": "Collaboration request sent successfully!"}, status=201)
+
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({"error": "Recipient student not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
