@@ -76,220 +76,220 @@ const TypewriterEffectSmooth = ({ words, className }) => {
 };
 
 // Navbar Component
-const Navbar = ({ toggleSidebar }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
+// const Navbar = ({ toggleSidebar }) => {
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const navigate = useNavigate();
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#1F2A2A] py-4 px-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#00C4B8] to-[#006D66]"></div>
-          <span className="text-white font-bold text-xl">DevCompete</span>
-        </div>
+//   return (
+//     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#1F2A2A] py-4 px-6">
+//       <div className="flex items-center justify-between">
+//         <div className="flex items-center space-x-2">
+//           <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#00C4B8] to-[#006D66]"></div>
+//           <span className="text-white font-bold text-xl">DevCompete</span>
+//         </div>
         
-        <div className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-[#A0AEC0] hover:text-white transition-colors">Home</Link>
-          <Link to="/competitions" className="text-white font-medium border-b-2 border-[#00C4B8] pb-1">Competitions</Link>
-          <Link to="/leaderboard" className="text-[#A0AEC0] hover:text-white transition-colors">Leaderboard</Link>
-          <Link to="/resources" className="text-[#A0AEC0] hover:text-white transition-colors">Resources</Link>
-        </div>
+//         <div className="hidden md:flex items-center space-x-8">
+//           <Link to="/" className="text-[#A0AEC0] hover:text-white transition-colors">Home</Link>
+//           <Link to="/competitions" className="text-white font-medium border-b-2 border-[#00C4B8] pb-1">Competitions</Link>
+//           <Link to="/leaderboard" className="text-[#A0AEC0] hover:text-white transition-colors">Leaderboard</Link>
+//           <Link to="/resources" className="text-[#A0AEC0] hover:text-white transition-colors">Resources</Link>
+//         </div>
         
-        <div className="hidden md:flex items-center space-x-4">
-          <button 
-            onClick={toggleSidebar} 
-            className="p-2 text-[#A0AEC0] hover:text-white transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-          <button onClick={() => navigate('/profile')} className="p-2 text-[#A0AEC0] hover:text-white transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-          </button>
-          <button onClick={() => navigate('/notifications')} className="p-2 text-[#A0AEC0] hover:text-white transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-            </svg>
-          </button>
-        </div>
+//         <div className="hidden md:flex items-center space-x-4">
+//           <button 
+//             onClick={toggleSidebar} 
+//             className="p-2 text-[#A0AEC0] hover:text-white transition-colors"
+//           >
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+//             </svg>
+//           </button>
+//           <button onClick={() => navigate('/profile')} className="p-2 text-[#A0AEC0] hover:text-white transition-colors">
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+//             </svg>
+//           </button>
+//           <button onClick={() => navigate('/notifications')} className="p-2 text-[#A0AEC0] hover:text-white transition-colors">
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+//             </svg>
+//           </button>
+//         </div>
         
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-[#A0AEC0] hover:text-white">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            {isMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            )}
-          </svg>
-        </button>
-      </div>
+//         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-[#A0AEC0] hover:text-white">
+//           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//             {isMenuOpen ? (
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+//             ) : (
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+//             )}
+//           </svg>
+//         </button>
+//       </div>
       
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-[#121F1F] py-4 px-6 border-b border-[#1F2A2A]">
-          <div className="flex flex-col space-y-4">
-            <Link to="/" className="text-[#A0AEC0] hover:text-white transition-colors">Home</Link>
-            <Link to="/competitions" className="text-white font-medium border-l-2 border-[#00C4B8] pl-2">Competitions</Link>
-            <Link to="/leaderboard" className="text-[#A0AEC0] hover:text-white transition-colors">Leaderboard</Link>
-            <Link to="/resources" className="text-[#A0AEC0] hover:text-white transition-colors">Resources</Link>
-            <div className="flex space-x-4 pt-2 border-t border-[#1F2A2A]">
-              <button onClick={() => navigate('/profile')} className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                Profile
-              </button>
-              <button onClick={() => navigate('/notifications')} className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                Notifications
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
-};
+//       {/* Mobile Menu */}
+//       {isMenuOpen && (
+//         <div className="md:hidden absolute top-16 left-0 right-0 bg-[#121F1F] py-4 px-6 border-b border-[#1F2A2A]">
+//           <div className="flex flex-col space-y-4">
+//             <Link to="/" className="text-[#A0AEC0] hover:text-white transition-colors">Home</Link>
+//             <Link to="/competitions" className="text-white font-medium border-l-2 border-[#00C4B8] pl-2">Competitions</Link>
+//             <Link to="/leaderboard" className="text-[#A0AEC0] hover:text-white transition-colors">Leaderboard</Link>
+//             <Link to="/resources" className="text-[#A0AEC0] hover:text-white transition-colors">Resources</Link>
+//             <div className="flex space-x-4 pt-2 border-t border-[#1F2A2A]">
+//               <button onClick={() => navigate('/profile')} className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
+//                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+//                 </svg>
+//                 Profile
+//               </button>
+//               <button onClick={() => navigate('/notifications')} className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
+//                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+//                 </svg>
+//                 Notifications
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </nav>
+//   );
+// };
 
-// Sidebar Component
-const Sidebar = ({ isOpen, toggleSidebar }) => {
-  const sidebarCategories = [
-    { name: "All Competitions", icon: "🏆", count: 42 },
-    { name: "Web Development", icon: "🌐", count: 15 },
-    { name: "Mobile Apps", icon: "📱", count: 8 },
-    { name: "Data Science", icon: "📊", count: 12 },
-    { name: "AI & ML", icon: "🤖", count: 7 },
-    { name: "Blockchain", icon: "⛓️", count: 5 },
-    { name: "Game Dev", icon: "🎮", count: 6 },
-    { name: "UI/UX Design", icon: "🎨", count: 9 },
-  ];
+// // Sidebar Component
+// const Sidebar = ({ isOpen, toggleSidebar }) => {
+//   const sidebarCategories = [
+//     { name: "All Competitions", icon: "🏆", count: 42 },
+//     { name: "Web Development", icon: "🌐", count: 15 },
+//     { name: "Mobile Apps", icon: "📱", count: 8 },
+//     { name: "Data Science", icon: "📊", count: 12 },
+//     { name: "AI & ML", icon: "🤖", count: 7 },
+//     { name: "Blockchain", icon: "⛓️", count: 5 },
+//     { name: "Game Dev", icon: "🎮", count: 6 },
+//     { name: "UI/UX Design", icon: "🎨", count: 9 },
+//   ];
 
-  return (
-    <>
-      {/* Mobile Sidebar Backdrop */}
-      {isOpen && (
-        <div 
-          className="md:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
-          onClick={toggleSidebar}
-        ></div>
-      )}
+//   return (
+//     <>
+//       {/* Mobile Sidebar Backdrop */}
+//       {isOpen && (
+//         <div 
+//           className="md:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm"
+//           onClick={toggleSidebar}
+//         ></div>
+//       )}
       
-      {/* Sidebar */}
-      <aside 
-        className={`fixed top-16 bottom-0 left-0 w-64 bg-[#0A0A0A]/95 backdrop-blur-lg border-r border-[#1F2A2A] z-40 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-5 border-b border-[#1F2A2A]">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search competitions..."
-                className="w-full bg-[#121F1F] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C4B8] placeholder-[#A0AEC0]"
-              />
-              <svg
-                className="w-5 h-5 text-[#A0AEC0] absolute right-3 top-2.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                ></path>
-              </svg>
-            </div>
-          </div>
+//       {/* Sidebar */}
+//       <aside 
+//         className={`fixed top-16 bottom-0 left-0 w-64 bg-[#0A0A0A]/95 backdrop-blur-lg border-r border-[#1F2A2A] z-40 transform transition-transform duration-300 ease-in-out ${
+//           isOpen ? "translate-x-0" : "-translate-x-full"
+//         }`}
+//       >
+//         <div className="flex flex-col h-full">
+//           <div className="p-5 border-b border-[#1F2A2A]">
+//             <div className="relative">
+//               <input
+//                 type="text"
+//                 placeholder="Search competitions..."
+//                 className="w-full bg-[#121F1F] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C4B8] placeholder-[#A0AEC0]"
+//               />
+//               <svg
+//                 className="w-5 h-5 text-[#A0AEC0] absolute right-3 top-2.5"
+//                 fill="none"
+//                 stroke="currentColor"
+//                 viewBox="0 0 24 24"
+//                 xmlns="http://www.w3.org/2000/svg"
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   strokeWidth="2"
+//                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+//                 ></path>
+//               </svg>
+//             </div>
+//           </div>
           
-          <div className="overflow-y-auto flex-grow py-4">
-            <h3 className="px-5 text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider mb-3">
-              Categories
-            </h3>
-            <ul>
-              {sidebarCategories.map((category, index) => (
-                <li key={index}>
-                  <button
-                    className={`flex items-center justify-between w-full px-5 py-2 text-left hover:bg-[#121F1F] ${
-                      index === 0 ? "text-white bg-[#121F1F]" : "text-[#A0AEC0]"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="mr-3">{category.icon}</span>
-                      <span>{category.name}</span>
-                    </div>
-                    <span className="text-sm bg-[#1F2A2A] text-[#A0AEC0] px-2 rounded-full">
-                      {category.count}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+//           <div className="overflow-y-auto flex-grow py-4">
+//             <h3 className="px-5 text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider mb-3">
+//               Categories
+//             </h3>
+//             <ul>
+//               {sidebarCategories.map((category, index) => (
+//                 <li key={index}>
+//                   <button
+//                     className={`flex items-center justify-between w-full px-5 py-2 text-left hover:bg-[#121F1F] ${
+//                       index === 0 ? "text-white bg-[#121F1F]" : "text-[#A0AEC0]"
+//                     }`}
+//                   >
+//                     <div className="flex items-center">
+//                       <span className="mr-3">{category.icon}</span>
+//                       <span>{category.name}</span>
+//                     </div>
+//                     <span className="text-sm bg-[#1F2A2A] text-[#A0AEC0] px-2 rounded-full">
+//                       {category.count}
+//                     </span>
+//                   </button>
+//                 </li>
+//               ))}
+//             </ul>
             
-            <h3 className="px-5 text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider mt-6 mb-3">
-              Filters
-            </h3>
-            <div className="px-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
-                  Difficulty
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
-                    <span className="ml-2 text-sm">Beginner</span>
-                  </label>
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" checked />
-                    <span className="ml-2 text-sm">Intermediate</span>
-                  </label>
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
-                    <span className="ml-2 text-sm">Advanced</span>
-                  </label>
-                </div>
-              </div>
+//             <h3 className="px-5 text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider mt-6 mb-3">
+//               Filters
+//             </h3>
+//             <div className="px-5 space-y-4">
+//               <div>
+//                 <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
+//                   Difficulty
+//                 </label>
+//                 <div className="space-y-2">
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
+//                     <span className="ml-2 text-sm">Beginner</span>
+//                   </label>
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" checked />
+//                     <span className="ml-2 text-sm">Intermediate</span>
+//                   </label>
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
+//                     <span className="ml-2 text-sm">Advanced</span>
+//                   </label>
+//                 </div>
+//               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
-                  Status
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" checked />
-                    <span className="ml-2 text-sm">Active</span>
-                  </label>
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
-                    <span className="ml-2 text-sm">Upcoming</span>
-                  </label>
-                  <label className="flex items-center text-[#A0AEC0]">
-                    <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
-                    <span className="ml-2 text-sm">Past</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
+//               <div>
+//                 <label className="block text-sm font-medium text-[#A0AEC0] mb-2">
+//                   Status
+//                 </label>
+//                 <div className="space-y-2">
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" checked />
+//                     <span className="ml-2 text-sm">Active</span>
+//                   </label>
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
+//                     <span className="ml-2 text-sm">Upcoming</span>
+//                   </label>
+//                   <label className="flex items-center text-[#A0AEC0]">
+//                     <input type="checkbox" className="form-checkbox h-4 w-4 text-[#00C4B8] rounded" />
+//                     <span className="ml-2 text-sm">Past</span>
+//                   </label>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
           
-          <div className="p-4 border-t border-[#1F2A2A]">
-            <button className="w-full py-2 bg-gradient-to-r from-[#00C4B8] to-[#006D66] text-white rounded-lg hover:opacity-90 transition-opacity">
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      </aside>
-    </>
-  );
-};
+//           <div className="p-4 border-t border-[#1F2A2A]">
+//             <button className="w-full py-2 bg-gradient-to-r from-[#00C4B8] to-[#006D66] text-white rounded-lg hover:opacity-90 transition-opacity">
+//               Apply Filters
+//             </button>
+//           </div>
+//         </div>
+//       </aside>
+//     </>
+//   );
+// };
 
 const CompetitionsPage = () => {
   const [competitions, setCompetitions] = useState([]);
@@ -404,8 +404,6 @@ const CompetitionsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] via-[#121212] to-[#001E1E] text-gray-100">
-      <Navbar toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       
       <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? "md:pl-64" : ""}`}>
         {/* Hero Section */}

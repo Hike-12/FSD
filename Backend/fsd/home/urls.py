@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     # Auth-related
     # path('csrf/', views.get_csrf_token, name='get_csrf_token'),
+    
     path('api/register/', views.create_user, name='create_user'),
     path('api/login/', views.custom_login, name='custom_login'),
     # path('api/token/refresh/', views.refresh_token, name='refresh_token'),

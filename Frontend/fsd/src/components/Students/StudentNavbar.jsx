@@ -32,19 +32,19 @@ const StudentNavbar = ({ children }) => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#00C4B8] to-[#006D66]"></div>
-                <span className="text-white font-bold">DevCompete</span>
+                <span className="text-white font-bold">HUHUHUH</span>
               </div>
             </div>
 
             <div className="flex items-center space-x-10">
               <nav className="hidden md:flex space-x-6 place-items-center">
-                <a href="#" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
+                <a href="/students" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
                   Find Students
                 </a>
-                <a href="#" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
+                <a href="/mentors" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
                   Mentors
                 </a>
-                <a href="#" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
+                <a href="/competitions" className="text-[#A0AEC0] hover:text-white transition-colors flex items-center">
                   Competitions
                 </a>
               </nav>
@@ -87,11 +87,11 @@ const StudentNavbar = ({ children }) => {
                   <User className="w-5 h-5 mr-3" />
                   Profile
                 </a>
-                <a href="#" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/student-teams" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Users className="w-5 h-5 mr-3" />
                   My Teams
                 </a>
-                <a href="#" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/competitions" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Trophy className="w-5 h-5 mr-3" />
                   My Competitions
                 </a>

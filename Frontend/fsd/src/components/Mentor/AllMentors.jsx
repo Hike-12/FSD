@@ -78,8 +78,8 @@ const AllMentors = () => {
   const handleRequestConsultation = (id) => navigate(`/request-consultation/${id}`);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    
+      <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         {/* Animated Header */}
         <div className="relative overflow-hidden bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-700 rounded-xl shadow-xl p-6 mb-8 group">
           <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -248,7 +248,6 @@ const AllMentors = () => {
           </motion.div>
         )}
       </div>
-    </div>
   );
 };
 
