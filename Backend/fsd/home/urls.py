@@ -70,6 +70,8 @@ urlpatterns = [
     
     #Collaboration
     path("api/collaboration-requests/", views.send_collaboration_request, name="send_collaboration_request"),
+    path("api/get-collaboration-requests/", views.get_collaboration_requests, name="get_collaboration_requests"),
+    path("api/collaboration-requests/handle/", views.handle_collaboration_request, name="handle_collaboration_request"),
 ]
 
 

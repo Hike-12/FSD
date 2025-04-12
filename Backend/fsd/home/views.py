@@ -1790,3 +1790,55 @@ def send_collaboration_request(request):
         return JsonResponse({"error": "Recipient student not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_collaboration_requests(request):
+    try:
+        student = request.user.student_profile
+        requests = CollaborationRequest.objects.filter(to_student=student, status="pending")
+
+        data = [
+            {
+                "id": req.id,
+                "from_student_id": req.from_student.id,
+                "from_student_name": req.from_student.full_name,
+                "from_student_profile_picture": req.from_student.profile_picture.url if req.from_student.profile_picture else None,
+                "created_at": req.created_at,
+            }
+            for req in requests
+        ]
+
+        return JsonResponse(data, safe=False, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def handle_collaboration_request(request):
+    try:
+        data = json.loads(request.body)
+        request_id = data.get("request_id")
+        action = data.get("action")  # "accept" or "deny"
+
+        if not request_id or action not in ["accept", "deny"]:
+            return JsonResponse({"error": "Invalid request data"}, status=400)
+
+        collab_request = CollaborationRequest.objects.get(id=request_id)
+
+        if action == "accept":
+            collab_request.status = "accepted"
+            collab_request.save()
+            return JsonResponse({"message": "Collaboration request accepted"}, status=200)
+
+        if action == "deny":
+            collab_request.status = "rejected"
+            collab_request.save()
+            return JsonResponse({"message": "Collaboration request denied"}, status=200)
+
+    except CollaborationRequest.DoesNotExist:
+        return JsonResponse({"error": "Collaboration request not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

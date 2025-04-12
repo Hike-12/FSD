@@ -30,6 +30,7 @@ import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 import Workspace from "./components/Workspace/Workspace";
 import LandingPageAliqyaan from "./components/LandingPage/LandingPageAliqyaan";
 import HowItWorks from "./components/LandingPage/Working";
+import Notifications from "./components/Notifications";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -89,7 +90,9 @@ function App() {
                         <Route path="/team/:teamId" element={<TeamDetail />} />
                         <Route path="/chat/:teamId" element = {<Chat />} />
                         <Route path="/workspace/:teamId" element = {<Workspace />} />
-
+                        
+                        {/* NOTIFICATION */}
+                        <Route path="/notifications" element={<Notifications />} />
                     </Routes>
                 </Layout>
             </AuthProvider>
