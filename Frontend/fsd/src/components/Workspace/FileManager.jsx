@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { DJANGO_BASE_URL } from "@/lib/utils";
 import { useParams } from "react-router-dom";
+import { DJANGO_BASE_URL } from "@/lib/utils";
+import { File, Upload, Trash2, Eye, Download } from "lucide-react";
 
 const FileManager = () => {
   const { teamId } = useParams();
   const [files, setFiles] = useState([]);
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState(""); // Reintroduce fileName state
+  const [fileName, setFileName] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
 
   const handleViewFile = async (fileId) => {
@@ -20,14 +21,10 @@ const FileManager = () => {
   
       if (!response.ok) throw new Error("Failed to fetch file for viewing");
       
-      // Get content type from response
       const contentType = response.headers.get("content-type");
-      
-      // Handle the response based on content type
       const blob = await response.blob();
       const fileURL = URL.createObjectURL(blob);
       
-      // Open in new tab
       window.open(fileURL, "_blank");
     } catch (err) {
       console.error("Error viewing file:", err.message);
@@ -59,7 +56,7 @@ const FileManager = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    setFileName(selectedFile ? selectedFile.name : ""); // Automatically set file name
+    setFileName(selectedFile ? selectedFile.name : "");
   };
 
   const handleFileUpload = async (e) => {
@@ -72,7 +69,7 @@ const FileManager = () => {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("name", fileName); // Include fileName in the form data
+    formData.append("name", fileName);
 
     try {
       const response = await fetch(`${DJANGO_BASE_URL}/api/teams/${teamId}/files/upload/`, {
@@ -89,7 +86,7 @@ const FileManager = () => {
       setUploadMessage(data.message);
       setFiles((prev) => [...prev, { id: data.file_id, name: fileName, file_url: file.name }]);
       setFile(null);
-      setFileName(""); // Reset fileName after upload
+      setFileName("");
     } catch (err) {
       console.error(err.message);
       setUploadMessage("Error uploading file");
@@ -113,82 +110,119 @@ const FileManager = () => {
     }
   };
 
+  // Helper function to format date nicely
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">File Manager</h2>
-
-      {/* File Upload Form */}
-      <form onSubmit={handleFileUpload} className="mb-6">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">File Name</label>
-          <input
-            type="text"
-            value={fileName}
-            readOnly // Make the field non-editable
-            className="w-full px-4 py-2 border rounded-lg bg-gray-100 focus:outline-none"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Upload File</label>
-          <input
-            type="file"
-            onChange={handleFileChange} // Use the new handleFileChange function
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          Upload
-        </button>
-      </form>
-
-      {uploadMessage && <p className="text-sm text-green-500">{uploadMessage}</p>}
-
-      {/* File List */}
-      <ul className="space-y-4">
-  {files.map((file) => (
-    <li key={file.id} className="p-4 bg-white rounded-lg shadow">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="font-bold">{file.name}</h3>
-          <p className="text-sm text-gray-500">
-            Uploaded by: {file.uploaded_by} on {new Date(file.uploaded_at).toLocaleDateString()}
+    <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen p-6">
+      <div className="container mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
+            File Manager
+          </h1>
+          <p className="text-blue-100/70 mt-2">
+            Upload, view, and manage your team's files
           </p>
         </div>
-        <div className="flex space-x-2">
-          {/* View Button */}
-          {/* View Button */}
+
+        {/* Upload Section */}
+        <div className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6 mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <Upload className="mr-2 h-5 w-5 text-blue-400" />
+            Upload New File
+          </h2>
+          
+          <form onSubmit={handleFileUpload} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-blue-100/80 mb-1">File Name</label>
+              <input
+                type="text"
+                value={fileName}
+                readOnly
+                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-blue-500/30 text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-blue-100/80 mb-1">Select File</label>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-blue-500/30 text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                required
+              />
+            </div>
+            
             <button
-            onClick={() => handleViewFile(file.id)} // Call the function to fetch and view the file
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              type="submit"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-medium hover:shadow-blue-500/50 transition-all duration-300"
             >
-            View
+              Upload File
             </button>
+          </form>
+          
+          {uploadMessage && (
+            <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-200">
+              {uploadMessage}
+            </div>
+          )}
+        </div>
 
-          {/* Download Button */}
-          <a
-            href={`${DJANGO_BASE_URL}${file.file_url}`} // Ensure the full URL is used
-            download={file.name} // Add download attribute
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Download
-          </a>
-
-          {/* Delete Button */}
-          <button
-            onClick={() => handleDeleteFile(file.id)}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            Delete
-          </button>
+        {/* Files List */}
+        <div className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6">
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+            <File className="mr-2 h-5 w-5 text-blue-400" />
+            Team Files
+          </h2>
+          
+          {files.length === 0 ? (
+            <p className="text-blue-100/70 text-center py-8">No files uploaded yet</p>
+          ) : (
+            <div className="space-y-4">
+              {files.map((file) => (
+                <div 
+                  key={file.id} 
+                  className="bg-white/10 border border-blue-500/20 rounded-lg p-4 transition-all hover:bg-blue-900/20"
+                >
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <h3 className="font-bold text-white">{file.name}</h3>
+                      <p className="text-sm text-blue-100/70">
+                        Uploaded by: {file.uploaded_by || 'Team Member'} • {formatDate(file.uploaded_at || new Date())}
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleViewFile(file.id)}
+                        className="px-4 py-2 bg-indigo-600/60 text-white rounded-lg hover:bg-indigo-600/80 transition-colors flex items-center"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </button>
+                      
+                      <button
+                        onClick={() => handleDeleteFile(file.id)}
+                        className="px-4 py-2 bg-red-600/60 text-white rounded-lg hover:bg-red-600/80 transition-colors flex items-center"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </li>
-  ))}
-</ul>
     </div>
   );
 };
