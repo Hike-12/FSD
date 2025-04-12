@@ -17,6 +17,7 @@ const Collaborators = () => {
         if (!response.ok) throw new Error("Failed to fetch collaborators");
 
         const data = await response.json();
+        console.log("Fetched collaborators:", data);
         setCollaborators(data.collaborators);
       } catch (error) {
         console.error("Error fetching collaborators:", error);
@@ -46,10 +47,14 @@ const Collaborators = () => {
             className="bg-white shadow-md rounded-lg p-4 flex flex-col items-center"
           >
             <img
-              src={collaborator.profile_picture || "/default-avatar.png"}
-              alt={collaborator.full_name}
-              className="w-20 h-20 rounded-full object-cover mb-4"
-            />
+                src={
+                    collaborator.profile_picture.startsWith("http")
+                    ? collaborator.profile_picture
+                    : `${DJANGO_BASE_URL}${collaborator.profile_picture}`
+                }
+                alt={collaborator.full_name}
+                className="w-20 h-20 rounded-full object-cover mb-4"
+                />
             <h3 className="text-lg font-medium text-gray-800">{collaborator.full_name}</h3>
             <p className="text-sm text-gray-500">{collaborator.department}</p>
             <p className="text-sm text-gray-500">{collaborator.year_of_study} Year</p>
