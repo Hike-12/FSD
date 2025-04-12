@@ -38,6 +38,7 @@ const TeamDetail = () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
+    console.log(projectFile, presentationFile);
     if (projectFile) {
       formData.append("project_file", projectFile); // Correct field name
     }
@@ -505,7 +506,7 @@ const TeamDetail = () => {
                 </label>
                 <input
                   type="file"
-                  onChange={(e) => setProjectFile(e.target.submissions[0])}
+                  onChange={(e) => setProjectFile(e.target.files[0])}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -515,7 +516,7 @@ const TeamDetail = () => {
                 </label>
                 <input
                   type="file"
-                  onChange={(e) => setPresentationFile(e.target.submissions[0])}
+                  onChange={(e) => setPresentationFile(e.target.files[0])}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
