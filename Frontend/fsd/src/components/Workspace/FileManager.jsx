@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DJANGO_BASE_URL } from "@/lib/utils";
-import { File, Upload, Trash2, Eye, Download } from "lucide-react";
+import { File, Upload, Trash2, Eye, Download, FileText } from "lucide-react";
+import { motion } from 'framer-motion';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const FileManager = () => {
   const { teamId } = useParams();
@@ -26,8 +29,10 @@ const FileManager = () => {
       const fileURL = URL.createObjectURL(blob);
       
       window.open(fileURL, "_blank");
+      toast.success("File opened in new tab");
     } catch (err) {
       console.error("Error viewing file:", err.message);
+      toast.error("Error viewing file. Please try again.");
     }
   };
   
@@ -47,6 +52,7 @@ const FileManager = () => {
         setFiles(data.files || []);
       } catch (err) {
         console.error(err.message);
+        toast.error("Failed to fetch files. Please try again later.");
       }
     };
 
@@ -64,6 +70,7 @@ const FileManager = () => {
 
     if (!file || !fileName) {
       setUploadMessage("File and name are required");
+      toast.error("File and name are required");
       return;
     }
 
@@ -87,9 +94,11 @@ const FileManager = () => {
       setFiles((prev) => [...prev, { id: data.file_id, name: fileName, file_url: file.name }]);
       setFile(null);
       setFileName("");
+      toast.success("File uploaded successfully!");
     } catch (err) {
       console.error(err.message);
       setUploadMessage("Error uploading file");
+      toast.error("Error uploading file. Please try again.");
     }
   };
 
@@ -105,8 +114,10 @@ const FileManager = () => {
       if (!response.ok) throw new Error("Failed to delete file");
 
       setFiles((prev) => prev.filter((file) => file.id !== fileId));
+      toast.success("File deleted successfully");
     } catch (err) {
       console.error(err.message);
+      toast.error("Failed to delete file. Please try again.");
     }
   };
 
@@ -119,21 +130,58 @@ const FileManager = () => {
     });
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen p-6">
-      <div className="container mx-auto">
+      <ToastContainer position="top-right" theme="dark" />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="container mx-auto"
+      >
         {/* Header */}
-        <div className="mb-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
             File Manager
           </h1>
           <p className="text-blue-100/70 mt-2">
             Upload, view, and manage your team's files
           </p>
-        </div>
+        </motion.div>
 
         {/* Upload Section */}
-        <div className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6 mb-8"
+        >
           <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Upload className="mr-2 h-5 w-5 text-blue-400" />
             Upload New File
@@ -160,35 +208,59 @@ const FileManager = () => {
               />
             </div>
             
-            <button
+            <motion.button
               type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-medium hover:shadow-blue-500/50 transition-all duration-300"
             >
               Upload File
-            </button>
+            </motion.button>
           </form>
           
           {uploadMessage && (
-            <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-200">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-200"
+            >
               {uploadMessage}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Files List */}
-        <div className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-6"
+        >
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-            <File className="mr-2 h-5 w-5 text-blue-400" />
+            <FileText className="mr-2 h-5 w-5 text-blue-400" />
             Team Files
           </h2>
           
           {files.length === 0 ? (
-            <p className="text-blue-100/70 text-center py-8">No files uploaded yet</p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-blue-100/70 text-center py-8"
+            >
+              No files uploaded yet
+            </motion.p>
           ) : (
-            <div className="space-y-4">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
               {files.map((file) => (
-                <div 
-                  key={file.id} 
+                <motion.div 
+                  key={file.id}
+                  variants={itemVariants}
                   className="bg-white/10 border border-blue-500/20 rounded-lg p-4 transition-all hover:bg-blue-900/20"
                 >
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -200,29 +272,33 @@ const FileManager = () => {
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleViewFile(file.id)}
                         className="px-4 py-2 bg-indigo-600/60 text-white rounded-lg hover:bg-indigo-600/80 transition-colors flex items-center"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View
-                      </button>
+                      </motion.button>
                       
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleDeleteFile(file.id)}
                         className="px-4 py-2 bg-red-600/60 text-white rounded-lg hover:bg-red-600/80 transition-colors flex items-center"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         Delete
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
