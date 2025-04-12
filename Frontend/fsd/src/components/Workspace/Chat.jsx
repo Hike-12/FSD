@@ -15,6 +15,7 @@ const Chat = () => {
     const [isCameraEnabled, setIsCameraEnabled] = useState(true);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [screenStream, setScreenStream] = useState(null);
+    const [isMicEnabled, setIsMicEnabled] = useState(true);
 
     // Refs
     const socketRef = useRef(null);
@@ -311,6 +312,18 @@ const Chat = () => {
         setIsCameraEnabled(prev => !prev);
     };
 
+    // Add microphone toggle functionality
+    const toggleMic = () => {
+        if (!localStreamRef.current) return;
+
+        const audioTracks = localStreamRef.current.getAudioTracks();
+        audioTracks.forEach(track => {
+            track.enabled = !track.enabled;
+        });
+
+        setIsMicEnabled(prev => !prev);
+    };
+
     // Add functionality to check users in call
     const getUsersInCall = () => {
         return remoteUserIds.map(id => remoteUsers[id]?.name || id);
@@ -467,6 +480,12 @@ const Chat = () => {
                                 className={`px-4 py-2 ${isScreenSharing ? 'bg-green-500' : 'bg-blue-500'} text-white rounded-lg hover:bg-green-600 transition-colors`}
                             >
                                 {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+                            </button>
+                            <button
+                                onClick={toggleMic}
+                                className={`px-4 py-2 ${isMicEnabled ? 'bg-blue-500' : 'bg-red-500'} text-white rounded-lg hover:bg-blue-600 transition-colors`}
+                            >
+                                {isMicEnabled ? 'Mute Mic' : 'Unmute Mic'}
                             </button>
                         </div>
                     )}
