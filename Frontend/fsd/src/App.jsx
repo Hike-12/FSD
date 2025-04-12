@@ -31,6 +31,7 @@ import Workspace from "./components/Workspace/Workspace";
 import LandingPageAliqyaan from "./components/LandingPage/LandingPageAliqyaan";
 import HowItWorks from "./components/LandingPage/Working";
 import Notifications from "./components/Notifications";
+import Collaborators from "./components/Students/StudentCollaborator";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -71,6 +72,7 @@ function App() {
                         <Route path="/students/:id" element={<StudentProfile />} />
                         <Route path="/student-teams" element={<StudentTeams />} />
                         <Route path="/student-competitions" element={<StudentCompetitions />} />
+                        <Route path="/student-collaborators" element={<Collaborators />} />
 
                         {/* MENTORS */}
                         <Route path="/mentor-profile" element={<MentorProfileForm/>} />
@@ -93,6 +95,8 @@ function App() {
                         
                         {/* NOTIFICATION */}
                         <Route path="/notifications" element={<Notifications />} />
+
+
                     </Routes>
                 </Layout>
             </AuthProvider>
