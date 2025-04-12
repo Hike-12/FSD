@@ -1523,36 +1523,37 @@ def edit_task(request, task_id):
         print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
     
-@csrf_exempt
 @api_token_required
-def get_team_submission(request,team_id):
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_team_submission(request, team_id):
+    """
+    Fetch all submissions for a specific team.
+    """
     try:
-        # Get the logged-in user's student profile
-        student_profile = StudentProfile.objects.get(user=request.user)
+        team = get_object_or_404(Team, id=team_id)
+        submissions = ProjectSubmission.objects.filter(team=team)
 
-        # Fetch all submissions where the user is a member of the team
-        submissions = ProjectSubmission.objects.filter(team__members=student_profile)
-
-        # Prepare the response data
         submission_list = [
             {
-                'submission_id': submission.id,
-                'team_name': submission.team.name,
-                'competition_name': submission.competition.name,
-                'title': submission.title,
-                'description': submission.description,
-                'submission_date': submission.submission_date.isoformat() if submission.submission_date else None,
-                'status': submission.status,
+                "id": submission.id,
+                "title": submission.title,
+                "description": submission.description,
+                "submission_date": submission.submission_date.isoformat(),
+                # Removed 'uploaded_by' since it doesn't exist
+                "project_file_url": request.build_absolute_uri(submission.project_file.url) if submission.project_file else None,
+                "presentation_file_url": request.build_absolute_uri(submission.presentation_file.url) if submission.presentation_file else None,
             }
             for submission in submissions
         ]
 
-        return JsonResponse({'submissions': submission_list}, status=200)
+        return JsonResponse({"submissions": submission_list}, status=200)
 
-    except StudentProfile.DoesNotExist:
-        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Team.DoesNotExist:
+        return JsonResponse({"error": "Team not found"}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
     
 @api_token_required
 @require_http_methods(["GET"])
