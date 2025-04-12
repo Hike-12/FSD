@@ -83,7 +83,7 @@ const StudentNavbar = ({ children }) => {
             </div>
             <div className="p-4">
               <nav className="space-y-2">
-                <a href="#" className="flex items-center py-2 px-4 text-white bg-[#121F1F] rounded-lg hover:bg-[#00C4B8]/10 transition-colors">
+                <a href="/student-profile" className="flex items-center py-2 px-4 text-white bg-[#121F1F] rounded-lg hover:bg-[#00C4B8]/10 transition-colors">
                   <User className="w-5 h-5 mr-3" />
                   Profile
                 </a>
@@ -91,7 +91,7 @@ const StudentNavbar = ({ children }) => {
                   <Users className="w-5 h-5 mr-3" />
                   My Teams
                 </a>
-                <a href="/competitions" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
+                <a href="/student-competitions" className="flex items-center py-2 px-4 text-[#A0AEC0] hover:text-white hover:bg-[#00C4B8]/10 rounded-lg transition-colors">
                   <Trophy className="w-5 h-5 mr-3" />
                   My Competitions
                 </a>
