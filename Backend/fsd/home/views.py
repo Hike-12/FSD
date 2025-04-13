@@ -2,7 +2,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout as django_logout
 from django.http import JsonResponse
 from django.db.utils import IntegrityError
-from home.models import CustomUser, MentorProfile, Skill, CompetitionType, StudentProfile, Competition, SDG, Team,ProjectSubmission,Task, TeamFile,CollaborationRequest
+from home.models import *
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -408,26 +408,32 @@ def list_skills(request):
 @csrf_exempt
 def get_user_info(request, user_id):
     try:
-        # Fetch the user
         user = CustomUser.objects.get(id=user_id)
-
-        # Check if the user is a student
-        if hasattr(user, 'student_profile'):
-            student_profile = StudentProfile.objects.get(user=user)
-            return JsonResponse({"userName": student_profile.full_name}, status=200)
-
-        # Check if the user is a mentor
-        elif hasattr(user, 'mentor_profile'):
-            mentor_profile = MentorProfile.objects.get(user=user)
-            return JsonResponse({"userName": mentor_profile.name}, status=200)
-
-        # If the user is neither a student nor a mentor, return the username (e.g., for admins)
+        if hasattr(user, 'mentor_profile'):
+            profile = user.mentor_profile
+            data = {
+                "id": profile.id,
+                "full_name": profile.full_name,
+                "email": user.email,
+                # Other fields...
+            }
+        elif hasattr(user, 'student_profile'):
+            profile = user.student_profile
+            data = {
+                "id": profile.id,
+                "full_name": profile.full_name,
+                "email": user.email,
+                # Other fields...
+            }
         else:
-            return JsonResponse({"userName": user.username}, status=200)
+            return JsonResponse({"error": "User does not have a profile"}, status=404)
+
+        return JsonResponse(data, status=200)
 
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)
     except Exception as e:
+        print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
 
 ##############################################################################################################################################
@@ -1898,4 +1904,143 @@ def get_collaborators(request):
         return JsonResponse({"collaborators": collaborator_list}, status=200)
 
     except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def send_consultation_request(request):
+    try:
+        data = json.loads(request.body)
+        to_mentor_id = data.get("to_mentor_id")
+
+        if not to_mentor_id:
+            return JsonResponse({"error": "Mentor ID is required"}, status=400)
+
+        from_student = request.user.student_profile
+        to_mentor = MentorProfile.objects.get(id=to_mentor_id)
+
+        # Check if a request already exists
+        if ConsultationRequest.objects.filter(from_student=from_student, to_mentor=to_mentor).exists():
+            return JsonResponse({"error": "Consultation request already sent"}, status=400)
+
+        # Create the consultation request
+        ConsultationRequest.objects.create(from_student=from_student, to_mentor=to_mentor)
+
+        return JsonResponse({"message": "Consultation request sent successfully!"}, status=201)
+
+    except MentorProfile.DoesNotExist:
+        return JsonResponse({"error": "Mentor not found"}, status=404)
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def handle_consultation_request(request):
+    try:
+        data = json.loads(request.body)
+        request_id = data.get("request_id")
+        action = data.get("action")  # "accept" or "deny"
+
+        if not request_id or action not in ["accept", "deny"]:
+            return JsonResponse({"error": "Invalid request data"}, status=400)
+
+        consultation_request = ConsultationRequest.objects.get(id=request_id)
+
+        if action == "accept":
+            consultation_request.status = "accepted"
+            consultation_request.save()
+
+            # Create a chat room for the consultation
+            node_server_url = os.getenv('NODE_SERVER_URL')
+            payload = {
+                "team_id": f"consult-{consultation_request.id}",  # Unique ID for the consultation
+                "team_name": f"Consultation: {consultation_request.from_student.full_name} & {consultation_request.to_mentor.full_name}",
+                "competition_id": "consultation",  # Use a placeholder competition ID
+                "competition_name": "consultation",
+                "members": [consultation_request.from_student.user.id, consultation_request.to_mentor.user.id],
+            }
+
+            try:
+                response = requests.post(f"{node_server_url}/chat-rooms/create", json=payload)
+                if response.status_code != 201:
+                    print("Error notifying chat server:", response.text)
+                    return JsonResponse({"error": "Failed to create chat room"}, status=500)
+            except Exception as e:
+                print("Error notifying chat server:", str(e))
+                return JsonResponse({"error": f"Error notifying chat server: {str(e)}"}, status=500)
+
+            return JsonResponse({"message": "Consultation request accepted"}, status=200)
+
+        if action == "deny":
+            consultation_request.status = "rejected"
+            consultation_request.save()
+            return JsonResponse({"message": "Consultation request denied"}, status=200)
+
+    except ConsultationRequest.DoesNotExist:
+        return JsonResponse({"error": "Consultation request not found"}, status=404)
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+
+@api_token_required
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_consultations(request):
+    try:
+        user = request.user
+        if hasattr(user, 'student_profile'):
+            consultations = ConsultationRequest.objects.filter(from_student=user.student_profile, status="accepted")
+        elif hasattr(user, 'mentor_profile'):
+            consultations = ConsultationRequest.objects.filter(to_mentor=user.mentor_profile, status="accepted")
+        else:
+            return JsonResponse({"error": "Invalid user type"}, status=400)
+
+        consultation_list = [
+            {
+                "id": consult.id,
+                "from_student": consult.from_student.full_name,
+                "to_mentor": consult.to_mentor.full_name,
+                "team_id": f"consult-{consult.id}",
+            }
+            for consult in consultations
+        ]
+
+        return JsonResponse({"consultations": consultation_list}, status=200)
+
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@api_token_required
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_consultation_requests(request):
+    try:
+        # Check if the user is a mentor
+        if hasattr(request.user, 'mentor_profile'):
+            mentor = request.user.mentor_profile
+            # Fetch pending consultation requests for the mentor
+            requests = ConsultationRequest.objects.filter(to_mentor=mentor, status="pending")
+
+            # Prepare the response data
+            data = [
+                {
+                    "id": req.id,
+                    "from_student_id": req.from_student.id,
+                    "from_student_name": req.from_student.full_name,
+                    "from_student_profile_picture": req.from_student.profile_picture.url if req.from_student.profile_picture else None,
+                    "created_at": req.created_at,
+                }
+                for req in requests
+            ]
+
+            return JsonResponse(data, safe=False, status=200)
+        else:
+            return JsonResponse({"error": "User is not a mentor"}, status=403)
+
+    except Exception as e:
+        print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)

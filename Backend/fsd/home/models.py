@@ -517,3 +517,12 @@ class CollaborationRequest(models.Model):
 
     def __str__(self):
         return f"{self.from_student} -> {self.to_student} ({self.status})"
+    
+class ConsultationRequest(models.Model):
+    from_student = models.ForeignKey(StudentProfile, related_name="consultation_requests", on_delete=models.CASCADE)
+    to_mentor = models.ForeignKey(MentorProfile, related_name="received_consultations", on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=[("pending", "Pending"), ("accepted", "Accepted"), ("rejected", "Rejected")], default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_student} -> {self.to_mentor} ({self.status})"

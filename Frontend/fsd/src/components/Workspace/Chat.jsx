@@ -21,9 +21,12 @@ const Chat = () => {
   const [screenStream, setScreenStream] = useState(null);
   const [isMicEnabled, setIsMicEnabled] = useState(true);
   
-  const messagesEndRef = useRef(null);
-
+  useEffect(() => {
+    console.log("Current userId:", userId);
+    console.log("Messages state:", messages);
+  }, [messages]);
   // Refs
+  const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -605,15 +608,14 @@ const Chat = () => {
         </motion.div>
       )}
 
-      {/* Chat Area */}
       <div className="flex-1 container mx-auto p-6 flex flex-col">
-{/* Messages Container */}
-<motion.div 
-  initial={{ y: 20, opacity: 0 }}
-  animate={{ y: 0, opacity: 1 }}
-  transition={{ delay: 0.1 }}
-  className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
->
+      {/* Messages Container */}
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
+      >
   {messages.length === 0 ? (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -624,7 +626,6 @@ const Chat = () => {
       No messages yet. Start the conversation!
     </motion.div>
   ) : (
-    /* Rest of your message rendering code */
     <motion.div
       variants={containerVariants}
       initial="hidden"

@@ -5,6 +5,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DJANGO_BASE_URL } from "@/lib/utils";
+
+const sendConsultationRequest = async (mentorId) => {
+  try {
+    const response = await fetch(`${DJANGO_BASE_URL}/api/send-consultation-request/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ to_mentor_id: mentorId }),
+    });
+
+    if (!response.ok) throw new Error("Failed to send consultation request");
+
+    const message = await response.json();
+    alert(message.message);
+  } catch (error) {
+    console.error("Error sending consultation request:", error);
+    alert("Failed to send consultation request. Please try again.");
+  }
+};
 
 const MentorCard = ({ 
   mentor = {},
@@ -173,10 +195,7 @@ const MentorCard = ({
                         : "bg-gray-700 text-gray-400 cursor-not-allowed"
                     }`}
                     disabled={!availability}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRequestConsultation(id);
-                    }}
+                    onClick={() => sendConsultationRequest(mentor.id)}
                   >
                     Request Consultation
                   </Button>

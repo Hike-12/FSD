@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { DJANGO_BASE_URL } from "@/lib/utils";
 
-const Notifications = () => {
+const StudentNotifications = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,4 +107,4 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
+export default StudentNotifications;

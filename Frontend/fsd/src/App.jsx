@@ -30,8 +30,10 @@ import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 import Workspace from "./components/Workspace/Workspace";
 import LandingPageAliqyaan from "./components/LandingPage/LandingPageAliqyaan";
 import HowItWorks from "./components/LandingPage/Working";
-import Notifications from "./components/Notifications";
+import StudentNotifications from "./components/Students/Notifications";
 import Collaborators from "./components/Students/StudentCollaborator";
+import MentorConsultations from "./components/Mentor/MentorConsultations";
+import MentorNotifications from "./components/Mentor/Notifications";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -73,11 +75,14 @@ function App() {
                         <Route path="/student-teams" element={<StudentTeams />} />
                         <Route path="/student-competitions" element={<StudentCompetitions />} />
                         <Route path="/student-collaborators" element={<Collaborators />} />
+                        <Route path="/student-notifications" element={<StudentNotifications />} />
 
                         {/* MENTORS */}
                         <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                         <Route path="/mentors" element={<AllMentors />} />
                         <Route path="/mentor/:id" element={<MentorProfile />} />
+                        <Route path="/mentor-consultations" element={<MentorConsultations />} />
+                        <Route path="/mentor-notifications" element={<MentorNotifications />} />
 
                         {/* ADMIN */}
                         <Route path="/admin-landing" element={<AdminLandingPage />} />
@@ -94,7 +99,6 @@ function App() {
                         <Route path="/workspace/:teamId" element = {<Workspace />} />
                         
                         {/* NOTIFICATION */}
-                        <Route path="/notifications" element={<Notifications />} />
 
                         {/* CHATROOMS */}
                         <Route path="/chat/:teamId" element={<Chat />} />

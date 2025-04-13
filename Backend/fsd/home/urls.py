@@ -73,6 +73,12 @@ urlpatterns = [
     path("api/get-collaboration-requests/", views.get_collaboration_requests, name="get_collaboration_requests"),
     path("api/collaboration-requests/handle/", views.handle_collaboration_request, name="handle_collaboration_request"),
     path("api/collaborators/", views.get_collaborators, name="get_collaborators"),
+    
+    ##Consultation
+    path("api/send-consultation-request/", views.send_consultation_request, name="send_consultation_request"),
+    path("api/consultation-requests/handle/", views.handle_consultation_request, name="handle_consultation_request"),
+    path("api/get-consultation-requests/", views.get_consultation_requests, name="get_consultation_requests"),
+    path("api/get-consultations/", views.get_consultations, name="get_consultations"),
 ]
 
 
