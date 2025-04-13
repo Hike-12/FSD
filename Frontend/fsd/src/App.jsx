@@ -96,7 +96,8 @@ function App() {
                         {/* NOTIFICATION */}
                         <Route path="/notifications" element={<Notifications />} />
 
-
+                        {/* CHATROOMS */}
+                        <Route path="/chat/:teamId" element={<Chat />} />
                     </Routes>
                 </Layout>
             </AuthProvider>

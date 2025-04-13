@@ -1839,6 +1839,24 @@ def handle_collaboration_request(request):
         if action == "accept":
             collab_request.status = "accepted"
             collab_request.save()
+
+            # Create a chat room for the collaborators
+            node_server_url = os.getenv('NODE_SERVER_URL')
+            payload = {
+                "team_id": f"collab-{collab_request.id}",  # Unique ID for the collaboration
+                "team_name": f"Collaboration: {collab_request.from_student.full_name} & {collab_request.to_student.full_name}",
+                "competition_id": "collaboration",  # Use a placeholder competition ID
+                "competition_name": "Collaboration",
+                "members": [collab_request.from_student.user.id, collab_request.to_student.user.id],
+            }
+
+            try:
+                response = requests.post(f"{node_server_url}/chat-rooms/create", json=payload)
+                if response.status_code != 201:
+                    return JsonResponse({"error": "Failed to create chat room"}, status=500)
+            except Exception as e:
+                return JsonResponse({"error": f"Error notifying chat server: {str(e)}"}, status=500)
+
             return JsonResponse({"message": "Collaboration request accepted"}, status=200)
 
         if action == "deny":
@@ -1856,6 +1874,7 @@ def handle_collaboration_request(request):
 @require_http_methods(["GET"])
 def get_collaborators(request):
     try:
+        user = request.user
         student = request.user.student_profile
 
         # Fetch all accepted collaboration requests
@@ -1873,6 +1892,7 @@ def get_collaborators(request):
                 "profile_picture": other_student.profile_picture.url if other_student.profile_picture else None,
                 "department": other_student.department,
                 "year_of_study": other_student.year_of_study,
+                "team_id": f"collab-{collab.id}"  # Use collab_request.id as the room ID
             })
 
         return JsonResponse({"collaborators": collaborator_list}, status=200)

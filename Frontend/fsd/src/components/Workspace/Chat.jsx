@@ -607,9 +607,6 @@ const Chat = () => {
 
       {/* Chat Area */}
       <div className="flex-1 container mx-auto p-6 flex flex-col">
-        {/* Messages Container */}
-        // Update the Messages Container section with improved formatting and timestamps
-
 {/* Messages Container */}
 <motion.div 
   initial={{ y: 20, opacity: 0 }}
@@ -627,6 +624,7 @@ const Chat = () => {
       No messages yet. Start the conversation!
     </motion.div>
   ) : (
+    /* Rest of your message rendering code */
     <motion.div
       variants={containerVariants}
       initial="hidden"
