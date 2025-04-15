@@ -258,14 +258,7 @@ const StudentLandingPage = () => {
               </motion.div>
             </div>
             
-            <div className="absolute bottom-10 left-0 right-0 flex justify-center z-10">
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-              >
-                <ChevronRight className="h-8 w-8 text-gray-400 transform rotate-90" />
-              </motion.div>
-            </div>
+        
           </section>
 
           {/* Features Section */}
