@@ -20,6 +20,26 @@ const Chat = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenStream, setScreenStream] = useState(null);
   const [isMicEnabled, setIsMicEnabled] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenVideoSrc, setFullScreenVideoSrc] = useState(null);
+
+  const handleVideoClick = (videoElement) => {
+    if (videoElement) {
+      if (videoElement.srcObject) {
+        // Handle media streams (e.g., WebRTC)
+        setFullScreenVideoSrc(videoElement.srcObject);
+      } else {
+        // Handle regular video files
+        setFullScreenVideoSrc(videoElement.src);
+      }
+      setIsFullScreen(true);
+    }
+  };
+  
+  const closeFullScreen = () => {
+    setIsFullScreen(false);
+    setFullScreenVideoSrc(null);
+  };
   
   useEffect(() => {
     console.log("Current userId:", userId);
@@ -522,7 +542,8 @@ const Chat = () => {
                   autoPlay 
                   playsInline 
                   muted 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover"
+                  onClick={() => handleVideoClick(localVideoRef.current)} 
                 />
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
@@ -549,6 +570,7 @@ const Chat = () => {
                     autoPlay
                     playsInline
                     className="w-full h-full object-cover"
+                    onClick={() => handleVideoClick(remoteVideoRefs.current[remoteUserId])}
                   />
                   <motion.div 
                     initial={{ y: 20, opacity: 0 }}
@@ -563,7 +585,37 @@ const Chat = () => {
                 </motion.div>
               ))}
             </motion.div>
-            
+            {isFullScreen && (
+  <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+    {fullScreenVideoSrc instanceof MediaStream ? (
+      <video
+        ref={(el) => {
+          if (el) el.srcObject = fullScreenVideoSrc;
+        }}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-contain"
+        controls
+      />
+    ) : (
+      <video
+        src={fullScreenVideoSrc}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-contain"
+        controls
+      />
+    )}
+    <button
+      onClick={closeFullScreen}
+      className="absolute top-4 right-4 text-white bg-red-500 px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+    >
+      Close
+    </button>
+  </div>
+)}
             {/* Video Controls */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
