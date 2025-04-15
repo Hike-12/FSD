@@ -401,17 +401,7 @@ const StudentLandingPage = () => {
           </section>
 
           {/* CTA Section */}
-          <section className="py-20 px-4 bg-gradient-to-r from-[#006D66] to-[#00C4B8]">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Transform Your Learning?</h2>
-              <p className="text-xl text-white mb-8">
-                Join thousands of students who are accelerating their careers with DevCompete.
-              </p>
-              <PrimaryButton className="bg-white text-[#006D66] hover:bg-gray-100 mx-auto">
-                Sign Up Now <ChevronRight className="h-5 w-5" />
-              </PrimaryButton>
-            </div>
-          </section>
+         
         </main>
 
         {/* Footer */}

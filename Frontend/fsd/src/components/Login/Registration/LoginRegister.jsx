@@ -11,9 +11,9 @@ const float = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(0, 196, 184, 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(0, 196, 184, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 196, 184, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
 `;
 
 const move = keyframes`
@@ -34,7 +34,7 @@ const Background = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(-45deg, #0A0A0A, #121212, #1A1A1A, #121212);
+  background: linear-gradient(-45deg, #050A15, #0A1428, #050A15, #0A1428);
   background-size: 400% 400%;
   animation: ${gradientShift} 15s ease infinite;
   z-index: -2;
@@ -46,10 +46,10 @@ const Background = styled.div`
     width: 100%;
     height: 100%;
     background: 
-      radial-gradient(circle at 20% 30%, rgba(0, 196, 184, 0.05) 0%, transparent 25%),
-      radial-gradient(circle at 80% 70%, rgba(0, 196, 184, 0.05) 0%, transparent 25%),
-      linear-gradient(135deg, transparent 49.5%, rgba(0, 196, 184, 0.03) 49.5%, rgba(0, 196, 184, 0.03) 50.5%, transparent 50.5%),
-      linear-gradient(-135deg, transparent 49.5%, rgba(0, 196, 184, 0.03) 49.5%, rgba(0, 196, 184, 0.03) 50.5%, transparent 50.5%);
+      radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 25%),
+      radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 25%),
+      linear-gradient(135deg, transparent 49.5%, rgba(59, 130, 246, 0.03) 49.5%, rgba(59, 130, 246, 0.03) 50.5%, transparent 50.5%),
+      linear-gradient(-135deg, transparent 49.5%, rgba(59, 130, 246, 0.03) 49.5%, rgba(59, 130, 246, 0.03) 50.5%, transparent 50.5%);
     background-size: 100px 100px;
     opacity: 0.8;
   }
@@ -59,7 +59,7 @@ const Background = styled.div`
     position: absolute;
     width: 100%;
     height: 100%;
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%2300C4B8' fill-opacity='0.03' d='M45,0 L55,0 L55,200 L45,200 Z M95,0 L105,0 L105,200 L95,200 Z M145,0 L155,0 L155,200 L145,200 Z M0,45 L0,55 L200,55 L200,45 Z M0,95 L0,105 L200,105 L200,95 Z M0,145 L0,155 L200,155 L200,145 Z'/%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%233b82f6' fill-opacity='0.03' d='M45,0 L55,0 L55,200 L45,200 Z M95,0 L105,0 L105,200 L95,200 Z M145,0 L155,0 L155,200 L145,200 Z M0,45 L0,55 L200,55 L200,45 Z M0,95 L0,105 L200,105 L200,95 Z M0,145 L0,155 L200,155 L200,145 Z'/%3E%3C/svg%3E");
     background-size: 50px 50px;
     opacity: 0.5;
   }
@@ -83,7 +83,7 @@ const FloatingOrbs = styled.div`
   span:nth-child(1) {
     width: 500px;
     height: 500px;
-    background: #00C4B8;
+    background: #3b82f6;
     top: -100px;
     left: -100px;
     animation-duration: 20s;
@@ -92,7 +92,7 @@ const FloatingOrbs = styled.div`
   span:nth-child(2) {
     width: 300px;
     height: 300px;
-    background: #006D66;
+    background: #2563eb;
     top: 50%;
     right: -50px;
     animation-duration: 25s;
@@ -101,10 +101,25 @@ const FloatingOrbs = styled.div`
   span:nth-child(3) {
     width: 400px;
     height: 400px;
-    background: #00A89E;
+    background: #60a5fa;
     bottom: -100px;
     left: 30%;
     animation-duration: 30s;
+  }
+
+  @media (max-width: 768px) {
+    span:nth-child(1) {
+      width: 300px;
+      height: 300px;
+    }
+    span:nth-child(2) {
+      width: 200px;
+      height: 200px;
+    }
+    span:nth-child(3) {
+      width: 250px;
+      height: 250px;
+    }
   }
 `;
 
@@ -112,14 +127,31 @@ const LoginContainer = styled.div`
   position: relative;
   width: 900px;
   height: 600px;
-  background: rgba(18, 18, 18, 0.85);
+  background: rgba(10, 20, 40, 0.85);
   backdrop-filter: blur(10px);
   border-radius: 23px;
   overflow: hidden;
-  border: 1px solid rgba(0, 196, 184, 0.3);
-  box-shadow: 0 0 30px rgba(0, 196, 184, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
   margin: 0 auto;
   animation: ${move} 0.8s ease-out;
+
+  @media (max-width: 992px) {
+    width: 700px;
+    height: 500px;
+  }
+
+  @media (max-width: 768px) {
+    width: 90%;
+    height: auto;
+    min-height: 600px;
+    margin: 2rem auto;
+  }
+
+  @media (max-width: 576px) {
+    width: 95%;
+    border-radius: 15px;
+  }
 `;
 
 const FormPanel = styled.div`
@@ -135,6 +167,17 @@ const FormPanel = styled.div`
   justify-content: center;
   left: ${props => props.left ? '0' : 'auto'};
   right: ${props => props.right ? '0' : 'auto'};
+
+  @media (max-width: 768px) {
+    width: 100%;
+    opacity: ${props => props.active ? 1 : 0};
+    z-index: ${props => props.active ? 2 : 1};
+    padding: 2rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 1.5rem;
+  }
 `;
 
 const OverlayContainer = styled.div`
@@ -142,13 +185,17 @@ const OverlayContainer = styled.div`
   width: 100%;
   height: 100%;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const OverlayPanel = styled.div`
   position: absolute;
   width: 50%;
   height: 100%;
-  background: linear-gradient(135deg, #006D66, #00C4B8);
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
   background-size: 200% 200%;
   animation: ${gradientShift} 8s ease infinite;
   z-index: 3;
@@ -175,7 +222,7 @@ const ToggleButton = styled.button`
   position: absolute;
   width: 70px;
   height: 70px;
-  background: rgba(0, 196, 184, 0.2);
+  background: rgba(59, 130, 246, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   cursor: pointer;
@@ -191,7 +238,7 @@ const ToggleButton = styled.button`
   backdrop-filter: blur(5px);
 
   &:hover {
-    background: rgba(0, 196, 184, 0.3);
+    background: rgba(59, 130, 246, 0.3);
     transform: translateX(-50%) rotate(${props => props.active ? '180deg' : '0deg'}) scale(1.1);
   }
 
@@ -199,7 +246,34 @@ const ToggleButton = styled.button`
     content: "⇄";
     font-size: 2rem;
     color: white;
-    text-shadow: 0 0 10px rgba(0, 196, 184, 0.7);
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileToggleButton = styled.button`
+  background: rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  padding: 0.8rem 1.5rem;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s;
+  backdrop-filter: blur(5px);
+  display: none;
+  align-self: center;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    display: block;
   }
 `;
 
@@ -209,38 +283,51 @@ const Form = styled.form`
   flex-direction: column;
   gap: 1.2rem;
   animation: ${move} 0.5s ease-out;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 1.1rem;
-  background: rgba(31, 42, 42, 0.7);
-  border: 1px solid rgba(42, 58, 58, 0.5);
+  background: rgba(5, 10, 21, 0.7);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 6px;
-  color: white;
+  color: #f8fafc;
   font-size: 1rem;
   transition: all 0.3s;
   backdrop-filter: blur(5px);
 
   &:focus {
     outline: none;
-    border-color: #00C4B8;
-    box-shadow: 0 0 0 2px rgba(0, 196, 184, 0.3);
-    background: rgba(31, 42, 42, 0.9);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    background: rgba(10, 20, 40, 0.9);
   }
 
   &::placeholder {
-    color: #A0AEC0;
+    color: #94a3b8;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0.9rem;
+    font-size: 0.9rem;
   }
 `;
 
 const Select = styled.select`
   width: 100%;
   padding: 1.1rem;
-  background: rgba(31, 42, 42, 0.7);
-  border: 1px solid rgba(42, 58, 58, 0.5);
+  background: rgba(5, 10, 21, 0.7);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 6px;
-  color: white;
+  color: #f8fafc;
   font-size: 1rem;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -252,15 +339,24 @@ const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #00C4B8;
-    box-shadow: 0 0 0 2px rgba(0, 196, 184, 0.3);
-    background: rgba(31, 42, 42, 0.9);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    background: rgba(10, 20, 40, 0.9);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0.9rem;
+    font-size: 0.9rem;
   }
 `;
 
 const Button = styled.button`
   padding: 1.1rem;
-  background: linear-gradient(135deg, #00C4B8, #006D66);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   background-size: 200% 200%;
   color: white;
   border: none;
@@ -270,14 +366,14 @@ const Button = styled.button`
   cursor: pointer;
   margin-top: 1rem;
   transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(0, 196, 184, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
   position: relative;
   overflow: hidden;
   animation: ${gradientShift} 5s ease infinite;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 196, 184, 0.4);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
   }
 
   &:active {
@@ -308,6 +404,15 @@ const Button = styled.button`
     0% { transform: translateX(-100%) rotate(30deg); }
     100% { transform: translateX(100%) rotate(30deg); }
   }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0.9rem;
+    font-size: 0.9rem;
+  }
 `;
 
 const ErrorText = styled.p`
@@ -315,10 +420,14 @@ const ErrorText = styled.p`
   font-size: 0.9rem;
   margin: -0.8rem 0 0.8rem 0;
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+
+  @media (max-width: 576px) {
+    font-size: 0.8rem;
+  }
 `;
 
 const Link = styled.a`
-  color: #A0AEC0;
+  color: #94a3b8;
   text-decoration: none;
   font-size: 0.9rem;
   text-align: center;
@@ -327,8 +436,8 @@ const Link = styled.a`
   position: relative;
 
   &:hover {
-    color: #00C4B8;
-    text-shadow: 0 0 5px rgba(0, 196, 184, 0.3);
+    color: #3b82f6;
+    text-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
   }
 
   &::after {
@@ -338,21 +447,25 @@ const Link = styled.a`
     left: 0;
     width: 0;
     height: 1px;
-    background: #00C4B8;
+    background: #3b82f6;
     transition: width 0.3s;
   }
 
   &:hover::after {
     width: 100%;
   }
+
+  @media (max-width: 576px) {
+    font-size: 0.8rem;
+  }
 `;
 
 const Title = styled.h1`
-  color: white;
+  color: #f8fafc;
   font-size: 2.2rem;
   margin-bottom: 1.8rem;
   text-align: center;
-  text-shadow: 0 0 10px rgba(0, 196, 184, 0.3);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
   position: relative;
   display: inline-block;
   margin-left: auto;
@@ -366,8 +479,18 @@ const Title = styled.h1`
     transform: translateX(-50%);
     width: 50px;
     height: 3px;
-    background: linear-gradient(to right, #00C4B8, #006D66);
+    background: linear-gradient(to right, #3b82f6, #7c3aed);
     border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
   }
 `;
 
@@ -376,6 +499,10 @@ const PanelTitle = styled.h2`
   margin-bottom: 1.2rem;
   color: white;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
 `;
 
 const PanelText = styled.p`
@@ -383,6 +510,11 @@ const PanelText = styled.p`
   line-height: 1.6;
   max-width: 80%;
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    max-width: 90%;
+  }
 `;
 
 const Particles = styled.div`
@@ -397,7 +529,7 @@ const Particles = styled.div`
 
 const Particle = styled.div`
   position: absolute;
-  background: rgba(0, 196, 184, ${props => props.opacity});
+  background: rgba(59, 130, 246, ${props => props.opacity});
   border-radius: 50%;
   animation: ${float} ${props => props.duration}s linear infinite;
   top: ${props => props.top}%;
@@ -561,6 +693,12 @@ const LoginPage = () => {
             {errors.login && <ErrorText>{errors.login}</ErrorText>}
             <Link href="#">Forgot password?</Link>
             <Button type="submit">Sign In</Button>
+            <MobileToggleButton 
+              type="button" 
+              onClick={() => setIsSignInActive(false)}
+            >
+              Don't have an account? Sign Up
+            </MobileToggleButton>
           </Form>
         </FormPanel>
 
@@ -604,10 +742,13 @@ const LoginPage = () => {
               required
             />
             {errors.register && <ErrorText>{errors.register}</ErrorText>}
-            <Link href="#" onClick={() => setIsSignInActive(true)}>
-              Already have an account?
-            </Link>
             <Button type="submit">Sign Up</Button>
+            <MobileToggleButton 
+              type="button" 
+              onClick={() => setIsSignInActive(true)}
+            >
+              Already have an account? Sign In
+            </MobileToggleButton>
           </Form>
         </FormPanel>
 

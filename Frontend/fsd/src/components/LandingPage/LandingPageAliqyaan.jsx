@@ -19,15 +19,15 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
  
  // Define colors palette
  const colors = {
-   primary: '#3b82f6',
-   primaryDark: '#2563eb',
-   secondary: '#60a5fa',
-   accent: '#7c3aed',
-   accentLight: '#a78bfa',
-   background: '#050A15',
-   backgroundLight: '#0A1428',
-   text: '#f8fafc',
-   muted: '#94a3b8'
+   primary: '#3b82f6',         // Primary color
+   primaryDark: '#2563eb',     // Darker shade of primary
+   secondary: '#60a5fa',       // Secondary color
+   accent: '#7c3aed',          // Accent color
+   accentLight: '#a78bfa',     // Lighter accent color
+   background: '#050A15',      // Main background color
+   backgroundLight: '#0A1428', // Lighter background color
+   text: '#f8fafc',            // Text color
+   muted: '#94a3b8'            // Muted text color
  };
  
  // City data with coordinates and testimonials
@@ -1101,7 +1101,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
            >
              {/* Background glow and patterns */}
              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-blue-800/30 to-indigo-900/30"></div>
-             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM3ODdiZmYiIGZpbGwtb3BhY2l0eT0iLjEiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHpNMjAgMjBoMjB2MjBIMjB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
+             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM3ODdiZmYiIGZpbGwtb3BhY2l0eT0iLjEiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHpNMjAgMjBoMjB2MjBIMjB6Ii8+PC9nPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
              <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-500 rounded-full filter blur-[120px] opacity-20 transform translate-x-1/2 -translate-y-1/3"></div>
              
              {/* Content */}
