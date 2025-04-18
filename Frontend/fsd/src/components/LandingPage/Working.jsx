@@ -48,7 +48,7 @@ const HowItWorks = () => {
             </h1>
           </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/landing')}
             className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg hover:shadow-blue-500/50 transition-all duration-300"
           >
             Back to Home

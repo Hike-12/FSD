@@ -56,7 +56,8 @@ function App() {
         <>
         <BrowserRouter>
             <AuthProvider>
-                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
+
+                {/* <Layout navbar={getNavbar()} sidebar={getSidebar()}> */}
                     <Routes>
 
                         {/* LANDING PAGE */}
@@ -69,6 +70,7 @@ function App() {
 
                         {/* STUDENTS */}
                         <Route path="/student-landing" element={<StudentLandingPage />} />
+
                         <Route path="/student-profile" element={<StudentProfileForm/>} />
                         <Route path="/students" element={<RecommendedStudents />} />
                         <Route path="/students/:id" element={<StudentProfile />} />
@@ -103,7 +105,7 @@ function App() {
                         {/* CHATROOMS */}
                         <Route path="/chat/:teamId" element={<Chat />} />
                     </Routes>
-                </Layout>
+                {/* </Layout> */}
             </AuthProvider>
         </BrowserRouter>
         </>
