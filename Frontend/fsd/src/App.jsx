@@ -34,6 +34,8 @@ import StudentNotifications from "./components/Students/Notifications";
 import Collaborators from "./components/Students/StudentCollaborator";
 import MentorConsultations from "./components/Mentor/MentorConsultations";
 import MentorNotifications from "./components/Mentor/Notifications";
+import React from 'react';
+import VoiceControl from './components/VoiceControl/VoiceControl';
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -50,6 +52,20 @@ function App() {
         if (userRole === "MENTOR") return <StudentNavbar />;
         if (userRole === "HOST") return <StudentNavbar />;
         return null;
+      };
+
+    const handleVoiceCommand = (command) => {
+        console.log('Received command:', command);
+    
+        // Example: Perform actions based on the command
+        if (command.toLowerCase().includes('hello')) {
+          alert('Hello to you too!');
+        } else if (command.toLowerCase().includes('open settings')) {
+          console.log('Opening settings...');
+          // Add logic to open settings
+        } else {
+          console.log('Command not recognized.');
+        }
       };
 
     return (
@@ -108,6 +124,7 @@ function App() {
                 {/* </Layout> */}
             </AuthProvider>
         </BrowserRouter>
+     
         </>
     );
 }

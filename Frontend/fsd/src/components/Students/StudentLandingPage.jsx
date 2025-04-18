@@ -1,33 +1,246 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, Stars } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/context/AuthContext";
 import { 
-  Menu, X, ChevronRight, User, Search, Bell, LogOut, 
-  Moon, Sun, GlobeIcon, BriefcaseIcon, Lightbulb, 
-  ChartBarIcon, ArrowRightIcon, CheckCircleIcon, BookOpen, 
-  Trophy, Users, MessageSquare, Mic, MicOff
+  Menu, X, ChevronRight, User, LogOut, 
+  Moon, Sun, GlobeIcon, BriefcaseIcon, 
+  ChartBarIcon, ArrowRightIcon, BookOpen, 
+  Trophy, Users, MessageSquare, Mic, MicOff, 
+  Sparkles, Volume2, Type, Languages, Contrast,
+  Plus, Minus
 } from 'lucide-react';
+import Dharti from '../LandingPage/Dharti';
 
-// Enhanced colors palette with better balance
-const colors = {
-  primary: '#4f46e5',
-  primaryDark: '#4338ca',
-  secondary: '#818cf8',
-  accent: '#a855f7',
-  accentLight: '#c084fc',
-  background: '#0a0a1a',
-  backgroundLight: '#111827',
-  text: '#f8fafc',
-  muted: '#94a3b8',
-  highlight: '#eab308',
-  success: '#10b981'
+// Multi-language content
+const translations = {
+  en: {
+    ui: {
+      title: "StudentSphere",
+      featuresTitle: "Student Features",
+      featuresDesc: "Discover powerful tools and resources designed to enhance your learning experience",
+      stats: {
+        students: "Students",
+        mentors: "Mentors",
+        competitions: "Competitions",
+        success: "Success Rate"
+      },
+      accessibility: {
+        menu: "Accessibility Menu",
+        font: "Font Size",
+        contrast: "High Contrast",
+        language: "Language",
+        voiceHelp: "Voice Commands Help",
+        pageGuide: "Page Guide"
+      },
+      listening: "Listening...",
+      stopSpeaking: "Stop speaking",
+      navigation: {
+        dashboard: "Dashboard",
+        competitions: "Competitions",
+        mentors: "Mentors",
+        profile: "Profile",
+        signout: "Sign Out"
+      }
+    },
+    commands: {
+      dashboard: "go to dashboard",
+      competitions: "open competitions",
+      mentors: "show mentors",
+      profile: "navigate to profile",
+      signout: "sign out",
+      increaseFont: "increase font size",
+      decreaseFont: "decrease font size",
+      darkMode: "toggle dark mode",
+      highContrast: "toggle high contrast",
+      language: "change language to",
+      pageSummary: "read page summary",
+      stop: "stop",
+      help: "help"
+    }
+  },
+  hi: {
+    ui: {
+      title: "स्टूडेंटस्फीयर",
+      featuresTitle: "छात्र सुविधाएँ",
+      featuresDesc: "अपने सीखने के अनुभव को बेहतर बनाने के लिए डिज़ाइन किए गए शक्तिशाली उपकरण और संसाधन खोजें",
+      stats: {
+        students: "छात्र",
+        mentors: "गुरु",
+        competitions: "प्रतियोगिताएं",
+        success: "सफलता दर"
+      },
+      accessibility: {
+        menu: "एक्सेसिबिलिटी मेनू",
+        font: "फॉन्ट आकार",
+        contrast: "उच्च कंट्रास्ट",
+        language: "भाषा",
+        voiceHelp: "वॉइस कमांड सहायता",
+        pageGuide: "पेज गाइड"
+      },
+      listening: "सुन रहा हूँ...",
+      stopSpeaking: "बोलना बंद करो",
+      navigation: {
+        dashboard: "डैशबोर्ड",
+        competitions: "प्रतियोगिताएं",
+        mentors: "गुरु",
+        profile: "प्रोफ़ाइल",
+        signout: "साइन आउट"
+      }
+    },
+    commands: {
+      dashboard: "डैशबोर्ड पर जाएं",
+      competitions: "प्रतियोगिताएं खोलें",
+      mentors: "गुरु दिखाएं",
+      profile: "प्रोफ़ाइल पर नेविगेट करें",
+      signout: "साइन आउट करें",
+      increaseFont: "फॉन्ट आकार बढ़ाएं",
+      decreaseFont: "फॉन्ट आकार घटाएं",
+      darkMode: "डार्क मोड टॉगल करें",
+      highContrast: "उच्च कंट्रास्ट टॉगल करें",
+      language: "भाषा बदलें",
+      pageSummary: "पेज सारांश पढ़ें",
+      stop: "रुकें",
+      help: "मदद"
+    }
+  },
+  ta: {
+    ui: {
+      title: "மாணவர்கோளம்",
+      featuresTitle: "மாணவர் அம்சங்கள்",
+      featuresDesc: "உங்கள் கற்றல் அனுபவத்தை மேம்படுத்த வடிவமைக்கப்பட்ட சக்திவாய்ந்த கருவிகள் மற்றும் வளங்களைக் கண்டறியவும்",
+      stats: {
+        students: "மாணவர்கள்",
+        mentors: "வழிகாட்டிகள்",
+        competitions: "போட்டிகள்",
+        success: "வெற்றி விகிதம்"
+      },
+      accessibility: {
+        menu: "அணுகல் மெனு",
+        font: "எழுத்துரு அளவு",
+        contrast: "உயர் தொடர்பு",
+        language: "மொழி",
+        voiceHelp: "குரல் கட்டளைகள் உதவி",
+        pageGuide: "பக்க வழிகாட்டி"
+      },
+      listening: "கேட்டுக்கொண்டிருக்கிறது...",
+      stopSpeaking: "பேசுவதை நிறுத்து",
+      navigation: {
+        dashboard: "டாஷ்போர்டு",
+        competitions: "போட்டிகள்",
+        mentors: "வழிகாட்டிகள்",
+        profile: "சுயவிவரம்",
+        signout: "வெளியேறு"
+      }
+    },
+    commands: {
+      dashboard: "டாஷ்போர்டுக்குச் செல்லவும்",
+      competitions: "போட்டிகளைத் திறக்கவும்",
+      mentors: "வழிகாட்டிகளைக் காட்டு",
+      profile: "சுயவிவரத்திற்கு செல்லவும்",
+      signout: "வெளியேறவும்",
+      increaseFont: "எழுத்துரு அளவை அதிகரிக்கவும்",
+      decreaseFont: "எழுத்துரு அளவைக் குறைக்கவும்",
+      darkMode: "இருள் பயன்முறையை மாற்றவும்",
+      highContrast: "உயர் தொடர்பு மாற்றவும்",
+      language: "மொழியை மாற்றவும்",
+      pageSummary: "பக்க சுருக்கத்தைப் படிக்கவும்",
+      stop: "நிறுத்து",
+      help: "உதவி"
+    }
+  },
+  es: {
+    ui: {
+      title: "StudentSphere",
+      featuresTitle: "Características Estudiantiles",
+      featuresDesc: "Descubre herramientas poderosas diseñadas para mejorar tu experiencia de aprendizaje",
+      stats: {
+        students: "Estudiantes",
+        mentors: "Mentores",
+        competitions: "Competiciones",
+        success: "Tasa de éxito"
+      },
+      accessibility: {
+        menu: "Menú de Accesibilidad",
+        font: "Tamaño de Fuente",
+        contrast: "Alto Contraste",
+        language: "Idioma",
+        voiceHelp: "Ayuda de Comandos de Voz",
+        pageGuide: "Guía de Página"
+      },
+      listening: "Escuchando...",
+      stopSpeaking: "Dejar de hablar",
+      navigation: {
+        dashboard: "Panel",
+        competitions: "Competiciones",
+        mentors: "Mentores",
+        profile: "Perfil",
+        signout: "Cerrar Sesión"
+      }
+    },
+    commands: {
+      dashboard: "ir al panel",
+      competitions: "abrir competencias",
+      mentors: "mostrar mentores",
+      profile: "navegar al perfil",
+      signout: "cerrar sesión",
+      increaseFont: "aumentar tamaño de fuente",
+      decreaseFont: "disminuir tamaño de fuente",
+      darkMode: "alternar modo oscuro",
+      highContrast: "alternar alto contraste",
+      language: "cambiar idioma a",
+      pageSummary: "leer resumen de página",
+      stop: "detener",
+      help: "ayuda"
+    }
+  },
+  fr: {
+    ui: {
+      title: "StudentSphere",
+      featuresTitle: "Fonctionnalités Étudiantes",
+      featuresDesc: "Découvrez des outils puissants conçus pour améliorer votre expérience d'apprentissage",
+      stats: {
+        students: "Étudiants",
+        mentors: "Mentors",
+        competitions: "Compétitions",
+        success: "Taux de Réussite"
+      },
+      accessibility: {
+        menu: "Menu d'Accessibilité",
+        font: "Taille de Police",
+        contrast: "Haut Contraste",
+        language: "Langue",
+        voiceHelp: "Aide des Commandes Vocales",
+        pageGuide: "Guide de Page"
+      },
+      listening: "Écoute...",
+      stopSpeaking: "Arrêter de parler",
+      navigation: {
+        dashboard: "Tableau de Bord",
+        competitions: "Compétitions",
+        mentors: "Mentors",
+        profile: "Profil",
+        signout: "Se Déconnecter"
+      }
+    },
+    commands: {
+      dashboard: "aller au tableau de bord",
+      competitions: "ouvrir les compétitions",
+      mentors: "afficher les mentors",
+      profile: "naviguer vers le profil",
+      signout: "se déconnecter",
+      increaseFont: "augmenter la taille de police",
+      decreaseFont: "diminuer la taille de police",
+      darkMode: "basculer en mode sombre",
+      highContrast: "basculer en haut contraste",
+      language: "changer la langue en",
+      pageSummary: "lire le résumé de la page",
+      stop: "arrêter",
+      help: "aide"
+    }
+  }
 };
 
-// Enhanced student features with new additions
 const features = [
   {
     icon: <GlobeIcon className="w-6 h-6" />,
@@ -60,501 +273,43 @@ const features = [
     color: 'from-amber-500 to-yellow-500'
   },
   {
-    icon: <Trophy className="w-6 h-6" />,
+    icon: <Trophy className="w-6 w-6" />,
     title: "Achievement Badges",
     description: "Earn recognition for your accomplishments with verifiable digital badges.",
     color: 'from-rose-500 to-red-500'
   }
 ];
 
-// Student stats
 const stats = [
-  { value: "500K+", label: "Students" },
-  { value: "10K+", label: "Mentors" },
-  { value: "1,200+", label: "Competitions" },
-  { value: "95%", label: "Success Rate" }
+  { value: "500K+", label: "students" },
+  { value: "10K+", label: "mentors" },
+  { value: "1,200+", label: "competitions" },
+  { value: "95%", label: "success" }
 ];
-
-// Sample cities data for the globe
-const cities = [
-  { name: "New York", lat: 40.7128, lng: -74.0060 },
-  { name: "London", lat: 51.5072, lng: -0.1276 },
-  { name: "Tokyo", lat: 35.6895, lng: 139.6917 },
-  { name: "Sydney", lat: -33.8688, lng: 151.2093 },
-  { name: "Delhi", lat: 28.6139, lng: 77.2090 },
-  { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
-  { name: "Rio", lat: -22.9068, lng: -43.1729 },
-  { name: "Cape Town", lat: -33.9249, lng: 18.4241 }
-];
-
-// Utility function to convert latitude and longitude to 3D coordinates
-const latLngToVector3 = (lat, lng, r = 5) => {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
-
-  return new THREE.Vector3(
-    -(r * Math.sin(phi) * Math.cos(theta)),
-    r * Math.cos(phi),
-    r * Math.sin(phi) * Math.sin(theta)
-  );
-};
-
-// Enhanced Globe component with better lighting
-const Globe = ({ onCitySelect }) => {
-  const { scene, camera, gl } = useThree();
-  const groupRef = useRef();
-  const linesRef = useRef([]);
-  const cityMeshes = useRef([]);
-  const starfieldRef = useRef(null);
-  const cloudRef = useRef(null);
-  const raycaster = useRef(new THREE.Raycaster());
-  const mouse = useRef(new THREE.Vector2());
-  
-  // Create animated line between points
-  const createAnimatedLine = (start, end, color = '#818cf8') => {
-    const startNormal = start.clone().normalize();
-    const endNormal = end.clone().normalize();
-    
-    const midDirection = new THREE.Vector3()
-      .addVectors(startNormal, endNormal)
-      .normalize();
-    const arcHeight = 5 * 0.8;
-    const midPoint = midDirection.multiplyScalar(5 + arcHeight);
-
-    const curve = new THREE.CubicBezierCurve3(
-      start,
-      start.clone().lerp(midPoint, 0.6),
-      end.clone().lerp(midPoint, 0.6),
-      end
-    );
-
-    const points = curve.getPoints(100);
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    const uvs = new Float32Array(points.length * 2);
-    for (let i = 0; i < points.length; i++) {
-      uvs[i * 2] = i / (points.length - 1);
-      uvs[i * 2 + 1] = 0;
-    }
-    geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        color: { value: new THREE.Color(color) },
-        time: { value: 0 },
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 color;
-        uniform float time;
-        varying vec2 vUv;
-        
-        void main() {
-          float progress1 = fract(time * 1.2); 
-          float progress2 = fract(time * 1.2 + 0.4); 
-          float pulseWidth = 0.3;
-          
-          float front1 = smoothstep(progress1 - pulseWidth, progress1, vUv.x);
-          float trail1 = smoothstep(progress1 - pulseWidth - 0.1, progress1 - 0.1, vUv.x);
-          float alpha1 = (front1 - trail1) * 1.0;
-          
-          float front2 = smoothstep(progress2 - pulseWidth, progress2, vUv.x);
-          float trail2 = smoothstep(progress2 - pulseWidth - 0.1, progress2 - 0.1, vUv.x);
-          float alpha2 = (front2 - trail2) * 0.8;
-          
-          float baseAlpha = 0.5;
-          float finalAlpha = max(alpha1, alpha2) + baseAlpha;
-          
-          gl_FragColor = vec4(color * 0.8, finalAlpha);
-        }
-      `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const line = new THREE.Line(geometry, material);
-    line.scale.set(1.05, 1.05, 1.05);
-
-    return line;
-  };
-
-  // Setup scene with globe and effects
-  useEffect(() => {
-    const globeGroup = new THREE.Group();
-    const loader = new THREE.TextureLoader();
-  
-    // Add atmosphere layers with better colors
-    const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(5 + 0.15, 64, 64),
-      new THREE.MeshBasicMaterial({
-        color: colors.secondary,
-        transparent: true,
-        opacity: 0.15,
-        side: THREE.BackSide
-      })
-    );
-    
-    const atmosphereOuter = new THREE.Mesh(
-      new THREE.SphereGeometry(5 + 0.3, 64, 64),
-      new THREE.MeshBasicMaterial({
-        color: colors.accent,
-        transparent: true,
-        opacity: 0.08,
-        side: THREE.BackSide
-      })
-    );
-    
-    globeGroup.add(atmosphere);
-    globeGroup.add(atmosphereOuter);
-  
-    // Create earth with better textures
-    const earthMaterial = new THREE.MeshStandardMaterial({
-      map: loader.load("/textures/earth.jpg"),
-      bumpMap: loader.load("/textures/earth_bump.jpg"),
-      bumpScale: 0.2,
-      metalness: 0.3,
-      roughness: 0.6,
-      emissive: new THREE.Color(0x0a0a1a),
-      emissiveIntensity: 0.1
-    });
-    
-    const earthMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(5, 64, 64),
-      earthMaterial
-    );
-    
-    globeGroup.add(earthMesh);
-    
-    // Add subtle cloud layer with animation
-    const cloudsMaterial = new THREE.MeshPhongMaterial({
-      map: loader.load("/clouds.png"),
-      transparent: true,
-      opacity: 0.4,
-      blending: THREE.AdditiveBlending,
-    });
-    
-    const cloudsMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(5.05, 64, 64),
-      cloudsMaterial
-    );
-    
-    globeGroup.add(cloudsMesh);
-    cloudRef.current = cloudsMesh;
-
-    // Add city markers with better visual hierarchy
-    cities.forEach((city, index) => {
-      const position = latLngToVector3(city.lat, city.lng);
-
-      // Interactive hit area
-      const hitGeom = new THREE.SphereGeometry(0.3, 16, 16);
-      const hitMat = new THREE.MeshBasicMaterial({
-        color: colors.primary,
-        transparent: true,
-        opacity: 0.01,
-      });
-      const hitArea = new THREE.Mesh(hitGeom, hitMat);
-      hitArea.position.copy(position);
-      hitArea.userData = { cityIndex: index };
-
-      // Visible dot with glow effect
-      const dotGeom = new THREE.SphereGeometry(0.12, 32, 32);
-      const dotMat = new THREE.MeshStandardMaterial({
-        color: colors.text,
-        emissive: colors.highlight,
-        emissiveIntensity: 2.0,
-        metalness: 0.9,
-        roughness: 0.1,
-      });
-      const dot = new THREE.Mesh(dotGeom, dotMat);
-      dot.position.copy(position);
-
-      // Animated pulsing ring
-      const ringGeom = new THREE.RingGeometry(0.15, 0.2, 32);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: colors.highlight,
-        transparent: true,
-        opacity: 0.8,
-        side: THREE.DoubleSide,
-      });
-      const ring = new THREE.Mesh(ringGeom, ringMat);
-      ring.position.copy(position);
-      ring.lookAt(0, 0, 0);
-
-      // Glow effect
-      const glowGeom = new THREE.SphereGeometry(0.25, 32, 32);
-      const glowMat = new THREE.MeshBasicMaterial({
-        color: colors.highlight,
-        transparent: true,
-        opacity: 0.3,
-        blending: THREE.AdditiveBlending
-      });
-      const glow = new THREE.Mesh(glowGeom, glowMat);
-      glow.position.copy(position);
-
-      globeGroup.add(hitArea);
-      globeGroup.add(dot);
-      globeGroup.add(ring);
-      globeGroup.add(glow);
-
-      cityMeshes.current.push({ dot, ring, glow, hitArea, position });
-    });
-
-    // Create connections between cities with varied colors
-    const connections = [
-      [0, 1], [0, 5], [1, 2], [2, 3], [3, 7], [4, 5], [5, 6]
-    ];
-    
-    connections.forEach(([i, j]) => {
-      const start = latLngToVector3(cities[i].lat, cities[i].lng);
-      const end = latLngToVector3(cities[j].lat, cities[j].lng);
-      
-      const colors = ['#818cf8', '#a855f7', '#eab308', '#10b981'];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      
-      const line = createAnimatedLine(start, end, color);
-      globeGroup.add(line);
-      linesRef.current.push(line);
-    });
-    
-    scene.add(globeGroup);
-    groupRef.current = globeGroup;
-
-    // Create starfield with better distribution
-    const starGeometry = new THREE.BufferGeometry();
-    const starMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.15,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
-    });
-
-    const starVertices = [];
-    for (let i = 0; i < 10000; i++) {
-      const x = (Math.random() - 0.5) * 2000;
-      const y = (Math.random() - 0.5) * 2000;
-      const z = (Math.random() - 0.5) * 2000;
-      starVertices.push(x, y, z);
-    }
-
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    const starfield = new THREE.Points(starGeometry, starMaterial);
-    scene.add(starfield);
-    starfieldRef.current = starfield;
-
-    // Enhanced lighting setup
-    const directionalLight = new THREE.DirectionalLight(colors.primary, 3.0);
-    directionalLight.position.set(10, 10, 5);
-    scene.add(directionalLight);
-
-    const hemisphereLight = new THREE.HemisphereLight(colors.primary, colors.accent, 0.5);
-    scene.add(hemisphereLight);
-
-    const pointLight = new THREE.PointLight(colors.highlight, 1.5, 50);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
-
-    const ambientLight = new THREE.AmbientLight(colors.backgroundLight, 0.2);
-    scene.add(ambientLight);
-
-    return () => {
-      scene.remove(globeGroup);
-      scene.remove(starfield);
-    };
-  }, [scene, camera, onCitySelect]);
-  
-  // Handle city selection
-  const handleClick = useCallback((event) => {
-    event.stopPropagation();
-    const canvas = gl.domElement;
-    const rect = canvas.getBoundingClientRect();
-    mouse.current.x = ((event.clientX - rect.left) / canvas.clientWidth) * 2 - 1;
-    mouse.current.y = -((event.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
-
-    raycaster.current.setFromCamera(mouse.current, camera);
-
-    const hitAreas = cityMeshes.current.map(mesh => mesh.hitArea);
-    const intersects = raycaster.current.intersectObjects(hitAreas);
-
-    if (intersects.length > 0) {
-      const cityIndex = intersects[0].object.userData.cityIndex;
-      onCitySelect(`Student from ${cities[cityIndex].name}`);
-      
-      // Highlight the selected city
-      cityMeshes.current.forEach((city, idx) => {
-        if (idx === cityIndex) {
-          city.dot.material.emissiveIntensity = 5.0;
-          city.ring.material.color.set(colors.highlight);
-          city.glow.scale.set(1.5, 1.5, 1.5);
-        } else {
-          city.dot.material.emissiveIntensity = 2.0;
-          city.ring.material.color.set(colors.accent);
-          city.glow.scale.set(1, 1, 1);
-        }
-      });
-    }
-  }, [camera, gl, onCitySelect]);
-
-  // Animation loop
-  useFrame(({ clock }) => {
-    const elapsedTime = clock.getElapsedTime();
-    
-    // Animate connection lines
-    linesRef.current.forEach((line, index) => {
-      const offset = index * 0.1;
-      line.material.uniforms.time.value = (elapsedTime * 0.2 + offset) % 1.0;
-    });
-    
-    // Rotate clouds
-    if (cloudRef.current) {
-      cloudRef.current.rotation.y = elapsedTime * 0.02;
-    }
-    
-    // Pulse effect for city indicators
-    cityMeshes.current.forEach((city, index) => {
-      const scale = 1 + 0.2 * Math.sin(elapsedTime * 2 + index);
-      city.ring.scale.set(scale, scale, 1);
-      city.ring.material.opacity = 0.6 + 0.2 * Math.sin(elapsedTime * 2 + index);
-      city.glow.material.opacity = 0.3 + 0.1 * Math.sin(elapsedTime * 3 + index);
-    });
-  });
-
-  return (
-    <group ref={groupRef} onClick={handleClick}>
-      <Stars ref={starfieldRef} radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-    </group>
-  );
-};
 
 const StudentLandingPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [highContrast, setHighContrast] = useState(false);
+  const [fontSize, setFontSize] = useState(16);
   const [scrolled, setScrolled] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [activeFeature, setActiveFeature] = useState(null);
-  const [showTooltip, setShowTooltip] = useState(true);
   const [isListening, setIsListening] = useState(false);
-  const [voiceCommand, setVoiceCommand] = useState('');
-  const [voiceFeedback, setVoiceFeedback] = useState('');
+  const [transcript, setTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [language, setLanguage] = useState('en');
+  const [showAccessibilityMenu, setShowAccessibilityMenu] = useState(false);
+  const [showVoiceHelp, setShowVoiceHelp] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const recognitionRef = useRef(null);
   const navigate = useNavigate();
   const { logout, currentUser } = useAuth();
 
-  // Initialize voice recognition
+  // Apply dynamic styles based on accessibility settings
   useEffect(() => {
-    const initVoiceRecognition = () => {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          setVoiceFeedback('Voice commands not supported in your browser');
-          return;
-        }
-  
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'en-US';
-  
-        recognitionRef.current.onresult = (event) => {
-          const transcript = Array.from(event.results)
-            .map(result => result[0])
-            .map(result => result.transcript)
-            .join('');
-          setVoiceCommand(transcript);
-          processVoiceCommand(transcript);
-        };
-  
-        recognitionRef.current.onerror = (event) => {
-          console.error('Voice recognition error', event.error);
-          const errorMessages = {
-            'no-speech': 'No speech detected',
-            'audio-capture': 'No microphone available',
-            'not-allowed': 'Microphone access denied',
-            default: `Error: ${event.error}`
-          };
-          setVoiceFeedback(errorMessages[event.error] || errorMessages.default);
-          setIsListening(false);
-        };
-  
-        recognitionRef.current.onend = () => {
-          if (isListening) {
-            try {
-              recognitionRef.current.start();
-            } catch (e) {
-              console.error('Restart error:', e);
-              setIsListening(false);
-            }
-          }
-        };
-      } catch (error) {
-        console.error('Initialization error:', error);
-        setVoiceFeedback('Error initializing voice recognition');
-        setIsListening(false);
-      }
-    };
-  
-    initVoiceRecognition();
-  
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, [isListening]);
-
-  // Process voice commands
-  const processVoiceCommand = (command) => {
-    const normalizedCommand = command.toLowerCase().trim();
-    let feedback = '';
-  
-    if (normalizedCommand.includes('help')) {
-      feedback = [
-        'Available commands:',
-        '- "Dashboard" - Go to dashboard',
-        '- "Competitions" - View competitions',
-        '- "Mentors" - Find mentors',
-        '- "Profile" - View your profile',
-        '- "Study groups" - Find study groups',
-        '- "Dark mode"/"Light mode" - Toggle theme',
-        '- "Sign out" - Log out',
-        '- "Close" - Close current view'
-      ].join('\n');
-    }
-
-    if (feedback) {
-      setVoiceFeedback(feedback);
-      setTimeout(() => setVoiceFeedback(''), 3000);
-    }
-  };
-
-const toggleVoiceControl = async () => {
-  if (isListening) {
-    recognitionRef.current.stop();
-    setIsListening(false);
-    setVoiceCommand('');
-  } else {
-    try {
-      // Check microphone permissions first
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      
-      setVoiceFeedback('Listening... Say "help" for commands');
-      recognitionRef.current.start();
-      setIsListening(true);
-    } catch (error) {
-      console.error('Microphone access error:', error);
-      setVoiceFeedback('Microphone access denied. Please allow microphone access.');
-    }
-  }
-};
+    document.documentElement.style.fontSize = `${fontSize}px`;
+    document.documentElement.classList.toggle('high-contrast', highContrast);
+    document.documentElement.lang = language;
+  }, [fontSize, highContrast, language]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -565,93 +320,472 @@ const toggleVoiceControl = async () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('Speech recognition not supported');
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.lang = language;
+
+    recognitionRef.current.onresult = (event) => {
+      let interim = '';
+      let final = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+          handleVoiceCommand(transcript.trim());
+        } else {
+          interim += transcript;
+        }
+      }
+
+      setTranscript(prev => final ? prev + final : prev);
+      setInterimTranscript(interim);
+    };
+
+    recognitionRef.current.onerror = (event) => {
+      console.error('Voice recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      if (isListening) {
+        recognitionRef.current.start();
+      }
+    };
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [isListening, language]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // New UX feature: Auto-hide tooltip after delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowTooltip(false);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleCitySelect = (city) => {
+    console.log("Selected city:", city);
+  };
 
-  // New UX feature: Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setSelectedCity(null);
-        setSidebarOpen(false);
-      }
-      if (e.key === 'm' && e.metaKey) {
-        navigate('/mentors');
-      }
-      if (e.key === 'd' && e.metaKey) {
-        navigate('/dashboard');
-      }
-      if (e.key === 'v' && e.metaKey) {
-        toggleVoiceControl();
-      }
-    };
+  const speak = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language;
+      setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  const stopSpeaking = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const readPageSummary = () => {
+    const summary = `
+      Welcome to StudentSphere. This page provides an overview of our platform features.
+      We have ${stats[0].value} students, ${stats[1].value} mentors, and ${stats[2].value} competitions.
+      Key features include: Global Student Network, Expert Mentorship, Study Groups, Competition Insights,
+      Learning Resources, and Achievement Badges. You can navigate using voice commands.
+    `;
+    speak(summary);
+  };
+
+  const handleVoiceCommand = (command) => {
+    const normalizedCommand = command.toLowerCase();
+    console.log('Processing command:', command);
+
+    if (normalizedCommand.includes('stop') && isSpeaking) {
+      stopSpeaking();
+      return;
+    }
+
+    if (normalizedCommand.includes(translations[language].commands.dashboard)) {
+      navigate('/student-landing');
+      speak(`Navigating to dashboard`);
+    } 
+    else if (normalizedCommand.includes(translations[language].commands.competitions)) {
+      navigate('/student-competitions');
+      speak(`Opening competitions`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.mentors)) {
+      navigate('/mentors');
+      speak(`Showing mentors`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.profile)) {
+      navigate('/student-profile');
+      speak(`Navigating to your profile`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.signout)) {
+      handleLogout();
+      speak(`Signing out`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.darkMode)) {
+      setDarkMode(!darkMode);
+      speak(`${darkMode ? 'Turning off dark mode' : 'Turning on dark mode'}`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.highContrast)) {
+      setHighContrast(!highContrast);
+      speak(`${highContrast ? 'Turning off high contrast' : 'Turning on high contrast'}`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.increaseFont)) {
+      setFontSize(prev => Math.min(prev + 2, 24));
+      speak(`Increasing font size`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.decreaseFont)) {
+      setFontSize(prev => Math.max(prev - 2, 12));
+      speak(`Decreasing font size`);
+    }
+    else if (normalizedCommand.includes('english') || normalizedCommand.includes('अंग्रेज़ी') || normalizedCommand.includes('ஆங்கிலம்')) {
+      setLanguage('en');
+      speak(`Changing language to English`);
+    }
+    else if (normalizedCommand.includes('hindi') || normalizedCommand.includes('हिंदी')) {
+      setLanguage('hi');
+      speak(`Changing language to Hindi`);
+    }
+    else if (normalizedCommand.includes('tamil') || normalizedCommand.includes('தமிழ்')) {
+      setLanguage('ta');
+      speak(`Changing language to Tamil`);
+    }
+    else if (normalizedCommand.includes('spanish') || normalizedCommand.includes('español')) {
+      setLanguage('es');
+      speak(`Changing language to Spanish`);
+    }
+    else if (normalizedCommand.includes('french') || normalizedCommand.includes('français')) {
+      setLanguage('fr');
+      speak(`Changing language to French`);
+    }
+    else if (normalizedCommand.includes(translations[language].commands.pageSummary)) {
+      readPageSummary();
+    }
+    else if (normalizedCommand.includes(translations[language].commands.help)) {
+      setShowVoiceHelp(true);
+      const commandsList = Object.values(translations[language].commands)
+        .filter(cmd => !['stop', 'help'].includes(cmd));
+      speak("Here are available voice commands: " + commandsList.join(", "));
+    }
+    else {
+      console.log('Command not recognized:', command);
+      speak("Command not recognized. Say 'help' for available commands.");
+    }
+  };
+
+  const toggleVoiceControl = () => {
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      setInterimTranscript('');
+    } else {
+      setTranscript('');
+      setInterimTranscript(translations[language].ui.listening);
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const increaseFontSize = () => {
+    setFontSize(prev => Math.min(prev + 2, 24));
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(prev => Math.max(prev - 2, 12));
+  };
+
+  const toggleHighContrast = () => {
+    setHighContrast(!highContrast);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+  };
+
+  const t = (path) => {
+    const keys = path.split('.');
+    let result = translations[language];
+    for (const k of keys) {
+      result = result?.[k];
+      if (result === undefined) return path;
+    }
+    return result || path;
+  };
 
   return (
-    <div className={`${darkMode ? 'dark' : ''} bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b] min-h-screen`}>
-      {/* Voice Control UI */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-2">
-        {voiceFeedback && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-blue-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg max-w-xs"
-          >
-            {voiceFeedback}
-          </motion.div>
-        )}
+    <div className={`${darkMode ? 'dark' : ''} ${highContrast ? 'high-contrast' : ''} bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b] min-h-screen`}>
+      {/* Accessibility Controls - Fixed at bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 flex gap-3">
+        <button 
+          onClick={() => setShowAccessibilityMenu(!showAccessibilityMenu)}
+          className="p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+          aria-label={t('ui.accessibility.menu')}
+        >
+          <Volume2 className="h-6 w-6" />
+        </button>
         
-        // Update your voice control button JSX:
-<button
-  onClick={toggleVoiceControl}
-  className={`p-4 rounded-full shadow-lg transition-all duration-300 flex flex-col items-center ${
-    isListening 
-      ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-      : 'bg-blue-600 hover:bg-blue-700'
-  }`}
-  aria-label={isListening ? "Stop listening" : "Start voice control"}
-  disabled={!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)}
->
-  {isListening ? (
-    <>
-      <MicOff className="h-6 w-6 text-white" />
-      <span className="text-xs mt-1 text-white">Listening...</span>
-    </>
-  ) : (
-    <>
-      <Mic className="h-6 w-6 text-white" />
-      <span className="text-xs mt-1 text-white">Voice Control</span>
-    </>
-  )}
-</button>
-        
-        {isListening && voiceCommand && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/10 backdrop-blur-sm text-blue-100 px-4 py-2 rounded-lg shadow-lg max-w-xs"
-          >
-            <div className="text-xs text-blue-300/80 mb-1">Heard:</div>
-            <div>{voiceCommand}</div>
-          </motion.div>
-        )}
+        <button 
+          onClick={toggleVoiceControl}
+          className={`p-3 rounded-full shadow-lg flex items-center justify-center ${
+            isListening 
+              ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          } text-white transition-colors`}
+          aria-label={isListening ? "Stop listening" : "Start voice control"}
+        >
+          {isListening ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+        </button>
       </div>
 
-      {/* Enhanced fixed header with mobile menu button */}
+      {/* Stop Speaking Button */}
+      {isSpeaking && (
+        <div className="fixed bottom-20 right-4 z-50">
+          <button 
+            onClick={stopSpeaking}
+            className="p-3 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors flex items-center justify-center"
+            aria-label={t('ui.stopSpeaking')}
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+      )}
+
+      {/* Accessibility Menu */}
+      {showAccessibilityMenu && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2 }}
+          className="fixed bottom-20 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-72 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+              {t('ui.accessibility.menu')}
+            </h3>
+            <button 
+              onClick={() => setShowAccessibilityMenu(false)} 
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="flex items-center justify-between mb-1">
+                <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <Type className="h-4 w-4" />
+                  {t('ui.accessibility.font')}
+                </span>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={decreaseFontSize} 
+                    className="p-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    aria-label={t('commands.decreaseFont')}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={increaseFontSize} 
+                    className="p-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    aria-label={t('commands.increaseFont')}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </label>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {fontSize}px
+              </div>
+            </div>
+            
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <Contrast className="h-4 w-4" />
+                {t('ui.accessibility.contrast')}
+              </span>
+              <input 
+                type="checkbox" 
+                checked={highContrast} 
+                onChange={toggleHighContrast}
+                className="toggle toggle-primary"
+                aria-label={t('commands.highContrast')}
+              />
+            </label>
+            
+            <div>
+              <label className="flex items-center gap-2 mb-1 text-gray-700 dark:text-gray-300">
+                <Languages className="h-4 w-4" />
+                {t('ui.accessibility.language')}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button 
+                  onClick={() => changeLanguage('en')} 
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    language === 'en' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  English
+                </button>
+                <button 
+                  onClick={() => changeLanguage('hi')} 
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    language === 'hi' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  हिंदी
+                </button>
+                <button 
+                  onClick={() => changeLanguage('ta')} 
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    language === 'ta' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  தமிழ்
+                </button>
+                <button 
+                  onClick={() => changeLanguage('es')} 
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    language === 'es' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Español
+                </button>
+                <button 
+                  onClick={() => changeLanguage('fr')} 
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    language === 'fr' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Français
+                </button>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => { setShowVoiceHelp(true); setShowAccessibilityMenu(false); }}
+              className="flex items-center gap-2 w-full text-left text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <Mic className="h-4 w-4" />
+              {t('ui.accessibility.voiceHelp')}
+            </button>
+            
+            <button 
+              onClick={readPageSummary}
+              className="flex items-center gap-2 w-full text-left text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <Volume2 className="h-4 w-4" />
+              {t('ui.accessibility.pageGuide')}
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Voice Commands Help */}
+      {showVoiceHelp && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          onClick={() => setShowVoiceHelp(false)}
+        >
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                {t('ui.accessibility.voiceHelp')}
+              </h3>
+              <button 
+                onClick={() => setShowVoiceHelp(false)} 
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {Object.entries(translations[language].commands).map(([key, value]) => (
+                key !== 'stop' && key !== 'help' && (
+                  <div key={key} className="flex items-start gap-2">
+                    <Mic className="h-4 w-4 mt-1 flex-shrink-0 text-blue-500" />
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      "{value}"
+                    </p>
+                  </div>
+                )
+              ))}
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button 
+                onClick={() => { setShowVoiceHelp(false); toggleVoiceControl(); }}
+                className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Mic className="h-4 w-4" />
+                {t('commands.darkMode')}
+              </button>
+              <button 
+                onClick={() => setShowVoiceHelp(false)}
+                className="flex-1 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                {t('commands.stop')}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Voice Feedback */}
+      {(isListening || transcript) && (
+        <div className="fixed bottom-28 right-4 z-50 bg-blue-900/90 backdrop-blur-sm text-white px-4 py-3 rounded-lg shadow-lg max-w-xs min-w-[240px] border border-blue-700">
+          <div className="flex items-start gap-2">
+            <Sparkles className="flex-shrink-0 h-4 w-4 mt-1 text-yellow-300" />
+            <div>
+              {transcript && (
+                <p className="font-medium">{transcript}</p>
+              )}
+              {interimTranscript && (
+                <p className="text-blue-200 italic">
+                  {interimTranscript}
+                  <span className="inline-block ml-1 h-2 w-2 bg-blue-300 rounded-full animate-pulse"></span>
+                </p>
+              )}
+              {isListening && !transcript && !interimTranscript && (
+                <p className="text-blue-200 italic">{t('ui.listening')}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <motion.header
         className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
           scrolled 
@@ -668,6 +802,7 @@ const toggleVoiceControl = async () => {
               <button 
                 className="md:hidden mr-4 p-2 rounded-full hover:bg-blue-500/20 transition-colors"
                 onClick={() => setSidebarOpen(true)}
+                aria-label="Open menu"
               >
                 <Menu className="h-6 w-6 text-blue-200" />
               </button>
@@ -675,34 +810,34 @@ const toggleVoiceControl = async () => {
                 <GlobeIcon className="h-6 w-6 text-white" />
               </div>
               <h1 className="ml-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
-                StudentSphere
+                {t('ui.title')}
               </h1>
             </div>
             
             <div className="hidden md:flex items-center space-x-6">
               <button 
                 className="text-sm text-blue-100 hover:text-white transition-colors"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/student-landing')}
               >
-                Dashboard
+                {t('ui.navigation.dashboard')}
               </button>
               <button 
                 className="text-sm text-blue-100 hover:text-white transition-colors"
-                onClick={() => navigate('/competitions')}
+                onClick={() => navigate('/student-competitions')}
               >
-                Competitions
+                {t('ui.navigation.competitions')}
               </button>
               <button 
                 className="text-sm text-blue-100 hover:text-white transition-colors"
                 onClick={() => navigate('/mentors')}
               >
-                Mentors
+                {t('ui.navigation.mentors')}
               </button>
               <button 
                 className="text-sm text-blue-100 hover:text-white transition-colors"
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/student-profile')}
               >
-                Profile
+                {t('ui.navigation.profile')}
               </button>
             </div>
             
@@ -710,7 +845,7 @@ const toggleVoiceControl = async () => {
               <button 
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-blue-500/20 transition-colors"
-                aria-label="Toggle dark mode"
+                aria-label={t('commands.darkMode')}
               >
                 {darkMode ? (
                   <Sun className="h-5 w-5 text-yellow-300" />
@@ -723,140 +858,15 @@ const toggleVoiceControl = async () => {
                 onClick={handleLogout}
                 className="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-500 hover:to-indigo-500"
               >
-                Sign Out
+                {t('ui.navigation.signout')}
               </button>
             </div>
           </div>
         </div>
       </motion.header>
 
-      {/* Hero section with globe */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM3ODdiZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ij48cGF0aCBkPSJNMCAwaDQwdjQwSDB6TTIwIDIwaDIwdjIwSDIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-40 pointer-events-none"></div>
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/90 pointer-events-none"></div>
-        
-        {/* Animated floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(30)].map((_, i) => (
-            <div 
-              key={i}
-              className="absolute rounded-full bg-gradient-to-br from-blue-400/30 to-purple-400/30 blur-xl"
-              style={{
-                width: `${Math.random() * 12 + 5}px`,
-                height: `${Math.random() * 12 + 5}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.5,
-                animation: `float ${Math.random() * 20 + 10}s linear infinite`,
-                animationDelay: `${Math.random() * -20}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Globe and hero content */}
-        <div className="relative w-full h-[700px] lg:h-[900px] flex items-center justify-center">
-          {/* 3D Globe */}
-          <div className="absolute inset-0 z-10">
-            <Canvas camera={{ position: [0, 0, 18], fov: 50 }}>
-              <color attach="background" args={['#0a0a1a']} />
-              <ambientLight intensity={0.8} />
-              <directionalLight
-                position={[10, 10, 5]}
-                intensity={1.5}
-                color={colors.primary}
-              />
-              <pointLight position={[0, 0, 0]} intensity={0.8} color="#4f46e5" />
-              <pointLight position={[-10, -5, -5]} intensity={0.5} color="#a855f7" />
-
-              <Globe onCitySelect={setSelectedCity} />
-
-              <OrbitControls
-                enableZoom={false}
-                enablePan={false}
-                minPolarAngle={Math.PI / 2.1}
-                maxPolarAngle={Math.PI / 2.1}
-                enableDamping
-                dampingFactor={0.05}
-                autoRotate
-                autoRotateSpeed={0.9}
-                makeDefault
-              />
-            </Canvas>
-          </div>
-          
-          {/* Tooltip with close button */}
-          {showTooltip && (
-            <motion.div 
-              className="absolute top-20 left-5 z-20 text-center"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="relative">
-                <p className="text-sm text-blue-100/80 bg-blue-900/50 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm">
-                  Click on the glowing dots to see student locations!
-                </p>
-                <button 
-                  onClick={() => setShowTooltip(false)}
-                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-blue-900/70 flex items-center justify-center hover:bg-blue-800 transition-colors"
-                >
-                  <X className="h-3 w-3 text-blue-200" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-          
-          {/* Hero Content */}
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-white"
-            >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-100 via-blue-200 to-indigo-100 leading-tight">
-                Welcome back, <span className="text-blue-400">{currentUser?.name || "Student"}</span>
-              </h1>
-              <p className="text-blue-100/80 text-lg mb-8 max-w-lg mx-auto">
-                Explore global learning opportunities and connect with mentors and peers worldwide.
-              </p>
-              
-              {/* New UX feature: Quick actions */}
-              <motion.div 
-                className="flex flex-wrap justify-center gap-4 mt-8 pointer-events-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <button 
-                  onClick={() => navigate('/competitions')}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center"
-                >
-                  <Trophy className="h-5 w-5 mr-2" />
-                  Join Competition
-                </button>
-                <button 
-                  onClick={() => navigate('/mentors')}
-                  className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-medium text-blue-100 hover:bg-blue-500/20 transition-all duration-300 flex items-center"
-                >
-                  <Users className="h-5 w-5 mr-2" />
-                  Find Mentor
-                </button>
-                <button 
-                  onClick={() => navigate('/study-groups')}
-                  className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-medium text-blue-100 hover:bg-blue-500/20 transition-all duration-300 flex items-center"
-                >
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Study Groups
-                </button>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
+      {/* Dharti (3D Globe) */}
+      <Dharti onCitySelect={handleCitySelect} />
 
       {/* Stats section */}
       <div className="relative z-10 py-12 bg-gradient-to-r from-blue-900/20 via-indigo-900/20 to-blue-900/20">
@@ -869,360 +879,89 @@ const toggleVoiceControl = async () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className= "bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-blue-500/30 transition-all duration-300"
-                >
+                className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-blue-500/30 transition-all duration-300"
+              >
                 <h3 className="text-3xl font-bold text-blue-200 mb-2">{stat.value}</h3>
-                <p className="text-blue-100/80 text-sm">{stat.label}</p>
-                </motion.div>
-                ))}
-                </div>
-                </div>
-                </div>
-                
-  {/* Features section */}
-  <div className="relative z-10 py-20 bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b]">
-    <div className="container mx-auto px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="text-center mb-16"
-      >
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Student Features</h2>
-        <p className="text-blue-100/80 max-w-2xl mx-auto">
-          Discover powerful tools and resources designed to enhance your learning experience and connect you with opportunities worldwide.
-        </p>
-      </motion.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {features.map((feature, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            onMouseEnter={() => setActiveFeature(index)}
-            onMouseLeave={() => setActiveFeature(null)}
-            className={`bg-gradient-to-br ${feature.color} rounded-xl p-6 shadow-lg overflow-hidden relative`}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"></div>
-            <div className="relative z-10">
-              <div className="w-12 h-12 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center mb-4">
-                {feature.icon}
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-              <p className="text-blue-100/90 mb-4">{feature.description}</p>
-              <button className="flex items-center text-sm font-medium text-white hover:text-blue-200 transition-colors">
-                Learn more <ChevronRight className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-
-            {activeFeature === index && (
-              <motion.div
-                className="absolute inset-0 bg-white/5 backdrop-blur-sm z-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-            )}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  {/* Testimonials section */}
-  <div className="relative z-10 py-20 bg-gradient-to-br from-[#1e1b4b] via-[#111827] to-[#0a0a1a]">
-    <div className="container mx-auto px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="text-center mb-16"
-      >
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Student Stories</h2>
-        <p className="text-blue-100/80 max-w-2xl mx-auto">
-          Hear from students who have transformed their learning journey with StudentSphere.
-        </p>
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {[1, 2, 3].map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 hover:border-blue-500/30 transition-all duration-300"
-          >
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold mr-4">
-                {String.fromCharCode(65 + index)}
-              </div>
-              <div>
-                <h4 className="text-white font-medium">Student from {['New York', 'London', 'Tokyo'][index]}</h4>
-                <p className="text-blue-100/60 text-sm">Computer Science</p>
-              </div>
-            </div>
-            <p className="text-blue-100/80 mb-6">
-              "StudentSphere connected me with mentors who helped me win the Global Hackathon. The resources and community support are unparalleled."
-            </p>
-            <div className="flex items-center">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className="w-5 h-5 text-yellow-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  {/* CTA section */}
-  <div className="relative z-10 py-20 bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b]">
-    <div className="container mx-auto px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="bg-gradient-to-r from-blue-900/30 via-indigo-900/30 to-purple-900/30 rounded-2xl p-8 md:p-12 border border-blue-500/20"
-      >
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="mb-8 md:mb-0 md:mr-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Ready to elevate your learning experience?</h2>
-            <p className="text-blue-100/80 max-w-lg">
-              Join thousands of students who are already achieving their academic goals with StudentSphere.
-            </p>
+                <p className="text-blue-100/80 text-sm">{t(`ui.stats.${stat.label}`)}</p>
+              </motion.div>
+            ))}
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg font-medium text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
-            >
-              Go to Dashboard <ArrowRightIcon className="h-5 w-5 ml-2" />
-            </button>
-            <button
-              onClick={() => navigate('/competitions')}
-              className="px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-medium text-blue-100 hover:bg-blue-500/20 transition-all duration-300 flex items-center justify-center"
-            >
-              Explore Competitions <Trophy className="h-5 w-5 ml-2" />
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  </div>
-
-  {/* Mobile sidebar */}
-  <AnimatePresence>
-    {sidebarOpen && (
-      <motion.div
-        initial={{ opacity: 0, x: -300 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -300 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="fixed inset-y-0 left-0 z-50 w-80 bg-[#0a0a1a] shadow-xl border-r border-blue-900/50"
-      >
-        <div className="flex flex-col h-full p-6">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <GlobeIcon className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="ml-3 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
-                StudentSphere
-              </h1>
-            </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-2 rounded-full hover:bg-blue-500/20 transition-colors"
-            >
-              <X className="h-6 w-6 text-blue-200" />
-            </button>
-          </div>
-
-          <div className="flex-1 flex flex-col">
-            <nav className="flex-1 space-y-2">
-              <button
-                onClick={() => {
-                  navigate('/dashboard');
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors"
-              >
-                <User className="h-5 w-5 mr-3" />
-                Dashboard
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/competitions');
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors"
-              >
-                <Trophy className="h-5 w-5 mr-3" />
-                Competitions
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/mentors');
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors"
-              >
-                <BriefcaseIcon className="h-5 w-5 mr-3" />
-                Mentors
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/study-groups');
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors"
-              >
-                <Users className="h-5 w-5 mr-3" />
-                Study Groups
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/profile');
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors"
-              >
-                <User className="h-5 w-5 mr-3" />
-                Profile
-              </button>
-            </nav>
-
-            <div className="mt-auto pt-6 border-t border-blue-900/50">
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-blue-500/10 text-blue-100 hover:text-white transition-colors mb-4"
-              >
-                {darkMode ? (
-                  <Sun className="h-5 w-5 mr-3" />
-                ) : (
-                  <Moon className="h-5 w-5 mr-3" />
-                )}
-                {darkMode ? 'Light Mode' : 'Dark Mode'}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-red-900/30 hover:bg-red-900/40 text-red-100 hover:text-white transition-colors"
-              >
-                <LogOut className="h-5 w-5 mr-3" />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-
-  {/* City details modal */}
-  <AnimatePresence>
-    {selectedCity && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-        onClick={() => setSelectedCity(null)}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-gradient-to-br from-[#0a0a1a] to-[#1e1b4b] rounded-2xl p-8 max-w-md w-full mx-4 border border-blue-900/50 shadow-xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xl font-bold text-white">{selectedCity}</h3>
-            <button
-              onClick={() => setSelectedCity(null)}
-              className="p-2 rounded-full hover:bg-blue-500/20 transition-colors"
-            >
-              <X className="h-5 w-5 text-blue-200" />
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-300" />
-              </div>
-              <div>
-                <h4 className="text-white font-medium">Computer Science</h4>
-                <p className="text-blue-100/60 text-sm">University of {selectedCity.split(' ')[2]}</p>
-              </div>
-            </div>
-            
-            <div className="bg-blue-900/20 rounded-lg p-4">
-              <p className="text-blue-100/80 text-sm">
-                "StudentSphere helped me connect with mentors in my field and participate in global competitions that boosted my career prospects."
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-between pt-4 border-t border-blue-900/50">
-              <div className="flex items-center space-x-2">
-                <Trophy className="h-5 w-5 text-yellow-400" />
-                <span className="text-sm text-blue-100">3 competitions won</span>
-              </div>
-              <button className="text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors flex items-center">
-                View profile <ChevronRight className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-
-  {/* Footer */}
-  <footer className="relative z-10 py-12 bg-[#0a0a1a] border-t border-blue-900/20">
-    <div className="container mx-auto px-6">
-      <div className="flex flex-col md:flex-row justify-between items-center">
-        <div className="flex items-center mb-6 md:mb-0">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <GlobeIcon className="h-5 w-5 text-white" />
-          </div>
-          <h1 className="ml-3 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
-            StudentSphere
-          </h1>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-8">
-          <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Terms of Service</a>
-          <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Contact Us</a>
         </div>
       </div>
       
-      <div className="mt-8 pt-8 border-t border-blue-900/20 text-center">
-        <p className="text-sm text-blue-100/60">
-          &copy; {new Date().getFullYear()} StudentSphere. All rights reserved.
-        </p>
+      {/* Features section */}
+      <div className="relative z-10 py-20 bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b]">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{t('ui.featuresTitle')}</h2>
+            <p className="text-blue-100/80 max-w-2xl mx-auto">
+              {t('ui.featuresDesc')}
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -5 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className={`bg-gradient-to-br ${feature.color} rounded-xl p-6 shadow-lg overflow-hidden relative`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"></div>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center mb-4">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                  <p className="text-blue-100/90 mb-4">{feature.description}</p>
+                  <button className="flex items-center text-sm font-medium text-white hover:text-blue-200 transition-colors">
+                    Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer className="relative z-10 py-12 bg-[#0a0a1a] border-t border-blue-900/20">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-6 md:mb-0">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <GlobeIcon className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="ml-3 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
+                {t('ui.title')}
+              </h1>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-8">
+              <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="text-sm text-blue-100/80 hover:text-white transition-colors">Contact Us</a>
+            </div>
+          </div>
+          
+          <div className="mt-8 pt-8 border-t border-blue-900/20 text-center">
+            <p className="text-sm text-blue-100/60">
+              &copy; {new Date().getFullYear()} {t('ui.title')}. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-  </footer>
-</div>
-);
+  );
 };
 
-export default StudentLandingPage;                
+export default StudentLandingPage;
