@@ -141,7 +141,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
        </motion.header>
  
        {/* Hero section with globe */}
-       <Dharti />
+       <Dharti onCitySelect={handleCitySelect} />
  
        {/* Stats section */}
        <div className="relative z-10 py-12 bg-gradient-to-r from-blue-900/20 via-indigo-900/20 to-blue-900/20">

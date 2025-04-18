@@ -738,10 +738,14 @@ const cities = [
     return null;
   };
 
-  export default function Dharti() {
-    const handleCitySelect = useCallback((city) => {
-         setSelectedCity(city);
-       }, []);
+  export default function Dharti({ onCitySelect }) {
+    // const navigate = useNavigate();
+    //    const [selectedCity, setSelectedCity] = useState(null);
+    //    const [activeTab, setActiveTab] = useState('individual');
+    //    const [scrolled, setScrolled] = useState(false);
+    // const handleCitySelect = useCallback((city) => {
+    //      setSelectedCity(city);
+    //    }, []);
        
        useEffect(() => {
          const handleScroll = () => {
@@ -792,7 +796,7 @@ const cities = [
            <pointLight position={[-10, -5, -5]} intensity={0.5} color="#7c3aed" />
      
            {/* Globe Component */}
-           <Globe onCitySelect={handleCitySelect} />
+           <Globe onCitySelect={onCitySelect} />
      
            {/* OrbitControls */}
            <OrbitControls
