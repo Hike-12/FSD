@@ -17,6 +17,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
 from django.http import FileResponse,HttpResponse
 from django.db.models import Q
+from django.utils import timezone
+from datetime import timedelta
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
@@ -2203,3 +2205,239 @@ def get_consultation_requests(request):
     except Exception as e:
         print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+@api_token_required
+@csrf_exempt
+def get_analytics_data(request):
+    """
+    Get comprehensive analytics data for the platform.
+    """
+    try:
+        # Time range filter
+        days = int(request.GET.get('days', 30))  # Default to last 30 days
+        end_date = timezone.now()  # Use timezone-aware datetime
+        start_date = end_date - timedelta(days=days)
+        
+        # User analytics
+        users_data = get_user_analytics(start_date, end_date)
+        
+        # Competition analytics
+        competitions_data = get_competition_analytics(start_date, end_date)
+        
+        # Team analytics
+        teams_data = get_team_analytics(start_date, end_date)
+        
+        # Submissions analytics
+        submissions_data = get_submission_analytics(start_date, end_date)
+        
+        # Mentor-Student engagement analytics
+        engagement_data = get_engagement_analytics(start_date, end_date)
+        
+        return JsonResponse({
+            'user_analytics': users_data,
+            'competition_analytics': competitions_data,
+            'team_analytics': teams_data,
+            'submission_analytics': submissions_data,
+            'engagement_analytics': engagement_data
+        }, status=200)
+    except Exception as e:
+        print(f"Error getting analytics data: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def get_user_analytics(start_date, end_date):
+    """Helper function to get user analytics."""
+    # Count total users by role
+    total_students = StudentProfile.objects.count()
+    total_mentors = MentorProfile.objects.count()
+    total_hosts = Host.objects.count()
+    
+    # Count new users in date range by role
+    new_students = StudentProfile.objects.filter(created_at__range=(start_date, end_date)).count()
+    new_mentors = MentorProfile.objects.filter(created_at__range=(start_date, end_date)).count()
+    new_hosts = Host.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # User growth over time (by month)
+    months = []
+    student_growth = []
+    mentor_growth = []
+    
+    # Calculate for the last 12 months
+    for i in range(12, 0, -1):
+        month_end = end_date.replace(day=1) - timedelta(days=1)
+        month_start = month_end.replace(day=1)
+        
+        month_name = month_end.strftime('%b %Y')
+        months.append(month_name)
+        
+        student_count = StudentProfile.objects.filter(created_at__lte=month_end).count()
+        mentor_count = MentorProfile.objects.filter(created_at__lte=month_end).count()
+        
+        student_growth.append(student_count)
+        mentor_growth.append(mentor_count)
+        
+        end_date = month_start
+    
+    return {
+        'total_users': total_students + total_mentors + total_hosts,
+        'total_students': total_students,
+        'total_mentors': total_mentors,
+        'total_hosts': total_hosts,
+        'new_students': new_students,
+        'new_mentors': new_mentors,
+        'new_hosts': new_hosts,
+        'growth_data': {
+            'months': months,
+            'student_growth': student_growth,
+            'mentor_growth': mentor_growth,
+        }
+    }
+
+def get_competition_analytics(start_date, end_date):
+    """Helper function to get competition analytics."""
+    # Count total competitions
+    total_competitions = Competition.objects.count()
+    active_competitions = Competition.objects.filter(status='active').count()
+    
+    # Count new competitions in date range
+    new_competitions = Competition.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # Competition participation
+    competitions = Competition.objects.all()
+    competition_participation = []
+    
+    for comp in competitions[:10]:  # Limit to 10 for performance
+        team_count = Team.objects.filter(competition=comp).count()
+        student_count = StudentProfile.objects.filter(teams__competition=comp).distinct().count()
+        
+        competition_participation.append({
+            'name': comp.name,
+            'team_count': team_count,
+            'student_count': student_count,
+        })
+    
+    # Competition type distribution
+    comp_types = CompetitionType.objects.all()
+    type_distribution = []
+    
+    for comp_type in comp_types:
+        count = Competition.objects.filter(competition_type=comp_type).count()
+        type_distribution.append({
+            'name': comp_type.name,
+            'count': count,
+        })
+    
+    return {
+        'total_competitions': total_competitions,
+        'active_competitions': active_competitions,
+        'new_competitions': new_competitions,
+        'competition_participation': competition_participation,
+        'type_distribution': type_distribution
+    }
+
+def get_team_analytics(start_date, end_date):
+    """Helper function to get team analytics."""
+    # Count total teams and new teams
+    total_teams = Team.objects.count()
+    new_teams = Team.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # Team size distribution
+    team_sizes = {}
+    for team in Team.objects.all():
+        size = team.members.count()
+        team_sizes[size] = team_sizes.get(size, 0) + 1
+    
+    size_distribution = [
+        {'size': size, 'count': count}
+        for size, count in team_sizes.items()
+    ]
+    
+    return {
+        'total_teams': total_teams,
+        'new_teams': new_teams,
+        'size_distribution': size_distribution
+    }
+
+def get_submission_analytics(start_date, end_date):
+    """Helper function to get submission analytics."""
+    # Count total submissions and new submissions
+    total_submissions = ProjectSubmission.objects.count()
+    new_submissions = ProjectSubmission.objects.filter(submission_date__range=(start_date, end_date)).count()
+    
+    # Submission status distribution
+    status_distribution = []
+    statuses = ProjectSubmission.objects.values('status').distinct()
+    
+    for status in statuses:
+        count = ProjectSubmission.objects.filter(status=status['status']).count()
+        status_distribution.append({
+            'status': status['status'],
+            'count': count
+        })
+    
+    # Submissions by competition
+    submissions_by_competition = []
+    competitions = Competition.objects.all()
+    
+    for comp in competitions[:10]:  # Limit to 10 for performance
+        count = ProjectSubmission.objects.filter(competition=comp).count()
+        submissions_by_competition.append({
+            'name': comp.name,
+            'count': count
+        })
+    
+    return {
+        'total_submissions': total_submissions,
+        'new_submissions': new_submissions,
+        'status_distribution': status_distribution,
+        'submissions_by_competition': submissions_by_competition
+    }
+
+def get_engagement_analytics(start_date, end_date):
+    """Helper function to get mentor-student engagement analytics."""
+    # Count consultations
+    total_consultations = ConsultationRequest.objects.filter(status='accepted').count()
+    new_consultations = ConsultationRequest.objects.filter(
+        status='accepted',
+        created_at__range=(start_date, end_date)
+    ).count()
+    
+    # Count collaborations
+    total_collaborations = CollaborationRequest.objects.filter(status='accepted').count()
+    new_collaborations = CollaborationRequest.objects.filter(
+        status='accepted',
+        created_at__range=(start_date, end_date)
+    ).count()
+    
+    # Mentor activity - top mentors by consultations
+    top_mentors = []
+    mentors = MentorProfile.objects.all()
+    
+    for mentor in mentors[:10]:  # Limit to 10 for performance
+        consultation_count = ConsultationRequest.objects.filter(to_mentor=mentor, status='accepted').count()
+        top_mentors.append({
+            'name': mentor.full_name,
+            'consultation_count': consultation_count
+        })
+    
+    # Sort by consultation count
+    top_mentors.sort(key=lambda x: x['consultation_count'], reverse=True)
+    
+    # Acceptance rates
+    consultation_requests = ConsultationRequest.objects.count() or 1  # Avoid division by zero
+    consultation_accepted = ConsultationRequest.objects.filter(status='accepted').count()
+    consultation_acceptance_rate = round((consultation_accepted / consultation_requests * 100), 2)
+    
+    collaboration_requests = CollaborationRequest.objects.count() or 1  # Avoid division by zero
+    collaboration_accepted = CollaborationRequest.objects.filter(status='accepted').count()
+    collaboration_acceptance_rate = round((collaboration_accepted / collaboration_requests * 100), 2)
+    
+    return {
+        'total_consultations': total_consultations,
+        'new_consultations': new_consultations,
+        'total_collaborations': total_collaborations,
+        'new_collaborations': new_collaborations,
+        'top_mentors': top_mentors,
+        'consultation_acceptance_rate': consultation_acceptance_rate,
+        'collaboration_acceptance_rate': collaboration_acceptance_rate
+    }
