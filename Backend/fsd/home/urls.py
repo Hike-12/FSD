@@ -79,6 +79,9 @@ urlpatterns = [
     path("api/consultation-requests/handle/", views.handle_consultation_request, name="handle_consultation_request"),
     path("api/get-consultation-requests/", views.get_consultation_requests, name="get_consultation_requests"),
     path("api/get-consultations/", views.get_consultations, name="get_consultations"),
+    
+    #Analytics
+    path('api/analytics/', views.get_analytics_data, name='get_analytics_data'),
 ]
 
 

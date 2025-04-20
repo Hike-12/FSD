@@ -477,6 +477,7 @@ class Host(models.Model):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     contact_number = models.CharField(max_length=15, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Add this field
 
     def __str__(self):
         return self.full_name

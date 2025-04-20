@@ -24,6 +24,12 @@ const SkeletonMentorCard = () => (
 );
 
 const AllMentors = () => {
+  const role = localStorage.getItem("role") || null;
+  console.log("User Role:", role);
+  if (role === "STUDENT") {
+    var student_id = localStorage.getItem("userId") || null;
+    console.log("Student ID:", student_id);
+  }
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,7 +44,7 @@ const AllMentors = () => {
     const fetchMentors = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${DJANGO_BASE_URL}/api/mentors/`, {
+        const response = await fetch(`${DJANGO_BASE_URL}/api/mentors/?student_id=${student_id}`, {
           headers: {
             Authorization: `Token ${localStorage.getItem("authToken")}`,
           },

@@ -17,19 +17,58 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
 from django.http import FileResponse,HttpResponse
 from django.db.models import Q
+from django.utils import timezone
+from datetime import timedelta
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
+
 
 # Dynamically construct the base directory and model path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Get the base directory
 MODEL_PATH = os.path.join(BASE_DIR, "home", "ml")  # Construct the model path
+# Add to your views.py or create a management command
+def retrain_recommendation_model():
+    # Get all student data from database
+    students_data = StudentProfile.objects.all().values(...)
+    
+    # Create DataFrame and features
+    students_df = pd.DataFrame(list(students_data))
+    students_df['combined_features'] = students_df.apply(compute_combined_features, axis=1)
+    
+    # Train new vectorizer and model
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    new_vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = new_vectorizer.fit_transform(students_df['combined_features'])
+    
+    from sklearn.neighbors import NearestNeighbors
+    nn_model = NearestNeighbors(metric='cosine')
+    nn_model.fit(tfidf_matrix)
+    
+    # Save the updated models
+    joblib.dump(nn_model, os.path.join(MODEL_PATH, "nn_model.joblib"))
+    joblib.dump(new_vectorizer, os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib"))
 
 # Load the recommendation model and vectorizer
 nn_model = joblib.load(os.path.join(MODEL_PATH, "nn_model.joblib"))
 tfidf_vectorizer = joblib.load(os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib"))
 
-# Load the student data (used for recommendations)
-# students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
+# Debug code to understand the model structure - run once then remove
+
+# Modify the model loading line
+# Old:
+# mentor_nn_model = joblib.load(os.path.join(MODEL_PATH, "mentor_recommender_model.joblib"))
+
+# Fix model loading code
+mentor_model_data = joblib.load(os.path.join(MODEL_PATH, "mentor_recommender_model.joblib"))
+if isinstance(mentor_model_data, tuple):
+    print(f"Loading mentor model from tuple with {len(mentor_model_data)} elements")
+    # Element 0 is the TfidfVectorizer
+    mentor_vectorizer = mentor_model_data[0]
+    # Element 1 is the pre-computed mentor features
+    mentor_features = mentor_model_data[1]
+else:
+    mentor_vectorizer = tfidf_vectorizer
+    mentor_features = None
 
 # Modified decorator for token auth
 def api_token_required(view_func):
@@ -155,6 +194,82 @@ def role_required(allowed_roles):
 ##############################################################################################################################################
 ##############################################################################################################################################
                                                          # MENTORS KA PART
+                                                         
+                                                         
+def compute_student_features_for_mentor_matching(student):
+    features = [
+        student.department,
+        str(student.year_of_study),
+        student.career_goal,
+        student.languages_spoken,
+        str(student.preferred_team_roles),
+        # Any other relevant fields that would match with mentor expertise
+    ]
+    print(features)
+    return ' '.join(filter(None, features))
+
+def get_mentor_recommendations(student_id, top_n=20):
+    print(f"Getting mentor recommendations for student ID: {student_id}")
+    try:
+        # Get student data
+        student = StudentProfile.objects.get(id=student_id)
+        
+        # Get all mentors
+        mentors_data = MentorProfile.objects.all().values(
+            'id', 'full_name', 'mentor_type', 'department', 'expertise', 
+            'years_of_experience', 'current_company', 'current_position',
+            'skills', 'competition_types', 'availability_status', 'profile_picture',
+            'linkedin', 'github', 'website', 'bio', 'average_rating'
+        )
+        
+        # Convert to DataFrame
+        mentors_df = pd.DataFrame(list(mentors_data))
+        
+        if mentors_df.empty:
+            print("No mentors found in database")
+            return []
+        
+        # Get student features
+        student_features = compute_student_features_for_mentor_matching(student)
+        
+        # SOLUTION 1: Use a simple ranking approach instead of ML model
+        # Convert mentors to feature text for matching
+        mentor_texts = []
+        for _, mentor in mentors_df.iterrows():
+            mentor_text = f"{mentor['department']} {mentor['expertise']} {mentor['current_position']} {mentor.get('skills', '')}"
+            mentor_texts.append(mentor_text)
+            
+        # Use sklearn's TF-IDF vectorizer for both student and mentors
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        new_vectorizer = TfidfVectorizer(stop_words='english')
+        all_texts = [student_features] + mentor_texts
+        all_vectors = new_vectorizer.fit_transform(all_texts)
+        
+        # Get student vector (first one) and mentor vectors (rest)
+        student_vector = all_vectors[0:1]
+        mentor_vectors = all_vectors[1:]
+        
+        # Calculate similarity
+        from sklearn.metrics.pairwise import cosine_similarity
+        similarities = cosine_similarity(student_vector, mentor_vectors).flatten()
+        
+        # Get indices of top N most similar mentors
+        top_indices = similarities.argsort()[-top_n:][::-1]
+        
+        # Map these indices to actual mentors in the database
+        if len(top_indices) > len(mentors_df):
+            top_indices = top_indices[:len(mentors_df)]
+            
+        recommended_mentors = mentors_df.iloc[top_indices].to_dict(orient="records")
+        return recommended_mentors
+        
+    except Exception as e:
+        print(f"Error in get_mentor_recommendations: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+    
+    
 @api_token_required
 @csrf_exempt
 def my_profile(request):
@@ -214,6 +329,52 @@ def my_profile(request):
 @api_token_required
 @csrf_exempt
 def get_all_mentors(request):
+    # Get student ID if provided in query parameters
+    student_id = request.GET.get("student_id")
+    print("Bhai call toh hua hai", student_id)
+    # If student ID is provided, use recommendations
+    if student_id:
+        try:
+            # Get recommendations for the student
+            recommended_mentors = get_mentor_recommendations(student_id)
+            
+            if recommended_mentors:
+                # Convert recommendations to list format expected by frontend
+                recommended_ids = [mentor['id'] for mentor in recommended_mentors]
+                
+                # Get all mentors with full details
+                all_mentors = MentorProfile.objects.all().values(
+                    'id', 'full_name', 'date_of_birth', 'gender', 'phone_number', 
+                    'address', 'country', 'state', 'city', 'postal_code', 
+                    'mentor_type', 'department', 'expertise', 'years_of_experience', 
+                    'current_company', 'current_position', 'past_mentorship_count', 
+                    'linkedin', 'github', 'website', 'bio', 'certifications', 
+                    'achievements', 'languages_spoken', 'availability_status', 
+                    'available_days', 'available_times', 'max_teams', 'current_teams_count', 
+                    'profile_picture', 'is_verified', 'average_rating', 'created_at', 'updated_at'
+                )
+                
+                # Convert queryset to list
+                mentors_list = list(all_mentors)
+                
+                # Filter and sort mentors according to recommendations
+                filtered_mentors = [
+                    mentor for mentor in mentors_list 
+                    if mentor['id'] in recommended_ids
+                ]
+                
+                # Sort according to recommendation order
+                filtered_mentors.sort(key=lambda x: recommended_ids.index(x['id']))
+                
+                return JsonResponse(filtered_mentors, safe=False)
+            
+        except StudentProfile.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except Exception as e:
+            print(f"Error in mentor recommendations: {e}")
+            # Fall back to returning all mentors if there's an error
+    
+    # Default: return all mentors (unchanged original behavior)
     mentors = MentorProfile.objects.all().values(
         'id', 'full_name', 'date_of_birth', 'gender', 'phone_number', 
         'address', 'country', 'state', 'city', 'postal_code', 
@@ -2044,3 +2205,239 @@ def get_consultation_requests(request):
     except Exception as e:
         print("Error:", str(e))
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+@api_token_required
+@csrf_exempt
+def get_analytics_data(request):
+    """
+    Get comprehensive analytics data for the platform.
+    """
+    try:
+        # Time range filter
+        days = int(request.GET.get('days', 30))  # Default to last 30 days
+        end_date = timezone.now()  # Use timezone-aware datetime
+        start_date = end_date - timedelta(days=days)
+        
+        # User analytics
+        users_data = get_user_analytics(start_date, end_date)
+        
+        # Competition analytics
+        competitions_data = get_competition_analytics(start_date, end_date)
+        
+        # Team analytics
+        teams_data = get_team_analytics(start_date, end_date)
+        
+        # Submissions analytics
+        submissions_data = get_submission_analytics(start_date, end_date)
+        
+        # Mentor-Student engagement analytics
+        engagement_data = get_engagement_analytics(start_date, end_date)
+        
+        return JsonResponse({
+            'user_analytics': users_data,
+            'competition_analytics': competitions_data,
+            'team_analytics': teams_data,
+            'submission_analytics': submissions_data,
+            'engagement_analytics': engagement_data
+        }, status=200)
+    except Exception as e:
+        print(f"Error getting analytics data: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def get_user_analytics(start_date, end_date):
+    """Helper function to get user analytics."""
+    # Count total users by role
+    total_students = StudentProfile.objects.count()
+    total_mentors = MentorProfile.objects.count()
+    total_hosts = Host.objects.count()
+    
+    # Count new users in date range by role
+    new_students = StudentProfile.objects.filter(created_at__range=(start_date, end_date)).count()
+    new_mentors = MentorProfile.objects.filter(created_at__range=(start_date, end_date)).count()
+    new_hosts = Host.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # User growth over time (by month)
+    months = []
+    student_growth = []
+    mentor_growth = []
+    
+    # Calculate for the last 12 months
+    for i in range(12, 0, -1):
+        month_end = end_date.replace(day=1) - timedelta(days=1)
+        month_start = month_end.replace(day=1)
+        
+        month_name = month_end.strftime('%b %Y')
+        months.append(month_name)
+        
+        student_count = StudentProfile.objects.filter(created_at__lte=month_end).count()
+        mentor_count = MentorProfile.objects.filter(created_at__lte=month_end).count()
+        
+        student_growth.append(student_count)
+        mentor_growth.append(mentor_count)
+        
+        end_date = month_start
+    
+    return {
+        'total_users': total_students + total_mentors + total_hosts,
+        'total_students': total_students,
+        'total_mentors': total_mentors,
+        'total_hosts': total_hosts,
+        'new_students': new_students,
+        'new_mentors': new_mentors,
+        'new_hosts': new_hosts,
+        'growth_data': {
+            'months': months,
+            'student_growth': student_growth,
+            'mentor_growth': mentor_growth,
+        }
+    }
+
+def get_competition_analytics(start_date, end_date):
+    """Helper function to get competition analytics."""
+    # Count total competitions
+    total_competitions = Competition.objects.count()
+    active_competitions = Competition.objects.filter(status='active').count()
+    
+    # Count new competitions in date range
+    new_competitions = Competition.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # Competition participation
+    competitions = Competition.objects.all()
+    competition_participation = []
+    
+    for comp in competitions[:10]:  # Limit to 10 for performance
+        team_count = Team.objects.filter(competition=comp).count()
+        student_count = StudentProfile.objects.filter(teams__competition=comp).distinct().count()
+        
+        competition_participation.append({
+            'name': comp.name,
+            'team_count': team_count,
+            'student_count': student_count,
+        })
+    
+    # Competition type distribution
+    comp_types = CompetitionType.objects.all()
+    type_distribution = []
+    
+    for comp_type in comp_types:
+        count = Competition.objects.filter(competition_type=comp_type).count()
+        type_distribution.append({
+            'name': comp_type.name,
+            'count': count,
+        })
+    
+    return {
+        'total_competitions': total_competitions,
+        'active_competitions': active_competitions,
+        'new_competitions': new_competitions,
+        'competition_participation': competition_participation,
+        'type_distribution': type_distribution
+    }
+
+def get_team_analytics(start_date, end_date):
+    """Helper function to get team analytics."""
+    # Count total teams and new teams
+    total_teams = Team.objects.count()
+    new_teams = Team.objects.filter(created_at__range=(start_date, end_date)).count()
+    
+    # Team size distribution
+    team_sizes = {}
+    for team in Team.objects.all():
+        size = team.members.count()
+        team_sizes[size] = team_sizes.get(size, 0) + 1
+    
+    size_distribution = [
+        {'size': size, 'count': count}
+        for size, count in team_sizes.items()
+    ]
+    
+    return {
+        'total_teams': total_teams,
+        'new_teams': new_teams,
+        'size_distribution': size_distribution
+    }
+
+def get_submission_analytics(start_date, end_date):
+    """Helper function to get submission analytics."""
+    # Count total submissions and new submissions
+    total_submissions = ProjectSubmission.objects.count()
+    new_submissions = ProjectSubmission.objects.filter(submission_date__range=(start_date, end_date)).count()
+    
+    # Submission status distribution
+    status_distribution = []
+    statuses = ProjectSubmission.objects.values('status').distinct()
+    
+    for status in statuses:
+        count = ProjectSubmission.objects.filter(status=status['status']).count()
+        status_distribution.append({
+            'status': status['status'],
+            'count': count
+        })
+    
+    # Submissions by competition
+    submissions_by_competition = []
+    competitions = Competition.objects.all()
+    
+    for comp in competitions[:10]:  # Limit to 10 for performance
+        count = ProjectSubmission.objects.filter(competition=comp).count()
+        submissions_by_competition.append({
+            'name': comp.name,
+            'count': count
+        })
+    
+    return {
+        'total_submissions': total_submissions,
+        'new_submissions': new_submissions,
+        'status_distribution': status_distribution,
+        'submissions_by_competition': submissions_by_competition
+    }
+
+def get_engagement_analytics(start_date, end_date):
+    """Helper function to get mentor-student engagement analytics."""
+    # Count consultations
+    total_consultations = ConsultationRequest.objects.filter(status='accepted').count()
+    new_consultations = ConsultationRequest.objects.filter(
+        status='accepted',
+        created_at__range=(start_date, end_date)
+    ).count()
+    
+    # Count collaborations
+    total_collaborations = CollaborationRequest.objects.filter(status='accepted').count()
+    new_collaborations = CollaborationRequest.objects.filter(
+        status='accepted',
+        created_at__range=(start_date, end_date)
+    ).count()
+    
+    # Mentor activity - top mentors by consultations
+    top_mentors = []
+    mentors = MentorProfile.objects.all()
+    
+    for mentor in mentors[:10]:  # Limit to 10 for performance
+        consultation_count = ConsultationRequest.objects.filter(to_mentor=mentor, status='accepted').count()
+        top_mentors.append({
+            'name': mentor.full_name,
+            'consultation_count': consultation_count
+        })
+    
+    # Sort by consultation count
+    top_mentors.sort(key=lambda x: x['consultation_count'], reverse=True)
+    
+    # Acceptance rates
+    consultation_requests = ConsultationRequest.objects.count() or 1  # Avoid division by zero
+    consultation_accepted = ConsultationRequest.objects.filter(status='accepted').count()
+    consultation_acceptance_rate = round((consultation_accepted / consultation_requests * 100), 2)
+    
+    collaboration_requests = CollaborationRequest.objects.count() or 1  # Avoid division by zero
+    collaboration_accepted = CollaborationRequest.objects.filter(status='accepted').count()
+    collaboration_acceptance_rate = round((collaboration_accepted / collaboration_requests * 100), 2)
+    
+    return {
+        'total_consultations': total_consultations,
+        'new_consultations': new_consultations,
+        'total_collaborations': total_collaborations,
+        'new_collaborations': new_collaborations,
+        'top_mentors': top_mentors,
+        'consultation_acceptance_rate': consultation_acceptance_rate,
+        'collaboration_acceptance_rate': collaboration_acceptance_rate
+    }

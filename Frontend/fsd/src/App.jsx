@@ -36,6 +36,7 @@ import MentorConsultations from "./components/Mentor/MentorConsultations";
 import MentorNotifications from "./components/Mentor/Notifications";
 import React from 'react';
 import VoiceControl from './components/VoiceControl/VoiceControl';
+import AnalyticsPage from "./components/Analytics";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -116,8 +117,8 @@ function App() {
                         <Route path="/chat/:teamId" element = {<Chat />} />
                         <Route path="/workspace/:teamId" element = {<Workspace />} />
                         
-                        {/* NOTIFICATION */}
-
+                        {/* Analytics */}
+                        <Route path="/analytics" element={<AnalyticsPage />} />
                         {/* CHATROOMS */}
                         <Route path="/chat/:teamId" element={<Chat />} />
                     </Routes>
