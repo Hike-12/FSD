@@ -273,7 +273,7 @@ const features = [
     color: 'from-amber-500 to-yellow-500'
   },
   {
-    icon: <Trophy className="w-6 w-6" />,
+    icon: <Trophy className="w-6 h-6" />,
     title: "Achievement Badges",
     description: "Earn recognition for your accomplishments with verifiable digital badges.",
     color: 'from-rose-500 to-red-500'
