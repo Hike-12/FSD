@@ -20,16 +20,53 @@ from django.db.models import Q
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
+
 # Dynamically construct the base directory and model path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Get the base directory
 MODEL_PATH = os.path.join(BASE_DIR, "home", "ml")  # Construct the model path
+# Add to your views.py or create a management command
+def retrain_recommendation_model():
+    # Get all student data from database
+    students_data = StudentProfile.objects.all().values(...)
+    
+    # Create DataFrame and features
+    students_df = pd.DataFrame(list(students_data))
+    students_df['combined_features'] = students_df.apply(compute_combined_features, axis=1)
+    
+    # Train new vectorizer and model
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    new_vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = new_vectorizer.fit_transform(students_df['combined_features'])
+    
+    from sklearn.neighbors import NearestNeighbors
+    nn_model = NearestNeighbors(metric='cosine')
+    nn_model.fit(tfidf_matrix)
+    
+    # Save the updated models
+    joblib.dump(nn_model, os.path.join(MODEL_PATH, "nn_model.joblib"))
+    joblib.dump(new_vectorizer, os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib"))
 
 # Load the recommendation model and vectorizer
 nn_model = joblib.load(os.path.join(MODEL_PATH, "nn_model.joblib"))
 tfidf_vectorizer = joblib.load(os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib"))
 
-# Load the student data (used for recommendations)
-# students_data = pd.read_csv(f"{MODEL_PATH}students_data.csv")  # Ensure this file matches your training data
+# Debug code to understand the model structure - run once then remove
+
+# Modify the model loading line
+# Old:
+# mentor_nn_model = joblib.load(os.path.join(MODEL_PATH, "mentor_recommender_model.joblib"))
+
+# Fix model loading code
+mentor_model_data = joblib.load(os.path.join(MODEL_PATH, "mentor_recommender_model.joblib"))
+if isinstance(mentor_model_data, tuple):
+    print(f"Loading mentor model from tuple with {len(mentor_model_data)} elements")
+    # Element 0 is the TfidfVectorizer
+    mentor_vectorizer = mentor_model_data[0]
+    # Element 1 is the pre-computed mentor features
+    mentor_features = mentor_model_data[1]
+else:
+    mentor_vectorizer = tfidf_vectorizer
+    mentor_features = None
 
 # Modified decorator for token auth
 def api_token_required(view_func):
@@ -155,6 +192,82 @@ def role_required(allowed_roles):
 ##############################################################################################################################################
 ##############################################################################################################################################
                                                          # MENTORS KA PART
+                                                         
+                                                         
+def compute_student_features_for_mentor_matching(student):
+    features = [
+        student.department,
+        str(student.year_of_study),
+        student.career_goal,
+        student.languages_spoken,
+        str(student.preferred_team_roles),
+        # Any other relevant fields that would match with mentor expertise
+    ]
+    print(features)
+    return ' '.join(filter(None, features))
+
+def get_mentor_recommendations(student_id, top_n=20):
+    print(f"Getting mentor recommendations for student ID: {student_id}")
+    try:
+        # Get student data
+        student = StudentProfile.objects.get(id=student_id)
+        
+        # Get all mentors
+        mentors_data = MentorProfile.objects.all().values(
+            'id', 'full_name', 'mentor_type', 'department', 'expertise', 
+            'years_of_experience', 'current_company', 'current_position',
+            'skills', 'competition_types', 'availability_status', 'profile_picture',
+            'linkedin', 'github', 'website', 'bio', 'average_rating'
+        )
+        
+        # Convert to DataFrame
+        mentors_df = pd.DataFrame(list(mentors_data))
+        
+        if mentors_df.empty:
+            print("No mentors found in database")
+            return []
+        
+        # Get student features
+        student_features = compute_student_features_for_mentor_matching(student)
+        
+        # SOLUTION 1: Use a simple ranking approach instead of ML model
+        # Convert mentors to feature text for matching
+        mentor_texts = []
+        for _, mentor in mentors_df.iterrows():
+            mentor_text = f"{mentor['department']} {mentor['expertise']} {mentor['current_position']} {mentor.get('skills', '')}"
+            mentor_texts.append(mentor_text)
+            
+        # Use sklearn's TF-IDF vectorizer for both student and mentors
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        new_vectorizer = TfidfVectorizer(stop_words='english')
+        all_texts = [student_features] + mentor_texts
+        all_vectors = new_vectorizer.fit_transform(all_texts)
+        
+        # Get student vector (first one) and mentor vectors (rest)
+        student_vector = all_vectors[0:1]
+        mentor_vectors = all_vectors[1:]
+        
+        # Calculate similarity
+        from sklearn.metrics.pairwise import cosine_similarity
+        similarities = cosine_similarity(student_vector, mentor_vectors).flatten()
+        
+        # Get indices of top N most similar mentors
+        top_indices = similarities.argsort()[-top_n:][::-1]
+        
+        # Map these indices to actual mentors in the database
+        if len(top_indices) > len(mentors_df):
+            top_indices = top_indices[:len(mentors_df)]
+            
+        recommended_mentors = mentors_df.iloc[top_indices].to_dict(orient="records")
+        return recommended_mentors
+        
+    except Exception as e:
+        print(f"Error in get_mentor_recommendations: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+    
+    
 @api_token_required
 @csrf_exempt
 def my_profile(request):
@@ -214,6 +327,52 @@ def my_profile(request):
 @api_token_required
 @csrf_exempt
 def get_all_mentors(request):
+    # Get student ID if provided in query parameters
+    student_id = request.GET.get("student_id")
+    print("Bhai call toh hua hai", student_id)
+    # If student ID is provided, use recommendations
+    if student_id:
+        try:
+            # Get recommendations for the student
+            recommended_mentors = get_mentor_recommendations(student_id)
+            
+            if recommended_mentors:
+                # Convert recommendations to list format expected by frontend
+                recommended_ids = [mentor['id'] for mentor in recommended_mentors]
+                
+                # Get all mentors with full details
+                all_mentors = MentorProfile.objects.all().values(
+                    'id', 'full_name', 'date_of_birth', 'gender', 'phone_number', 
+                    'address', 'country', 'state', 'city', 'postal_code', 
+                    'mentor_type', 'department', 'expertise', 'years_of_experience', 
+                    'current_company', 'current_position', 'past_mentorship_count', 
+                    'linkedin', 'github', 'website', 'bio', 'certifications', 
+                    'achievements', 'languages_spoken', 'availability_status', 
+                    'available_days', 'available_times', 'max_teams', 'current_teams_count', 
+                    'profile_picture', 'is_verified', 'average_rating', 'created_at', 'updated_at'
+                )
+                
+                # Convert queryset to list
+                mentors_list = list(all_mentors)
+                
+                # Filter and sort mentors according to recommendations
+                filtered_mentors = [
+                    mentor for mentor in mentors_list 
+                    if mentor['id'] in recommended_ids
+                ]
+                
+                # Sort according to recommendation order
+                filtered_mentors.sort(key=lambda x: recommended_ids.index(x['id']))
+                
+                return JsonResponse(filtered_mentors, safe=False)
+            
+        except StudentProfile.DoesNotExist:
+            return JsonResponse({"error": "Student not found"}, status=404)
+        except Exception as e:
+            print(f"Error in mentor recommendations: {e}")
+            # Fall back to returning all mentors if there's an error
+    
+    # Default: return all mentors (unchanged original behavior)
     mentors = MentorProfile.objects.all().values(
         'id', 'full_name', 'date_of_birth', 'gender', 'phone_number', 
         'address', 'country', 'state', 'city', 'postal_code', 
