@@ -1,42 +1,103 @@
-// AllMentors.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DJANGO_BASE_URL } from "@/lib/utils";
 import MentorCard from "@/components/Mentor/MentorCard";
-import { UserPlus, Search, Award, Users, Clock } from "lucide-react";
+import { UserPlus, Search, Users, Clock } from "lucide-react";
+
+const colors = {
+  primary: '#3b82f6',
+  primaryDark: '#2563eb',
+  secondary: '#60a5fa',
+  accent: '#7c3aed',
+  accentLight: '#a78bfa',
+  background: '#050A15',
+  backgroundLight: '#0A1428',
+  text: '#f8fafc',
+  muted: '#94a3b8'
+};
 
 const SkeletonMentorCard = () => (
-  <div className="bg-gray-800/50 border border-gray-700 rounded-xl h-[420px] overflow-hidden animate-pulse">
-    <div className="p-6 flex flex-col items-center">
-      <div className="w-24 h-24 rounded-full bg-gray-700 mb-4" />
-      <div className="h-6 w-40 bg-gray-700 rounded mb-2" />
-      <div className="h-5 w-32 bg-gray-700 rounded mb-3" />
-      <div className="flex space-x-1 mb-3">
+  <div className="mentor-card-skeleton" style={{ 
+    backgroundColor: colors.backgroundLight,
+    border: `1px solid ${colors.muted}`,
+    borderRadius: '16px',
+    height: '420px',
+    overflow: 'hidden',
+    position: 'relative'
+  }}>
+    <div className="shimmer" style={{
+      position: 'absolute',
+      inset: 0,
+      background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)`,
+      animation: 'shimmer 1.5s infinite'
+    }}></div>
+    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ 
+        width: '96px', 
+        height: '96px', 
+        borderRadius: '50%', 
+        backgroundColor: colors.muted,
+        opacity: 0.2,
+        marginBottom: '1rem' 
+      }} />
+      <div style={{ 
+        height: '24px', 
+        width: '160px', 
+        backgroundColor: colors.muted,
+        opacity: 0.2,
+        borderRadius: '4px',
+        marginBottom: '0.5rem' 
+      }} />
+      <div style={{ 
+        height: '20px', 
+        width: '128px', 
+        backgroundColor: colors.muted,
+        opacity: 0.2,
+        borderRadius: '4px',
+        marginBottom: '0.75rem' 
+      }} />
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.75rem' }}>
         {Array(5).fill(0).map((_, i) => (
-          <div key={i} className="w-4 h-4 bg-gray-700 rounded-full" />
+          <div key={i} style={{ 
+            width: '16px', 
+            height: '16px', 
+            backgroundColor: colors.muted,
+            opacity: 0.2,
+            borderRadius: '50%' 
+          }} />
         ))}
       </div>
-      <div className="h-4 w-24 bg-gray-700 rounded" />
-      <div className="h-5 w-5 bg-gray-700 rounded mt-4" />
+      <div style={{ 
+        height: '16px', 
+        width: '96px', 
+        backgroundColor: colors.muted,
+        opacity: 0.2,
+        borderRadius: '4px' 
+      }} />
+      <div style={{ 
+        height: '20px', 
+        width: '20px', 
+        backgroundColor: colors.muted,
+        opacity: 0.2,
+        borderRadius: '4px',
+        marginTop: '1rem' 
+      }} />
     </div>
   </div>
 );
 
 const AllMentors = () => {
   const role = localStorage.getItem("role") || null;
-  console.log("User Role:", role);
   if (role === "STUDENT") {
     var student_id = localStorage.getItem("userId") || null;
-    console.log("Student ID:", student_id);
   }
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({
     available: 0,
-    busy: 0,
-    premium: 0
+    busy: 0
   });
   const navigate = useNavigate();
 
@@ -59,8 +120,7 @@ const AllMentors = () => {
         // Calculate stats
         setStats({
           available: data.filter(m => m.availability_status === 'available').length,
-          busy: data.filter(m => m.availability_status === 'busy').length,
-          premium: data.filter(m => m.is_premium).length
+          busy: data.filter(m => m.availability_status === 'busy').length
         });
       } catch (error) {
         console.error("Error fetching mentor data:", error);
@@ -84,19 +144,91 @@ const AllMentors = () => {
   const handleRequestConsultation = (id) => navigate(`/request-consultation/${id}`);
 
   return (
-    
-      <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: colors.background,
+      color: colors.text,
+      padding: '2rem 1rem',
+      position: 'relative'
+    }}>
+      {/* Decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '-100px',
+        right: '-100px',
+        width: '300px',
+        height: '300px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${colors.accentLight} 0%, transparent 70%)`,
+        opacity: 0.1
+      }}></div>
+      
+      <div style={{
+        position: 'absolute',
+        bottom: '-50px',
+        left: '-50px',
+        width: '200px',
+        height: '200px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${colors.primary} 0%, transparent 70%)`,
+        opacity: 0.1
+      }}></div>
+
+      <div style={{ 
+        maxWidth: '1400px',
+        margin: '0 auto',
+        position: 'relative',
+        zIndex: 1
+      }}>
         {/* Animated Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-700 rounded-xl shadow-xl p-6 mb-8 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative z-10">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-teal-600/20 rounded-lg">
-                <Users className="h-8 w-8 text-teal-400" />
+        <motion.div 
+          style={{ 
+            position: 'relative',
+            overflow: 'hidden',
+            backgroundColor: colors.backgroundLight,
+            border: `1px solid ${colors.muted}`,
+            borderRadius: '16px',
+            padding: '1.25rem',
+            marginBottom: '2rem',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+          }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: `linear-gradient(90deg, ${colors.accent}20, ${colors.primary}20)`,
+            opacity: 0,
+            transition: 'opacity 0.5s ease'
+          }} className="group-hover:opacity-100"></div>
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              flexDirection: window.innerWidth < 640 ? 'column' : 'row',
+              textAlign: window.innerWidth < 640 ? 'center' : 'left'
+            }}>
+              <div style={{ 
+                padding: '0.75rem',
+                backgroundColor: `${colors.accent}20`,
+                borderRadius: '12px'
+              }}>
+                <Users style={{ height: '32px', width: '32px', color: colors.accent }} />
               </div>
               <div>
                 <motion.h1
-                  className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-400"
+                  style={{ 
+                    fontSize: window.innerWidth < 640 ? '1.5rem' : '1.75rem',
+                    fontWeight: 'bold',
+                    background: `linear-gradient(90deg, ${colors.accent}, ${colors.primary})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    marginBottom: '0.25rem'
+                  }}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
@@ -104,7 +236,11 @@ const AllMentors = () => {
                   Find Your Perfect Mentor
                 </motion.h1>
                 <motion.p
-                  className="text-gray-300 mt-1"
+                  style={{ 
+                    color: colors.muted,
+                    marginTop: '0.25rem',
+                    fontSize: window.innerWidth < 640 ? '0.9rem' : '1rem'
+                  }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
@@ -114,74 +250,142 @@ const AllMentors = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats Cards */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          style={{ 
+            display: 'grid',
+            gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)',
+            gap: '1rem',
+            marginBottom: '2rem'
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:bg-gray-700/30 transition-all transform hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-teal-600/20 rounded-lg">
-                <Users className="h-5 w-5 text-teal-400" />
+          {/* Available Mentors */}
+          <motion.div 
+            style={{ 
+              backgroundColor: colors.backgroundLight,
+              border: `1px solid ${colors.muted}`,
+              borderRadius: '12px',
+              padding: '1rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            whileHover={{ 
+              backgroundColor: `${colors.backgroundLight}90`,
+              transform: 'translateY(-4px)',
+              boxShadow: `0 10px 20px rgba(0, 0, 0, 0.2)`
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ 
+                padding: '0.5rem',
+                backgroundColor: `${colors.accent}20`,
+                borderRadius: '8px'
+              }}>
+                <Users style={{ height: '20px', width: '20px', color: colors.accent }} />
               </div>
               <div>
-                <p className="text-gray-400 text-sm">Available</p>
-                <p className="text-2xl font-bold text-white">{stats.available}</p>
+                <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Available</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.text }}>
+                  {stats.available}
+                </p>
               </div>
             </div>
-          </div>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:bg-gray-700/30 transition-all transform hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-600/20 rounded-lg">
-                <Clock className="h-5 w-5 text-blue-400" />
+          </motion.div>
+
+          {/* Busy Mentors */}
+          <motion.div 
+            style={{ 
+              backgroundColor: colors.backgroundLight,
+              border: `1px solid ${colors.muted}`,
+              borderRadius: '12px',
+              padding: '1rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            whileHover={{ 
+              backgroundColor: `${colors.backgroundLight}90`,
+              transform: 'translateY(-4px)',
+              boxShadow: `0 10px 20px rgba(0, 0, 0, 0.2)`
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ 
+                padding: '0.5rem',
+                backgroundColor: `${colors.primary}20`,
+                borderRadius: '8px'
+              }}>
+                <Clock style={{ height: '20px', width: '20px', color: colors.primary }} />
               </div>
               <div>
-                <p className="text-gray-400 text-sm">Currently Busy</p>
-                <p className="text-2xl font-bold text-white">{stats.busy}</p>
+                <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Currently Busy</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.text }}>
+                  {stats.busy}
+                </p>
               </div>
             </div>
-          </div>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:bg-gray-700/30 transition-all transform hover:-translate-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-600/20 rounded-lg">
-                <Award className="h-5 w-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm">Premium</p>
-                <p className="text-2xl font-bold text-white">{stats.premium}</p>
-              </div>
-            </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Search Bar */}
         <motion.div 
-          className="max-w-md mx-auto relative mb-8"
+          style={{ 
+            width: '100%',
+            maxWidth: '600px',
+            margin: '0 auto 2rem auto',
+            position: 'relative'
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
         >
-          <div className="relative shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-blue-400" />
+          <div style={{ position: 'relative' }}>
+            <div style={{ 
+              position: 'absolute',
+              top: '50%',
+              left: '1rem',
+              transform: 'translateY(-50%)'
+            }}>
+              <Search style={{ height: '20px', width: '20px', color: colors.primary }} />
             </div>
             <input 
               type="text" 
               placeholder="Search by name, specialty or expertise..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-full bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400 transition-all duration-300"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '0.75rem 1rem 0.75rem 2.5rem',
+                border: `1px solid ${colors.muted}`,
+                borderRadius: '9999px',
+                backgroundColor: colors.backgroundLight,
+                color: colors.text,
+                outline: 'none',
+                transition: 'all 0.3s ease',
+                fontSize: window.innerWidth < 640 ? '0.875rem' : '0.95rem'
+              }}
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '1rem',
+                  transform: 'translateY(-50%)'
+                }}
               >
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg 
+                  style={{ height: '20px', width: '20px', color: colors.muted }} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -192,32 +396,54 @@ const AllMentors = () => {
         {/* Mentors Grid */}
         {loading ? (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: window.innerWidth < 640 ? '1fr' : 
+                                window.innerWidth < 1024 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+              gap: '1.5rem'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.1 }}
           >
-            {Array(8).fill(0).map((_, index) => (
+            {Array(6).fill(0).map((_, index) => (
               <SkeletonMentorCard key={index} />
             ))}
           </motion.div>
         ) : filteredMentors.length === 0 ? (
           <motion.div
-            className="text-center py-20"
+            style={{ 
+              textAlign: 'center',
+              padding: '5rem 1rem'
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-900/20 mb-4"
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: `${colors.primary}20`,
+                marginBottom: '1rem'
+              }}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <UserPlus className="w-8 h-8 text-blue-400" />
+              <UserPlus style={{ width: '32px', height: '32px', color: colors.primary }} />
             </motion.div>
             <motion.h3
-              className="text-xl font-semibold text-white mb-2"
+              style={{ 
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: '0.5rem'
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -225,7 +451,12 @@ const AllMentors = () => {
               No mentors found
             </motion.h3>
             <motion.p
-              className="text-gray-400 max-w-md mx-auto"
+              style={{ 
+                color: colors.muted,
+                maxWidth: '28rem',
+                margin: '0 auto',
+                fontSize: window.innerWidth < 640 ? '0.9rem' : '1rem'
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -237,7 +468,12 @@ const AllMentors = () => {
           </motion.div>
         ) : (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: window.innerWidth < 640 ? '1fr' : 
+                                window.innerWidth < 1024 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+              gap: '1.5rem'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.1 }}
@@ -248,12 +484,34 @@ const AllMentors = () => {
                 mentor={mentor}
                 onViewProfile={handleViewProfile}
                 onRequestConsultation={handleRequestConsultation}
-                darkMode={true}
+                colors={colors}
               />
             ))}
           </motion.div>
         )}
       </div>
+
+      {/* Add CSS for shimmer animation */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .mentor-card-skeleton {
+          position: relative;
+          overflow: hidden;
+        }
+        .shimmer {
+          animation: shimmer 1.5s infinite linear;
+          background: linear-gradient(
+            to right,
+            transparent 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 100%
+          );
+        }
+      `}</style>
+    </div>
   );
 };
 
