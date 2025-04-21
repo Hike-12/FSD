@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Menu, X, Search, Bell, LogOut, Users, Trophy, MessageSquare, User } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
@@ -8,8 +8,11 @@ const StudentNavbar = ({ children }) => {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const mainRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -22,6 +25,29 @@ const StudentNavbar = ({ children }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    const mainElement = mainRef.current;
+    
+    const handleScroll = () => {
+      const currentScrollY = mainElement.scrollTop;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down
+        setVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll);
+      return () => mainElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [lastScrollY]);
 
   const handleLogout = () => {
     logout();
@@ -69,6 +95,11 @@ const StudentNavbar = ({ children }) => {
     },
   };
 
+  const navbarVariants = {
+    visible: { y: 0 },
+    hidden: { y: '-100%' }
+  };
+
   const itemVariants = {
     open: { opacity: 1, y: 0 },
     closed: { opacity: 0, y: -20 }
@@ -77,7 +108,13 @@ const StudentNavbar = ({ children }) => {
   return (
     <div className="relative flex flex-col h-screen overflow-hidden bg-[#050A15] text-[#f8fafc]">
       {/* Top Navigation Bar */}
-      <header className="bg-[#050A15]/90 backdrop-blur-md border-b border-[#1F2A2A] w-full z-10">
+      <motion.header 
+        className="bg-[#050A15]/90 backdrop-blur-md border-b border-[#1F2A2A] w-full z-10 fixed top-0"
+        initial="visible"
+        animate={visible ? "visible" : "hidden"}
+        variants={navbarVariants}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
         <div className="flex items-center justify-between p-4">
           {/* Mobile menu button */}
           <div className="md:hidden">
@@ -154,7 +191,7 @@ const StudentNavbar = ({ children }) => {
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
+      </motion.header>
 
       {/* Right Sidebar */}
       <AnimatePresence>
@@ -237,7 +274,10 @@ const StudentNavbar = ({ children }) => {
       </AnimatePresence>
 
       {/* Page Content */}
-      <main className={`flex-1 overflow-y-auto p-4 md:p-6 transition-all duration-300 ${rightSidebarOpen ? 'md:mr-64' : ''}`}>
+      <main 
+        ref={mainRef}
+        className={`flex-1 overflow-y-auto pt-16 md:pt-20 p-4 md:p-6 transition-all duration-300 ${rightSidebarOpen ? 'md:mr-64' : ''}`}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
