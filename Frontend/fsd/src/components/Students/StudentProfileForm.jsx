@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DJANGO_BASE_URL } from "@/lib/utils";
+import { motion } from 'framer-motion';
 
 const colors = {
   primary: '#3b82f6',
@@ -59,6 +60,29 @@ const StudentProfileForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [submitMessage, setSubmitMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,11 +143,11 @@ const StudentProfileForm = () => {
             const prefilledData = {
               ...profileData,
               skill_ids: profileData.skills ? 
-                skills.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id) : [],
+                skillsData.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id) : [],
               competition_type_ids: profileData.preferred_competition_types ? 
-                competitionTypes.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id) : [],
+                competitionTypesData.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id) : [],
               past_competition_ids: profileData.past_competitions ? 
-                pastCompetitions.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id) : [],
+                pastCompetitionsData.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id) : [],
               profile_picture: null
             };
             
@@ -161,13 +185,21 @@ const StudentProfileForm = () => {
     setFormData(prev => ({ ...prev, [name]: selectedValues }));
   };
 
-  const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
-  const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+  const nextStep = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(prev => Math.min(prev + 1, 4));
+  };
+
+  const prevStep = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(prev => Math.max(prev - 1, 1));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setSubmitMessage('');
+    setIsSubmitting(true);
   
     try {
       const formDataToSend = new FormData();
@@ -211,6 +243,8 @@ const StudentProfileForm = () => {
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ general: error.message || 'An error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -224,23 +258,36 @@ const StudentProfileForm = () => {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <div style={{
-          width: '50px',
-          height: '50px',
-          border: `4px solid ${colors.accentLight}`,
-          borderTopColor: colors.accent,
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }}></div>
-        <p style={{ 
-          color: colors.text,
-          marginTop: '1rem'
-        }}>Loading your profile...</p>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
+        <motion.div
+          animate={{ 
+            rotate: 360,
+            scale: [1, 1.2, 1]
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            width: '60px',
+            height: '60px',
+            border: `4px solid ${colors.accentLight}`,
+            borderTopColor: colors.accent,
+            borderRadius: '50%',
+          }}
+        ></motion.div>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          style={{ 
+            color: colors.text,
+            marginTop: '1.5rem',
+            fontSize: '1.1rem'
+          }}
+        >
+          Loading your profile...
+        </motion.p>
       </div>
     );
   }
@@ -249,134 +296,235 @@ const StudentProfileForm = () => {
     <div style={{ 
       backgroundColor: colors.background,
       minHeight: '100vh',
-      padding: '2rem'
+      padding: '2rem',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div style={{ 
-        backgroundColor: colors.backgroundLight,
-        maxWidth: '1200px',
-        margin: '0 auto',
-        borderRadius: '12px',
-        padding: '2rem',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-      }}>
-        <h1 style={{ 
-          color: colors.text,
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          marginBottom: '1.5rem',
-          textAlign: 'center'
-        }}>
-          {existingProfile ? 'Update Your Profile' : 'Create Student Profile'}
-        </h1>
-        
-        {/* Progress Steps */}
+      {/* Decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '-50px',
+        right: '-50px',
+        width: '200px',
+        height: '200px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${colors.accentLight} 0%, transparent 70%)`,
+        opacity: 0.2
+      }}></div>
+      
+      <div style={{
+        position: 'absolute',
+        bottom: '-100px',
+        left: '-100px',
+        width: '300px',
+        height: '300px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${colors.primary} 0%, transparent 70%)`,
+        opacity: 0.15
+      }}></div>
+
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        style={{ 
+          backgroundColor: colors.backgroundLight,
+          maxWidth: '1200px',
+          margin: '0 auto',
+          borderRadius: '16px',
+          padding: '2rem',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+          position: 'relative',
+          zIndex: 1,
+          border: `1px solid ${colors.backgroundLight}`,
+          overflow: 'hidden'
+        }}
+      >
+        {/* Header with animated gradient border */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          position: 'relative',
           marginBottom: '2rem',
-          gap: '0.5rem'
+          paddingBottom: '1rem',
+          borderBottom: `1px solid ${colors.muted}`,
+          overflow: 'hidden'
         }}>
+          <motion.h1 
+            variants={itemVariants}
+            style={{ 
+              color: colors.text,
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              marginBottom: '0.5rem',
+              textAlign: 'center',
+              background: `linear-gradient(90deg, ${colors.accent}, ${colors.primary})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'inline-block'
+            }}
+          >
+            {existingProfile ? 'Update Your Profile' : 'Create Student Profile'}
+          </motion.h1>
+          <motion.p 
+            variants={itemVariants}
+            style={{
+              color: colors.muted,
+              textAlign: 'center',
+              fontSize: '0.9rem'
+            }}
+          >
+            {existingProfile ? 'Keep your information fresh and up-to-date' : 'Let the world know about your amazing skills!'}
+          </motion.p>
+        </div>
+        
+        {/* Animated Progress Steps */}
+        <motion.div 
+          variants={itemVariants}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: '2.5rem',
+            gap: '0.5rem',
+            flexWrap: 'wrap'
+          }}
+        >
           {[1, 2, 3, 4].map((stepNumber) => (
             <React.Fragment key={stepNumber}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: step >= stepNumber ? colors.accent : 'transparent',
-                border: `2px solid ${colors.accent}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: step >= stepNumber ? colors.text : colors.accent,
-                fontWeight: 'bold'
-              }}>
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  backgroundColor: step >= stepNumber ? colors.accent : 'transparent',
+                  border: `2px solid ${colors.accent}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: step >= stepNumber ? colors.text : colors.accent,
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onClick={() => setStep(stepNumber)}
+              >
                 {stepNumber}
-              </div>
+              </motion.div>
               {stepNumber < 4 && (
-                <div style={{
-                  width: '40px',
-                  height: '2px',
-                  backgroundColor: step > stepNumber ? colors.accent : colors.muted,
-                  opacity: 0.5
-                }}></div>
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '40px' }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    height: '2px',
+                    backgroundColor: step > stepNumber ? colors.accent : colors.muted,
+                    opacity: 0.5
+                  }}
+                ></motion.div>
               )}
             </React.Fragment>
           ))}
-        </div>
+        </motion.div>
 
+        {/* Messages */}
         {submitMessage && (
-          <div style={{ 
-            backgroundColor: 'rgba(74, 222, 128, 0.1)',
-            border: `1px solid rgba(74, 222, 128, 0.3)`,
-            color: colors.text,
-            padding: '1rem',
-            borderRadius: '6px',
-            marginBottom: '1.5rem',
-            textAlign: 'center'
-          }}>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ 
+              backgroundColor: 'rgba(74, 222, 128, 0.1)',
+              border: `1px solid rgba(74, 222, 128, 0.3)`,
+              color: colors.text,
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              textAlign: 'center',
+              backdropFilter: 'blur(5px)'
+            }}
+          >
             {submitMessage}
-          </div>
+          </motion.div>
         )}
 
         {errors.general && (
-          <div style={{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            border: `1px solid rgba(239, 68, 68, 0.3)`,
-            color: colors.text,
-            padding: '1rem',
-            borderRadius: '6px',
-            marginBottom: '1.5rem',
-            textAlign: 'center'
-          }}>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ 
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: `1px solid rgba(239, 68, 68, 0.3)`,
+              color: colors.text,
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              textAlign: 'center',
+              backdropFilter: 'blur(5px)'
+            }}
+          >
             {errors.general}
-          </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit}>
           {/* Step 1: Personal Info */}
           {step === 1 && (
-            <div style={{ 
-              backgroundColor: colors.background,
-              padding: '1.5rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{ 
-                color: colors.text,
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ 
+                backgroundColor: colors.background,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: `1px solid ${colors.backgroundLight}`,
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <motion.h2 
+                variants={itemVariants}
+                style={{ 
+                  color: colors.text,
+                  fontSize: '1.5rem',
+                  fontWeight: '600',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+              >
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
+                  width: '32px',
+                  height: '32px',
                   backgroundColor: colors.accent,
                   color: colors.text,
                   borderRadius: '50%',
-                  fontSize: '0.875rem'
+                  fontSize: '1rem',
+                  boxShadow: `0 0 10px ${colors.accentLight}`
                 }}>1</span>
                 Personal Information
-              </h2>
+              </motion.h2>
               
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Full Name*</label>
                   <input
                     type="text"
@@ -389,20 +537,23 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
                       outline: 'none',
-                      transition: 'border-color 0.2s'
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
+                    className="focus:ring-2 focus:ring-accent"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Date of Birth</label>
                   <input
                     type="date"
@@ -414,26 +565,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
-              </div>
+                </motion.div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Gender</label>
                   <select
                     name="gender"
@@ -444,9 +591,16 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem',
+                      appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '16px 12px'
                     }}
                   >
                     <option value="">Select Gender</option>
@@ -455,14 +609,15 @@ const StudentProfileForm = () => {
                     <option value="Non-binary">Non-binary</option>
                     <option value="Prefer not to say">Prefer not to say</option>
                   </select>
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Phone Number</label>
                   <input
                     type="tel"
@@ -474,20 +629,26 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <div style={{ marginBottom: '1rem' }}>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
                 <label style={{ 
                   display: 'block',
                   color: colors.text,
-                  marginBottom: '0.5rem',
-                  fontSize: '0.875rem'
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
                 }}>Address</label>
                 <input
                   type="text"
@@ -499,25 +660,31 @@ const StudentProfileForm = () => {
                     backgroundColor: colors.backgroundLight,
                     color: colors.text,
                     border: `1px solid ${colors.muted}`,
-                    borderRadius: '6px',
-                    padding: '0.75rem',
-                    outline: 'none'
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem'
                   }}
                 />
-              </div>
+              </motion.div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Country</label>
                   <input
                     type="text"
@@ -529,19 +696,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>State</label>
                   <input
                     type="text"
@@ -553,19 +723,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>City</label>
                   <input
                     type="text"
@@ -577,19 +750,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Postal Code</label>
                   <input
                     type="text"
@@ -601,84 +777,113 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginTop: '1rem'
-              }}>
-                <button
+              <motion.div
+                variants={itemVariants}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginTop: '2rem',
+                  gap: '1rem'
+                }}
+              >
+                <motion.button
                   type="button"
                   onClick={nextStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
                     backgroundColor: colors.accent,
                     color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
                     border: 'none',
                     cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s'
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.accentLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = colors.accent}
                 >
                   Next
-                </button>
-              </div>
-            </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                  </svg>
+                </motion.button>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Step 2: Education Info */}
           {step === 2 && (
-            <div style={{ 
-              backgroundColor: colors.background,
-              padding: '1.5rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{ 
-                color: colors.text,
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ 
+                backgroundColor: colors.background,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: `1px solid ${colors.backgroundLight}`,
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <motion.h2 
+                variants={itemVariants}
+                style={{ 
+                  color: colors.text,
+                  fontSize: '1.5rem',
+                  fontWeight: '600',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+              >
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
+                  width: '32px',
+                  height: '32px',
                   backgroundColor: colors.accent,
                   color: colors.text,
                   borderRadius: '50%',
-                  fontSize: '0.875rem'
+                  fontSize: '1rem',
+                  boxShadow: `0 0 10px ${colors.accentLight}`
                 }}>2</span>
                 Education Information
-              </h2>
+              </motion.h2>
               
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Education Level*</label>
                   <select
                     name="education_level"
@@ -690,9 +895,16 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem',
+                      appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '16px 12px'
                     }}
                   >
                     <option value="">Select Education Level</option>
@@ -702,14 +914,15 @@ const StudentProfileForm = () => {
                     <option value="PhD">PhD</option>
                     <option value="Other">Other</option>
                   </select>
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Department</label>
                   <input
                     type="text"
@@ -721,26 +934,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
-              </div>
+                </motion.div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Year of Study</label>
                   <input
                     type="number"
@@ -753,19 +962,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>GPA</label>
                   <input
                     type="number"
@@ -780,21 +992,27 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                     placeholder="0.00 - 4.00"
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <div style={{ marginBottom: '1rem' }}>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
                 <label style={{ 
                   display: 'block',
                   color: colors.text,
-                  marginBottom: '0.5rem',
-                  fontSize: '0.875rem'
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
                 }}>Learning Style</label>
                 <select
                   name="learning_style"
@@ -805,9 +1023,16 @@ const StudentProfileForm = () => {
                     backgroundColor: colors.backgroundLight,
                     color: colors.text,
                     border: `1px solid ${colors.muted}`,
-                    borderRadius: '6px',
-                    padding: '0.75rem',
-                    outline: 'none'
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                    backgroundSize: '16px 12px'
                   }}
                 >
                   <option value="">Select Learning Style</option>
@@ -816,410 +1041,236 @@ const StudentProfileForm = () => {
                   <option value="Reading/Writing">Reading/Writing</option>
                   <option value="Kinesthetic">Kinesthetic</option>
                 </select>
-              </div>
+              </motion.div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',  
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Skills</label>
-                  <select
-                    name="skill_ids"
-                    multiple
-                    value={formData.skill_ids}
-                    onChange={handleMultiSelectChange}
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.5rem',
-                      outline: 'none',
-                      height: '120px'
-                    }}
-                  >
-                    {skills.map(skill => (
-                      <option key={skill.id} value={skill.id}>{skill.name}</option>
-                    ))}
-                  </select>
-                  <p style={{ 
-                    color: colors.muted,
-                    fontSize: '0.75rem',
-                    marginTop: '0.25rem'
-                  }}>Hold Ctrl/Cmd to select multiple</p>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Preferred Competition Types</label>
-                  <select
-                    name="competition_type_ids"
-                    multiple
-                    value={formData.competition_type_ids}
-                    onChange={handleMultiSelectChange}
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.5rem',
-                      outline: 'none',
-                      height: '120px'
-                    }}
-                  >
-                    {competitionTypes.map(type => (
-                      <option key={type.id} value={type.id}>{type.name}</option>
-                    ))}
-                  </select>
-                  <p style={{ 
-                    color: colors.muted,
-                    fontSize: '0.75rem',
-                    marginTop: '0.25rem'
-                  }}>Hold Ctrl/Cmd to select multiple</p>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Preferred Team Roles</label>
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
+                  }}>Languages Spoken</label>
                   <input
                     type="text"
-                    name="preferred_team_roles"
-                    value={formData.preferred_team_roles}
+                    name="languages_spoken"
+                    value={formData.languages_spoken}
                     onChange={handleChange}
                     style={{
                       width: '100%',
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
-                    placeholder="Leader, Designer, Developer, etc."
+                    placeholder="English, Spanish, etc."
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Past Competitions</label>
-                  <select
-                    name="past_competition_ids"
-                    multiple
-                    value={formData.past_competition_ids}
-                    onChange={handleMultiSelectChange}
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
+                  }}>Extracurricular Activities</label>
+                  <input
+                    type="text"
+                    name="extracurricular_activities"
+                    value={formData.extracurricular_activities}
+                    onChange={handleChange}
                     style={{
                       width: '100%',
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.5rem',
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
                       outline: 'none',
-                      height: '120px'
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
-                  >
-                    {pastCompetitions.map(comp => (
-                      <option key={comp.id} value={comp.id}>{comp.name}</option>
-                    ))}
-                  </select>
-                  <p style={{ 
-                    color: colors.muted,
-                    fontSize: '0.75rem',
-                    marginTop: '0.25rem'
-                  }}>Hold Ctrl/Cmd to select multiple</p>
-                </div>
-              </div>
+                    placeholder="Clubs, sports, etc."
+                  />
+                </motion.div>
+              </motion.div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: '1rem'
-              }}>
-                <button
+              <motion.div
+                variants={containerVariants}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '2rem',
+                  gap: '1rem'
+                }}
+              >
+                <motion.button
                   type="button"
                   onClick={prevStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: colors.backgroundLight,
                     color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
-                    border: `1px solid ${colors.accent}`,
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.muted}`,
                     cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s'
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.backgroundLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  Back
-                </button>
-                <button
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                  </svg>
+                  Previous
+                </motion.button>
+                <motion.button
                   type="button"
                   onClick={nextStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
                     backgroundColor: colors.accent,
                     color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
                     border: 'none',
                     cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s'
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.accentLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = colors.accent}
                 >
                   Next
-                </button>
-              </div>
-            </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                  </svg>
+                </motion.button>
+              </motion.div>
+            </motion.div>
           )}
 
-          {/* Step 3: Additional Info */}
+          {/* Step 3: Skills & Experience */}
           {step === 3 && (
-            <div style={{ 
-              backgroundColor: colors.background,
-              padding: '1.5rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{ 
-                color: colors.text,
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ 
+                backgroundColor: colors.background,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: `1px solid ${colors.backgroundLight}`,
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <motion.h2 
+                variants={itemVariants}
+                style={{ 
+                  color: colors.text,
+                  fontSize: '1.5rem',
+                  fontWeight: '600',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+              >
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
+                  width: '32px',
+                  height: '32px',
                   backgroundColor: colors.accent,
                   color: colors.text,
                   borderRadius: '50%',
-                  fontSize: '0.875rem'
+                  fontSize: '1rem',
+                  boxShadow: `0 0 10px ${colors.accentLight}`
                 }}>3</span>
-                Additional Information
-              </h2>
+                Skills & Experience
+              </motion.h2>
               
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Extracurricular Activities</label>
-                  <textarea
-                    name="extracurricular_activities"
-                    value={formData.extracurricular_activities}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your activities..."
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Achievements</label>
-                  <textarea
-                    name="achievements"
-                    value={formData.achievements}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your achievements..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Certifications</label>
-                  <textarea
-                    name="certifications"
-                    value={formData.certifications}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your certifications..."
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Internships</label>
-                  <textarea
-                    name="internships"
-                    value={formData.internships}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your internships..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Projects</label>
-                  <textarea
-                    name="projects"
-                    value={formData.projects}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your projects..."
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block',
-                    color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Hobbies</label>
-                  <textarea
-                    name="hobbies"
-                    value={formData.hobbies}
-                    onChange={handleChange}
-                    rows="3"
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.backgroundLight,
-                      color: colors.text,
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
-                    }}
-                    placeholder="List your hobbies..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '1rem' }}>
-                {/* Closing div tag was missing */}
-              </div>
-
-              <div style={{ marginBottom: '1rem' }}>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
                 <label style={{ 
                   display: 'block',
                   color: colors.text,
-                  marginBottom: '0.5rem',
-                  fontSize: '0.875rem'
-                }}>Career Goal</label>
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Skills*</label>
+                <select
+                  name="skill_ids"
+                  multiple
+                  value={formData.skill_ids}
+                  onChange={handleMultiSelectChange}
+                  required
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    minHeight: '120px'
+                  }}
+                >
+                  {skills.map(skill => (
+                    <option key={skill.id} value={skill.id}>{skill.name}</option>
+                  ))}
+                </select>
+                <p style={{ 
+                  color: colors.muted,
+                  fontSize: '0.85rem',
+                  marginTop: '0.5rem'
+                }}>Hold Ctrl/Cmd to select multiple skills</p>
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Achievements</label>
                 <textarea
-                  name="career_goal"
-                  value={formData.career_goal}
+                  name="achievements"
+                  value={formData.achievements}
                   onChange={handleChange}
                   rows="3"
                   style={{
@@ -1227,27 +1278,347 @@ const StudentProfileForm = () => {
                     backgroundColor: colors.backgroundLight,
                     color: colors.text,
                     border: `1px solid ${colors.muted}`,
-                    borderRadius: '6px',
-                    padding: '0.75rem',
-                    outline: 'none'
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
                   }}
-                  placeholder="Describe your career aspirations..."
-                ></textarea>
-              </div>
+                  placeholder="List any notable achievements or awards"
+                />
+              </motion.div>
 
-              {/* Ensure all divs are properly closed */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Certifications</label>
+                <textarea
+                  name="certifications"
+                  value={formData.certifications}
+                  onChange={handleChange}
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                  placeholder="List any certifications you've earned"
+                />
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Internships</label>
+                <textarea
+                  name="internships"
+                  value={formData.internships}
+                  onChange={handleChange}
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                  placeholder="Describe your internship experiences"
+                />
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Projects</label>
+                <textarea
+                  name="projects"
+                  value={formData.projects}
+                  onChange={handleChange}
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                  placeholder="Describe projects you've worked on"
+                />
+              </motion.div>
+
+              <motion.div
+                variants={containerVariants}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '2rem',
+                  gap: '1rem'
+                }}
+              >
+                <motion.button
+                  type="button"
+                  onClick={prevStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.muted}`,
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                  </svg>
+                  Previous
+                </motion.button>
+                <motion.button
+                  type="button"
+                  onClick={nextStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    backgroundColor: colors.accent,
+                    color: colors.text,
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
+                  }}
+                >
+                  Next
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                  </svg>
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Step 4: Competition & Additional Info */}
+          {step === 4 && (
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ 
+                backgroundColor: colors.background,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: `1px solid ${colors.backgroundLight}`,
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <motion.h2 
+                variants={itemVariants}
+                style={{ 
+                  color: colors.text,
+                  fontSize: '1.5rem',
+                  fontWeight: '600',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+              >
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  backgroundColor: colors.accent,
+                  color: colors.text,
+                  borderRadius: '50%',
+                  fontSize: '1rem',
+                  boxShadow: `0 0 10px ${colors.accentLight}`
+                }}>4</span>
+                Competition & Additional Info
+              </motion.h2>
+              
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Preferred Competition Types</label>
+                <select
+                  name="competition_type_ids"
+                  multiple
+                  value={formData.competition_type_ids}
+                  onChange={handleMultiSelectChange}
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    minHeight: '120px'
+                  }}
+                >
+                  {competitionTypes.map(type => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+                <p style={{ 
+                  color: colors.muted,
+                  fontSize: '0.85rem',
+                  marginTop: '0.5rem'
+                }}>Hold Ctrl/Cmd to select multiple types</p>
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Past Competitions</label>
+                <select
+                  name="past_competition_ids"
+                  multiple
+                  value={formData.past_competition_ids}
+                  onChange={handleMultiSelectChange}
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    minHeight: '120px'
+                  }}
+                >
+                  {pastCompetitions.map(comp => (
+                    <option key={comp.id} value={comp.id}>{comp.name}</option>
+                  ))}
+                </select>
+                <p style={{ 
+                  color: colors.muted,
+                  fontSize: '0.85rem',
+                  marginTop: '0.5rem'
+                }}>Hold Ctrl/Cmd to select multiple competitions</p>
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Preferred Team Roles</label>
+                <input
+                  type="text"
+                  name="preferred_team_roles"
+                  value={formData.preferred_team_roles}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem'
+                  }}
+                  placeholder="E.g., Developer, Designer, Leader, etc."
+                />
+              </motion.div>
+
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Emergency Contact Name</label>
                   <input
                     type="text"
@@ -1259,19 +1630,22 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
                   }}>Emergency Contact Number</label>
                   <input
                     type="tel"
@@ -1283,27 +1657,96 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem'
-              }}>
-                <div>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Hobbies</label>
+                <input
+                  type="text"
+                  name="hobbies"
+                  value={formData.hobbies}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem'
+                  }}
+                  placeholder="Your hobbies and interests"
+                />
+              </motion.div>
+
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <label style={{ 
+                  display: 'block',
+                  color: colors.text,
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
+                }}>Career Goal</label>
+                <textarea
+                  name="career_goal"
+                  value={formData.career_goal}
+                  onChange={handleChange}
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.backgroundLight,
+                    color: colors.text,
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                  placeholder="Describe your career aspirations"
+                />
+              </motion.div>
+
+              <motion.div 
+                variants={containerVariants}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>LinkedIn</label>
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
+                  }}>LinkedIn Profile</label>
                   <input
                     type="url"
                     name="linkedin"
@@ -1314,21 +1757,24 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
-                    placeholder="https://linkedin.com/..."
+                    placeholder="https://linkedin.com/in/yourprofile"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>GitHub</label>
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
+                  }}>GitHub Profile</label>
                   <input
                     type="url"
                     name="github"
@@ -1339,21 +1785,24 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
-                    placeholder="https://github.com/..."
+                    placeholder="https://github.com/yourusername"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label style={{ 
                     display: 'block',
                     color: colors.text,
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}>Portfolio</label>
+                    marginBottom: '0.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '500'
+                  }}>Portfolio Website</label>
                   <input
                     type="url"
                     name="portfolio"
@@ -1364,97 +1813,27 @@ const StudentProfileForm = () => {
                       backgroundColor: colors.backgroundLight,
                       color: colors.text,
                       border: `1px solid ${colors.muted}`,
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      outline: 'none'
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.95rem'
                     }}
                     placeholder="https://yourportfolio.com"
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: '1rem'
-              }}>
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
-                    border: `1px solid ${colors.accent}`,
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.backgroundLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  style={{
-                    backgroundColor: colors.accent,
-                    color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.accentLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = colors.accent}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Review and Submit */}
-          {step === 4 && (
-            <div style={{ 
-              backgroundColor: colors.background,
-              padding: '1.5rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{ 
-                color: colors.text,
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: colors.accent,
-                  color: colors.text,
-                  borderRadius: '50%',
-                  fontSize: '0.875rem'
-                }}>4</span>
-                Review and Submit
-              </h2>
-
-              <div style={{ marginBottom: '1.5rem' }}>
+              <motion.div 
+                variants={itemVariants}
+                style={{ marginBottom: '1.5rem' }}
+              >
                 <label style={{ 
                   display: 'block',
                   color: colors.text,
-                  marginBottom: '0.5rem',
-                  fontSize: '0.875rem'
+                  marginBottom: '0.75rem',
+                  fontSize: '0.95rem',
+                  fontWeight: '500'
                 }}>Profile Picture</label>
                 <input
                   type="file"
@@ -1463,224 +1842,103 @@ const StudentProfileForm = () => {
                   accept="image/*"
                   style={{
                     width: '100%',
+                    backgroundColor: colors.backgroundLight,
                     color: colors.text,
-                    marginBottom: '1rem'
+                    border: `1px solid ${colors.muted}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.95rem'
                   }}
                 />
-                {existingProfile?.profile_picture && !formData.profile_picture && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Current Profile Picture:</p>
-                    <img 
-                      src={`${DJANGO_BASE_URL}${existingProfile.profile_picture}`} 
-                      alt="Current Profile" 
-                      style={{ 
-                        maxWidth: '150px', 
-                        maxHeight: '150px',
-                        borderRadius: '8px',
-                        marginTop: '0.5rem'
-                      }} 
-                    />
-                  </div>
-                )}
-              </div>
+              </motion.div>
 
-              <div style={{ 
-                backgroundColor: colors.backgroundLight,
-                padding: '1rem',
-                borderRadius: '8px',
-                marginBottom: '1rem'
-              }}>
-                <h3 style={{ 
-                  color: colors.text,
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                  borderBottom: `1px solid ${colors.muted}`,
-                  paddingBottom: '0.5rem'
-                }}>
-                  Personal Information
-                </h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
+              <motion.div
+                variants={containerVariants}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '2rem',
                   gap: '1rem'
-                }}>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Full Name</p>
-                    <p style={{ color: colors.text }}>{formData.full_name || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Date of Birth</p>
-                    <p style={{ color: colors.text }}>{formData.date_of_birth || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Gender</p>
-                    <p style={{ color: colors.text }}>{formData.gender || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Phone Number</p>
-                    <p style={{ color: colors.text }}>{formData.phone_number || 'Not provided'}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ 
-                backgroundColor: colors.backgroundLight,
-                padding: '1rem',
-                borderRadius: '8px',
-                marginBottom: '1rem'
-              }}>
-                <h3 style={{ 
-                  color: colors.text,
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                  borderBottom: `1px solid ${colors.muted}`,
-                  paddingBottom: '0.5rem'
-                }}>
-                  Education Information
-                </h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '1rem'
-                }}>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Education Level</p>
-                    <p style={{ color: colors.text }}>{formData.education_level || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Department</p>
-                    <p style={{ color: colors.text }}>{formData.department || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Year of Study</p>
-                    <p style={{ color: colors.text }}>{formData.year_of_study || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: colors.muted, fontSize: '0.875rem' }}>GPA</p>
-                    <p style={{ color: colors.text }}>{formData.gpa || 'Not provided'}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ 
-                backgroundColor: colors.backgroundLight,
-                padding: '1rem',
-                borderRadius: '8px',
-                marginBottom: '1.5rem'
-              }}>
-                <h3 style={{ 
-                  color: colors.text,
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                  borderBottom: `1px solid ${colors.muted}`,
-                  paddingBottom: '0.5rem'
-                }}>
-                  Skills and Preferences
-                </h3>
-                <div>
-                  <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Skills</p>
-                  <div style={{ 
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {formData.skill_ids.length > 0 ? (
-                      skills
-                        .filter(skill => formData.skill_ids.includes(skill.id))
-                        .map(skill => (
-                          <span key={skill.id} style={{
-                            backgroundColor: colors.accent,
-                            color: colors.text,
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem'
-                          }}>
-                            {skill.name}
-                          </span>
-                        ))
-                    ) : (
-                      <p style={{ color: colors.text }}>No skills selected</p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <p style={{ color: colors.muted, fontSize: '0.875rem' }}>Preferred Competition Types</p>
-                  <div style={{ 
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {formData.competition_type_ids.length > 0 ? (
-                      competitionTypes
-                        .filter(type => formData.competition_type_ids.includes(type.id))
-                        .map(type => (
-                          <span key={type.id} style={{
-                            backgroundColor: colors.secondary,
-                            color: colors.text,
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem'
-                          }}>
-                            {type.name}
-                          </span>
-                        ))
-                    ) : (
-                      <p style={{ color: colors.text }}>No competition types selected</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: '1.5rem'
-              }}>
-                <button
+                }}
+              >
+                <motion.button
                   type="button"
                   onClick={prevStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: colors.backgroundLight,
                     color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
-                    border: `1px solid ${colors.accent}`,
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.muted}`,
                     cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s'
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.backgroundLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  Back
-                </button>
-                <button
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                  </svg>
+                  Previous
+                </motion.button>
+                <motion.button
                   type="submit"
+                  disabled={isSubmitting}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
-                    backgroundColor: colors.accent,
+                    backgroundColor: isSubmitting ? colors.muted : colors.accent,
                     color: colors.text,
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '6px',
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
                     border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s'
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: `0 4px 6px rgba(0, 0, 0, 0.1)`
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.accentLight}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = colors.accent}
                 >
-                  {existingProfile ? 'Update Profile' : 'Create Profile'}
-                </button>
-              </div>
-            </div>
+                  {isSubmitting ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        style={{ display: 'inline-block' }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M8 0a8 8 0 1 0 8 8A8 8 0 0 0 8 0zm0 2a6 6 0 1 1-6 6 6 6 0 0 1 6-6z" opacity=".5"/>
+                          <path d="M8 0a8 8 0 0 1 7.936 6.5h-2.2A6 6 0 0 0 8 2z"/>
+                        </svg>
+                      </motion.span>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {existingProfile ? 'Update Profile' : 'Create Profile'}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                        <path d="M1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 1 0v-13a.5.5 0 0 0-.5-.5z"/>
+                      </svg>
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
+            </motion.div>
           )}
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
