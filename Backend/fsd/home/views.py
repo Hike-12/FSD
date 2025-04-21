@@ -60,6 +60,7 @@ tfidf_vectorizer = joblib.load(os.path.join(MODEL_PATH, "tfidf_vectorizer.joblib
 
 # Fix model loading code
 mentor_model_data = joblib.load(os.path.join(MODEL_PATH, "mentor_recommender_model.joblib"))
+
 if isinstance(mentor_model_data, tuple):
     print(f"Loading mentor model from tuple with {len(mentor_model_data)} elements")
     # Element 0 is the TfidfVectorizer
