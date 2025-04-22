@@ -619,7 +619,25 @@ def compute_combined_features(student):
 
 def get_recommendations(student_id, top_n=100):
     print("This is in get_recommendations", student_id)
+    # Add at the start of get_recommendations
+    print(f"Checking user ID {student_id}")
     try:
+    #     user = CustomUser.objects.get(id=student_id)
+    #     print(f"Found user: {user.username}, has_profile: {hasattr(user, 'student_profile')}")
+    #     if hasattr(user, 'student_profile'):
+    #         print(f"Student profile ID: {user.student_profile.id}")
+    # except CustomUser.DoesNotExist:
+    #     print(f"No user with ID {student_id}")
+        try:
+            user = CustomUser.objects.get(id=student_id)
+            if hasattr(user, 'student_profile'):
+                # If this is a user ID, get the student profile ID
+                student_profile_id = user.student_profile.id
+                print(f"Converting user ID {student_id} to student profile ID {student_profile_id}")
+                student_id = student_profile_id
+        except CustomUser.DoesNotExist:
+            # If not a user ID, assume it's already a student profile ID
+            pass
         # Fetch all students from the database
         students_data = StudentProfile.objects.all().values(
             'id', 'full_name', 'date_of_birth', 'gender', 'phone_number',
@@ -637,6 +655,7 @@ def get_recommendations(student_id, top_n=100):
         # Compute combined_features dynamically
         students_df['combined_features'] = students_df.apply(compute_combined_features, axis=1)
 
+        all_students = students_df.to_dict(orient="records")
         # Ensure data type consistency
         student_id = str(student_id)
         students_df['id'] = students_df['id'].astype(str)
@@ -647,7 +666,7 @@ def get_recommendations(student_id, top_n=100):
 
         if student_row.empty:
             print(f"No student found with ID {student_id}")
-            return []
+            return all_students
 
         # Debug: Print the combined features for the student
         combined_features = student_row['combined_features'].values
@@ -655,17 +674,32 @@ def get_recommendations(student_id, top_n=100):
 
         # Transform the student's features into a TF-IDF vector
         student_features = tfidf_vectorizer.transform(combined_features)
-
-        # Use the Nearest Neighbors model to find similar students
-        distances, indices = nn_model.kneighbors(student_features, n_neighbors=top_n)
-
-        # Retrieve the recommended students
-        recommended_students = students_df.iloc[indices[0]].to_dict(orient="records")
-        print("Recommended students:", recommended_students)
-        return recommended_students
+        try:
+            # Transform all student features 
+            all_student_features = tfidf_vectorizer.transform(students_df['combined_features'])
+            
+            # Compute similarity directly instead of using pre-trained model
+            from sklearn.metrics.pairwise import cosine_similarity
+            similarities = cosine_similarity(student_features, all_student_features).flatten()
+            
+            # Get the student's index to exclude them from recommendations
+            student_idx = students_df[students_df['id'] == student_id].index[0]
+            similarities[student_idx] = 0  # Exclude the student from their own recommendations
+            
+            # Get indices of top N most similar students
+            top_indices = similarities.argsort()[-top_n:][::-1]
+            
+            # Get the recommended students
+            recommended_students = students_df.iloc[top_indices].to_dict(orient="records")
+            print("Recommended students:", recommended_students)
+            return recommended_students
+    
+        except Exception as e:
+            print(f"Error in get_recommendations: {e}")
+            return all_students
     except Exception as e:
         print(f"Error in get_recommendations: {e}")
-        return []
+        return all_students
     
 def clean_field_value(field_name, value):
     boolean_fields = ['is_active']
