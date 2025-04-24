@@ -18,10 +18,8 @@ import TeamDetail from "./components/Competitions/TeamDetail";
 import StudentCompetitions from "./components/Students/StudentCompetitions";
 import StudentTeams from "./components/Students/StudentTeams";
 import HostCompetitions from "./components/Hosts/HostCompetitions";
-import MentorNavbar from "./components/Mentor/MentorNavbar";
 import StudentNavbar from "./components/Students/StudentNavbar";
 import HostNavbar from "./components/Hosts/HostNavbar";
-import MentorSidebar from "./components/Mentor/MentorSidebar";
 import StudentSidebar from "./components/Students/StudentSidebar";
 import HostSidebar from "./components/Hosts/HostSidebar";
 import Layout from "./components/Students/StudentNavbar";
@@ -37,6 +35,7 @@ import MentorNotifications from "./components/Mentor/Notifications";
 import React from 'react';
 import VoiceControl from './components/VoiceControl/VoiceControl';
 import AnalyticsPage from "./components/Analytics";
+import GuestNavbar from "./components/GuestNavbar/GuestNavbar";
 
 function App() {
     const userRole = localStorage.getItem("role"); 
@@ -55,19 +54,7 @@ function App() {
         return null;
       };
 
-    const handleVoiceCommand = (command) => {
-        console.log('Received command:', command);
-    
-        // Example: Perform actions based on the command
-        if (command.toLowerCase().includes('hello')) {
-          alert('Hello to you too!');
-        } else if (command.toLowerCase().includes('open settings')) {
-          console.log('Opening settings...');
-          // Add logic to open settings
-        } else {
-          console.log('Command not recognized.');
-        }
-      };
+ 
 
     return (
         <>

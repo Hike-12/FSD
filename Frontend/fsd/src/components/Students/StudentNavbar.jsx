@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, Search, Bell, LogOut, Users, Trophy, MessageSquare, User } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Users, Trophy, MessageSquare, User } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,10 +33,8 @@ const StudentNavbar = ({ children }) => {
       const currentScrollY = mainElement.scrollTop;
       
       if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        // Scrolling down
         setVisible(false);
       } else if (currentScrollY < lastScrollY) {
-        // Scrolling up
         setVisible(true);
       }
       
@@ -55,15 +53,19 @@ const StudentNavbar = ({ children }) => {
   };
 
   const navItems = [
-    { path: "students", icon: Users, label: " Students" },
-    { path: "mentors", icon: User, label: " Mentors" },
-    { path: "competitions", icon: Trophy, label: " Competitions" },
+    { path: "students", icon: Users, label: "Students" },
+    { path: "mentors", icon: User, label: "Mentors" },
+    { path: "competitions", icon: Trophy, label: "Competitions" },
   ];
 
   const rightSidebarItems = [
     { path: "my-mentors", icon: User, label: "My Mentors" },
     { path: "my-team", icon: Users, label: "My Team" },
     { path: "my-chat", icon: MessageSquare, label: "My Chat" },
+    { path: "student-teams", icon: Users, label: "Student Teams" },
+    { path: "student-competitions", icon: Trophy, label: "Student Competitions" },
+    { path: "student-collaborators", icon: Users, label: "Student Collaborators" },
+    { path: "student-notifications", icon: Bell, label: "Notifications" },
   ];
 
   const rightSidebarVariants = {
@@ -115,50 +117,49 @@ const StudentNavbar = ({ children }) => {
         variants={navbarVariants}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="flex items-center justify-between p-4">
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-[#94a3b8] hover:text-white focus:outline-none"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-
-          {/* Logo or brand */}
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-              StudentHub
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={`/${item.path}`}
-                className="text-[#94a3b8] hover:text-white p-2 rounded-md flex items-center space-x-2 transition-all duration-200 hover:bg-[#1e293b]/50"
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Left side - Mobile menu button and logo */}
+            <div className="flex items-center">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden text-[#94a3b8] hover:text-white mr-4"
               >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
 
-          {/* User profile */}
-          <div className="flex items-center">
-            <button
-              onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-              className="flex items-center text-[#94a3b8] hover:text-white transition-all"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#7c3aed] flex items-center justify-center">
-                <span className="text-sm font-medium">
-                  {user?.name?.charAt(0) || 'U'}
-                </span>
-              </div>
-            </button>
+              {/* Logo */}
+              <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                StudentHub
+              </Link>
+            </div>
+
+            {/* Center - Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={`/${item.path}`}
+                  className="text-[#94a3b8] hover:text-white flex items-center space-x-2 transition-colors"
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Right side - User profile */}
+            <div className="flex items-center">
+              <button
+                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                className="flex items-center justify-center"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#7c3aed] flex items-center justify-center text-white font-medium">
+                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -216,18 +217,22 @@ const StudentNavbar = ({ children }) => {
                   <h2 className="text-xl font-bold text-white">My Account</h2>
                   <button
                     onClick={() => setRightSidebarOpen(false)}
-                    className="text-[#94a3b8] hover:text-white transition-colors"
+                    className="text-[#94a3b8] hover:text-white"
                   >
                     <X className="w-6 h-6" />
                   </button>
                 </div>
 
                 <div className="p-4 border-b border-[#1F2A2A]">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#7c3aed] flex items-center justify-center">
-                      <span className="text-lg font-medium">
-                        {user?.name?.charAt(0) || 'U'}
-                      </span>
+                  <div 
+                    className="flex items-center space-x-3 cursor-pointer"
+                    onClick={() => {
+                      setRightSidebarOpen(false);
+                      navigate('/student-profile');
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#7c3aed] flex items-center justify-center text-white font-medium">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
                       <h3 className="font-medium text-white">{user?.name || 'User'}</h3>
