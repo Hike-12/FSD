@@ -36,7 +36,7 @@ import React from 'react';
 import VoiceControl from './components/VoiceControl/VoiceControl';
 import AnalyticsPage from "./components/Analytics";
 import GuestNavbar from "./components/GuestNavbar/GuestNavbar";
-
+import MentorNavbar from "./components/Mentor/MentorNavbar";
 function App() {
     const userRole = localStorage.getItem("role"); 
 
@@ -63,7 +63,7 @@ function App() {
 
                 <Layout navbar={getNavbar()} sidebar={getSidebar()}>
                     <Routes>
-
+                        <Route path="/mentor-navbar" element={<MentorNavbar />} />
                         {/* LANDING PAGE */}
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/landing" element={<LandingPageAliqyaan />} />
