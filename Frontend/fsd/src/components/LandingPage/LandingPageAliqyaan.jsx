@@ -93,7 +93,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
    return (
      <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen">
        {/* Enhanced fixed header */}
-       <motion.header
+       {/* <motion.header
          className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
            scrolled 
              ? "py-2 bg-[#030718]/90 backdrop-blur-lg shadow-lg" 
@@ -138,7 +138,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
              </div>
            </div>
          </div>
-       </motion.header>
+       </motion.header> */}
  
        {/* Hero section with globe */}
        <Dharti onCitySelect={handleCitySelect} />
