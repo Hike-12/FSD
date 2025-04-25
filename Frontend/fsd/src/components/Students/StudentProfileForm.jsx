@@ -138,36 +138,95 @@ const StudentProfileForm = () => {
           
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
-            console.log('Existing profile data: part 2', profileData);
+            console.log('Existing profile data received:', profileData);
             setExistingProfile(profileData);
-            const skillIds = profileData.skills
-  ? skillsData.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id)
-  : [];
-console.log('Mapped skill IDs:', skillIds);
-
-const competitionTypeIds = profileData.preferred_competition_types
-  ? competitionTypesData.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id)
-  : [];
-console.log('Mapped competition type IDs:', competitionTypeIds);
-
-const pastCompetitionIds = profileData.past_competitions
-  ? pastCompetitionsData.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id)
-  : [];
-console.log('Mapped past competition IDs:', pastCompetitionIds);
+            
+            // Log data types for debugging
+            console.log('Skills data type:', Array.isArray(profileData.skills) ? 'Array' : typeof profileData.skills);
+            console.log('Competition types data type:', Array.isArray(profileData.preferred_competition_types) ? 'Array' : typeof profileData.preferred_competition_types);
+            console.log('Past competitions data type:', Array.isArray(profileData.past_competitions) ? 'Array' : typeof profileData.past_competitions);
+            
+            // Safely map skills (handle both array of strings or array of objects)
+            const skillIds = [];
+            if (Array.isArray(profileData.skills) && profileData.skills.length > 0) {
+              profileData.skills.forEach(skill => {
+                const foundSkill = skillsData.find(s => 
+                  (typeof skill === 'string' && (s.name === skill || s.id.toString() === skill)) ||
+                  (typeof skill === 'object' && s.id === skill.id)
+                );
+                if (foundSkill) skillIds.push(foundSkill.id);
+              });
+            }
+            console.log('Mapped skill IDs:', skillIds);
+            
+            // Safely map competition types
+            const competitionTypeIds = [];
+            if (Array.isArray(profileData.preferred_competition_types) && profileData.preferred_competition_types.length > 0) {
+              profileData.preferred_competition_types.forEach(type => {
+                const foundType = competitionTypesData.find(t => 
+                  (typeof type === 'string' && (t.name === type || t.id.toString() === type)) ||
+                  (typeof type === 'object' && t.id === type.id)
+                );
+                if (foundType) competitionTypeIds.push(foundType.id);
+              });
+            }
+            console.log('Mapped competition type IDs:', competitionTypeIds);
+            
+            // Safely map past competitions
+            const pastCompetitionIds = [];
+            if (Array.isArray(profileData.past_competitions) && profileData.past_competitions.length > 0) {
+              profileData.past_competitions.forEach(comp => {
+                const foundComp = pastCompetitionsData.find(c => 
+                  (typeof comp === 'string' && (c.name === comp || c.id.toString() === comp)) ||
+                  (typeof comp === 'object' && c.id === comp.id)
+                );
+                if (foundComp) pastCompetitionIds.push(foundComp.id);
+              });
+            }
+            console.log('Mapped past competition IDs:', pastCompetitionIds);
+            
+            // Create prefilled data with proper fallbacks for all fields
             const prefilledData = {
-              ...profileData,
-              skill_ids: profileData.skills ? 
-                skillsData.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id) : [],
-              competition_type_ids: profileData.preferred_competition_types ? 
-                competitionTypesData.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id) : [],
-              past_competition_ids: profileData.past_competitions ? 
-                pastCompetitionsData.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id) : [],
-              profile_picture: null
+              full_name: profileData.full_name || '',
+              date_of_birth: profileData.date_of_birth || '',
+              gender: profileData.gender || '',
+              phone_number: profileData.phone_number || '',
+              address: profileData.address || '',
+              country: profileData.country || '',
+              state: profileData.state || '',
+              city: profileData.city || '',
+              postal_code: profileData.postal_code || '',
+              education_level: profileData.education_level || '',
+              department: profileData.department || '',
+              year_of_study: profileData.year_of_study || '',
+              gpa: profileData.gpa || '',
+              skill_ids: skillIds,
+              extracurricular_activities: profileData.extracurricular_activities || '',
+              achievements: profileData.achievements || '',
+              certifications: profileData.certifications || '',
+              internships: profileData.internships || '',
+              projects: profileData.projects || '',
+              competition_type_ids: competitionTypeIds,
+              preferred_team_roles: profileData.preferred_team_roles || '',
+              past_competition_ids: pastCompetitionIds,
+              emergency_contact_name: profileData.emergency_contact_name || '',
+              emergency_contact_number: profileData.emergency_contact_number || '',
+              hobbies: profileData.hobbies || '',
+              career_goal: profileData.career_goal || '',
+              languages_spoken: profileData.languages_spoken || '',
+              learning_style: profileData.learning_style || '',
+              linkedin: profileData.linkedin || '',
+              github: profileData.github || '',
+              portfolio: profileData.portfolio || '',
+              profile_picture: null,
+              is_active: profileData.is_active !== false
             };
+            
             console.log('Prefilled form data:', prefilledData);
             setFormData(prefilledData);
           }
         } catch (error) {
+          console.error('Error fetching profile:', error);
           console.log('No existing profile found');
         }
       } catch (error) {
