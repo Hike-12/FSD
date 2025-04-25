@@ -114,13 +114,13 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
                </h1>
              </div>
              
-             <div className="hidden md:flex items-center space-x-8">
+             {/* <div className="hidden md:flex items-center space-x-8">
                <a href="/students" className="text-sm text-blue-100 hover:text-white transition-colors">Students</a>
                <a href="/mentors" className="text-sm text-blue-100 hover:text-white transition-colors">Mentors</a>
                <a href="/competitions" className="text-sm text-blue-100 hover:text-white transition-colors">Competitions</a>
                <button onClick={() => navigate('/contact')} className="text-sm text-blue-100 hover:text-white transition-colors">Contact</button>
              </div>
-             
+              */}
              <div className="flex items-center space-x-4">
                <button onClick={() => navigate('/login')} className="hidden md:block px-4 py-2 text-sm text-blue-100 hover:text-white border border-blue-400/30 rounded-lg hover:border-blue-400/60 transition-all duration-300">
                  Sign In

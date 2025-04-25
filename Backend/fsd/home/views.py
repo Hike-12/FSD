@@ -885,7 +885,8 @@ def student_profile(request):
     print("Request content type:", request.content_type)
     print("User ID:", request.user.id)
     print("User:", request.user)
-
+    print("User ka profile:", StudentProfile.objects.filter(user=request.user).exists())
+    print("User ka profile:", StudentProfile.objects.filter(user=request.user).values())
     if request.method == 'GET':
         try:
             profile = StudentProfile.objects.get(user=request.user)
@@ -983,6 +984,7 @@ def create_or_update_student_profile(request):
         return JsonResponse(result, status=201 if created else 200)
 
     except Exception as e:
+        print(f"Error creating/updating student profile: {str(e)}")
         return JsonResponse({'error': str(e)}, status=400)
 
 @api_token_required
@@ -1288,13 +1290,15 @@ def create_or_update_host_profile(request):
 @require_http_methods(["GET"])
 @csrf_exempt
 def get_host_competitions(request):
+    print("Request is:", request)
+    print("User is:", request.user)
     try:
         # Get the logged-in host's profile
         host = Host.objects.get(user=request.user)
-
+        print("Host profile:", host)
         # Fetch competitions created by the host
         competitions = Competition.objects.filter(created_by=request.user)
-
+        print("Competitions:", competitions)
         # Prepare response data
         competition_list = [
             {
@@ -1312,8 +1316,10 @@ def get_host_competitions(request):
         return JsonResponse({'competitions': competition_list}, status=200)
 
     except Host.DoesNotExist:
+        print("Host profile not found for this user.")
         return JsonResponse({'error': 'Host profile not found'}, status=404)
     except Exception as e:
+        print(f"Error fetching host competitions: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
     
 ######################################################################################################################################################

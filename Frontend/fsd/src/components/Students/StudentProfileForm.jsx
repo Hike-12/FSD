@@ -138,8 +138,22 @@ const StudentProfileForm = () => {
           
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
+            console.log('Existing profile data: part 2', profileData);
             setExistingProfile(profileData);
-            
+            const skillIds = profileData.skills
+  ? skillsData.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id)
+  : [];
+console.log('Mapped skill IDs:', skillIds);
+
+const competitionTypeIds = profileData.preferred_competition_types
+  ? competitionTypesData.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id)
+  : [];
+console.log('Mapped competition type IDs:', competitionTypeIds);
+
+const pastCompetitionIds = profileData.past_competitions
+  ? pastCompetitionsData.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id)
+  : [];
+console.log('Mapped past competition IDs:', pastCompetitionIds);
             const prefilledData = {
               ...profileData,
               skill_ids: profileData.skills ? 
@@ -150,7 +164,7 @@ const StudentProfileForm = () => {
                 pastCompetitionsData.filter(comp => profileData.past_competitions.includes(comp.name)).map(comp => comp.id) : [],
               profile_picture: null
             };
-            
+            console.log('Prefilled form data:', prefilledData);
             setFormData(prefilledData);
           }
         } catch (error) {

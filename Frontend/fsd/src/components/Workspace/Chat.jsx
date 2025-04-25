@@ -22,7 +22,15 @@ const Chat = () => {
   const [isMicEnabled, setIsMicEnabled] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenVideoSrc, setFullScreenVideoSrc] = useState(null);
+  useEffect(() => {
+    console.log("Messages are in use effect", messages);
+    messages.map((msg) => {
+      console.log("Message content:", msg.content);
+      console.log("Message sender:", msg.sender);
+      console.log("Message timestamp:", msg.timestamp);
+    });
 
+  }, [messages]);
   const handleVideoClick = (videoElement) => {
     if (videoElement) {
       if (videoElement.srcObject) {

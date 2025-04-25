@@ -61,9 +61,10 @@ const StudentNavbar = ({ children }) => {
   ];
 
   const rightSidebarItems = [
-    { path: "my-mentors", icon: User, label: "My Mentors" },
-    { path: "my-team", icon: Users, label: "My Team" },
-    { path: "my-chat", icon: MessageSquare, label: "My Chat" },
+    { path: "student-mentors", icon: User, label: "My Mentors" },
+    { path: "student-collaborators", icon: User, label: "My Collaborators" },
+    { path: "student-team", icon: Users, label: "My Team" },
+    // { path: "student-chat", icon: MessageSquare, label: "My Chat" },
   ];
 
   const rightSidebarVariants = {
