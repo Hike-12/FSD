@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
 import { DJANGO_BASE_URL } from "@/lib/utils";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // TypewriterEffectSmooth Component
 const TypewriterEffectSmooth = ({ words, className }) => {
@@ -80,6 +81,8 @@ const CompetitionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [competitionsByDate, setCompetitionsByDate] = useState({});
 
   const words = [
     { text: "Discover" },
@@ -119,6 +122,42 @@ const CompetitionsPage = () => {
     fetchCompetitions();
   }, []);
 
+  // Helper function to format dates consistently
+  const formatDateForComparison = (dateString) => {
+    return new Date(dateString).toISOString().split('T')[0];
+  };
+
+  // Group competitions by their start dates
+  useEffect(() => {
+    const groupedCompetitions = {};
+    competitions.forEach(comp => {
+      const startDate = formatDateForComparison(comp.start_date);
+      if (!groupedCompetitions[startDate]) {
+        groupedCompetitions[startDate] = [];
+      }
+      groupedCompetitions[startDate].push(comp);
+    });
+    setCompetitionsByDate(groupedCompetitions);
+  }, [competitions]);
+
+  // Get competitions starting on the selected date
+  const selectedDateFormatted = formatDateForComparison(selectedDate);
+  const competitionsOnSelectedDate = competitionsByDate[selectedDateFormatted] || [];
+
+  // Function to highlight only start dates of competitions on the calendar
+  const highlightStartDates = (date) => {
+    const dateStr = formatDateForComparison(date);
+    return competitionsByDate[dateStr] ? "highlight-start-date" : undefined;
+  };
+
+  // Get today's date in the same format as comp.start_date
+  const today = formatDateForComparison(new Date());
+  
+  // Filter competitions to only show those starting today
+  const todaysCompetitions = competitions.filter(comp => 
+    formatDateForComparison(comp.start_date) === today
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050A15] via-[#0A1428] to-[#050A15] text-[#f8fafc]">
       
@@ -151,16 +190,15 @@ const CompetitionsPage = () => {
           </div>
         </div>
 
-        {/* Competitions List Section */}
+        {/* Calendar Section */}
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-2">
-              Featured Competitions
+              Competition Calendar
             </h2>
             <div className="h-1 w-24 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] mx-auto rounded-full"></div>
             <p className="mt-4 text-[#94a3b8] max-w-2xl mx-auto">
-              Push your boundaries, collaborate with peers, and build your portfolio 
-              with these curated development challenges.
+              Browse competitions by their start dates. Click on a date to see what competitions begin that day.
             </p>
           </div>
 
@@ -173,15 +211,105 @@ const CompetitionsPage = () => {
               <strong className="font-bold">Error: </strong>
               <span className="block sm:inline">{error}</span>
             </div>
-          ) : competitions.length === 0 ? (
-            <div className="text-center py-12 bg-[#0A1428] rounded-lg border border-[#1F2A2A]">
-              <svg className="mx-auto h-12 w-12 text-[#94a3b8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 20h.01" />
-              </svg>
-              <h3 className="mt-2 text-lg font-medium text-white">No Competitions</h3>
-              <p className="mt-1 text-[#94a3b8]">There are no competitions available at the moment.</p>
-            </div>
           ) : (
+            <div className="mb-16">
+              <div className="bg-[#0A1428] border border-[#1F2A2A] p-6 rounded-xl shadow-lg">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="w-full md:w-auto">
+                    <DatePicker
+                      selected={selectedDate}
+                      onChange={date => setSelectedDate(date)}
+                      inline
+                      className="calendar-dark"
+                      dayClassName={date => 
+                        highlightStartDates(date) 
+                          ? "highlight-start-date" 
+                          : undefined
+                      }
+                      renderCustomHeader={({
+                        date,
+                        changeYear,
+                        changeMonth,
+                        decreaseMonth,
+                        increaseMonth,
+                        prevMonthButtonDisabled,
+                        nextMonthButtonDisabled
+                      }) => (
+                        <div className="flex items-center justify-between px-2 py-2">
+                          <button 
+                            onClick={decreaseMonth} 
+                            disabled={prevMonthButtonDisabled}
+                            className="text-gray-400 hover:text-white disabled:opacity-50"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                          </button>
+                          <div className="text-lg text-white font-semibold">
+                            {date.toLocaleString('default', { month: 'long' })} {date.getFullYear()}
+                          </div>
+                          <button 
+                            onClick={increaseMonth}
+                            disabled={nextMonthButtonDisabled}
+                            className="text-gray-400 hover:text-white disabled:opacity-50"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  <div className="w-full md:w-2/3 bg-[#050A15] border border-[#1F2A2A] rounded-xl p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">
+                      Competitions Starting on {selectedDate.toLocaleDateString()}
+                    </h3>
+                    
+                    {competitionsOnSelectedDate.length > 0 ? (
+                      <div className="space-y-4">
+                        {competitionsOnSelectedDate.map(comp => (
+                          <div key={comp.id} className="flex items-center gap-4 p-3 border border-[#1F2A2A] rounded-lg hover:bg-[#0A1428] transition-colors">
+                            <div className="w-12 h-12 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                              {comp.name.charAt(0)}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-white font-semibold">{comp.name}</h4>
+                              <p className="text-sm text-gray-400 line-clamp-1">{comp.description}</p>
+                            </div>
+                            <Link 
+                              to={`/competitions/${comp.id}`}
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                            >
+                              View
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <svg className="mx-auto h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="mt-2 text-gray-400">No competitions starting on this day</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* All Competitions List */}
+          <div className="mt-20 text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              All Competitions
+            </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] mx-auto rounded-full"></div>
+          </div>
+
+          {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {competitions.map((comp) => (
                 <div key={comp.id} className="bg-gradient-to-b from-[#050A15] to-[#0A1428] rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-[#1F2A2A] hover:border-[#3b82f6]">
@@ -195,6 +323,11 @@ const CompetitionsPage = () => {
                     )}
                     <div className="absolute top-4 right-4 bg-[#050A15]/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-white">
                       {comp.difficulty}
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent py-2 px-4">
+                      <div className="text-white text-sm font-semibold">
+                        Starts: {new Date(comp.start_date).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
                   <div className="p-6">
@@ -313,6 +446,40 @@ const CompetitionsPage = () => {
           </div>
         </footer>
       </div>
+      <style jsx global>{`
+        .calendar-dark .react-datepicker {
+          background-color: #0A1428;
+          border-color: #1F2A2A;
+          font-family: inherit;
+        }
+        .calendar-dark .react-datepicker__header {
+          background-color: #050A15;
+          border-color: #1F2A2A;
+        }
+        .calendar-dark .react-datepicker__current-month,
+        .calendar-dark .react-datepicker__day-name {
+          color: white;
+        }
+        .calendar-dark .react-datepicker__day {
+          color: #94a3b8;
+        }
+        .calendar-dark .react-datepicker__day:hover {
+          background-color: #1e293b;
+        }
+        .calendar-dark .react-datepicker__day--selected {
+          background-color: #2563eb;
+          color: white;
+        }
+        .calendar-dark .react-datepicker__day--keyboard-selected {
+          background-color: #3b82f6;
+          color: white;
+        }
+        .calendar-dark .highlight-start-date {
+          background-color: #2563eb;
+          color: white;
+          border-radius: 50%;
+        }
+      `}</style>
     </div>
   );
 };

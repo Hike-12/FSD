@@ -326,19 +326,29 @@ const CreateCompetition = () => {
 
       <div className="form-group">
         <label className="block text-sm font-medium text-teal-300 mb-2 flex items-center">
-          <FiCalendar className="mr-2 text-teal-400" /> Registration Deadline *
+          <FiCalendar className="mr-2 text-teal-400" /> Registration Deadline * 
+          <span className="ml-2 text-xs text-gray-400">(Select a date)</span>
         </label>
-        <DatePicker
-          selected={formData.registration_deadline ? new Date(formData.registration_deadline) : null}
-          onChange={(date) => handleDateChange(date, 'registration_deadline')}
-          minDate={new Date()}
-          maxDate={formData.start_date ? new Date(formData.start_date) : null}
-          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white"
-          required
-          popperClassName="dark-theme-datepicker"
-          calendarClassName="dark-theme-datepicker"
-          wrapperClassName="w-full"
-        />
+        <div className="relative">
+          <DatePicker
+            selected={formData.registration_deadline ? new Date(formData.registration_deadline) : null}
+            onChange={(date) => handleDateChange(date, 'registration_deadline')}
+            minDate={new Date()}
+            // Removed maxDate constraint completely
+            className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-white cursor-pointer"
+            required
+            popperClassName="dark-theme-datepicker"
+            calendarClassName="dark-theme-datepicker"
+            wrapperClassName="w-full"
+            popperPlacement="bottom-start"
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Click to select date"
+            showPopperArrow={true}
+          />
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <FiCalendar className="text-teal-400" />
+          </div>
+        </div>
       </div>
     </div>
   );
