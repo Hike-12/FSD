@@ -36,32 +36,23 @@ import AnalyticsPage from "./components/Analytics";
 import GuestNavbar from "./components/GuestNavbar/GuestNavbar";
 import MentorNavbar from "./components/Mentor/MentorNavbar";
 import HostNavbar from "./components/Hosts/HostNavbar";
-
+import MentorLandingPage from "./components/Mentor/MentorLandingPage";
 function App() {
     const userRole = localStorage.getItem("role"); 
 
     const getNavbar = () => {
+        if (!userRole) return <GuestNavbar />; // Show GuestNavbar when no user is logged in
         if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <StudentNavbar />;
-        if (userRole === "HOST") return <StudentNavbar />;
+        if (userRole === "MENTOR") return <MentorNavbar />;
+        if (userRole === "HOST") return <HostNavbar />;
         return null;
-      };
-    
-      const getSidebar = () => {
-        if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <StudentNavbar />;
-        if (userRole === "HOST") return <StudentNavbar />;
-        return null;
-      };
-
- 
+    };
 
     return (
         <>
         <BrowserRouter>
             <AuthProvider>
-
-                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
+                <Layout navbar={getNavbar()} >
                     <Routes>
                         <Route path="/mentor-navbar" element={<MentorNavbar />} />
                         <Route path="/host-navbar" element={<HostNavbar />}/>
@@ -86,6 +77,7 @@ function App() {
                         <Route path="/student-notifications" element={<StudentNotifications />} />
 
                         {/* MENTORS */}
+                        <Route path="/mentor-landing" element={<MentorLandingPage />} />
                         <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                         <Route path="/mentors" element={<AllMentors />} />
                         <Route path="/mentor/:id" element={<MentorProfile />} />
@@ -114,7 +106,6 @@ function App() {
                 </Layout>
             </AuthProvider>
         </BrowserRouter>
-     
         </>
     );
 }
