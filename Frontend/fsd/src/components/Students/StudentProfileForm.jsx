@@ -312,7 +312,7 @@ const StudentProfileForm = () => {
         ? 'Profile updated successfully!' 
         : 'Profile created successfully!');
       
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setTimeout(() => navigate('/student-landing'), 2000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ general: error.message || 'An error occurred. Please try again.' });
