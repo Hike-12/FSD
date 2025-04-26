@@ -54,6 +54,7 @@ function StudentLayout() {
       return <MentorNavbar><Outlet /></MentorNavbar>;
     } else if (userRole === "HOST") {
       return <HostNavbar><Outlet /></HostNavbar>;
+      
     } else {
   
       return <LoginRegister />;
@@ -121,7 +122,7 @@ function App() {
               isLoggedIn && userRole === "MANAGEMENT" ? (
                 <Navigate to="/analytics" />
               ) : (
-                <Navigate to="/" />
+                <Navigate to="/analytics" />
               )
             }
           />
