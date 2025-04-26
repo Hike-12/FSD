@@ -67,6 +67,13 @@ const HostCompetitions = () => {
     generateCalendarDays(currentMonth);
   }, [currentMonth, competitions]);
 
+  // Normalize date to midnight for accurate comparisons
+  const normalizeDate = (date) => {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  };
+
   const generateCalendarDays = (month) => {
     const year = month.getFullYear();
     const monthIndex = month.getMonth();
@@ -83,10 +90,14 @@ const HostCompetitions = () => {
 
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, monthIndex, i);
-      const competitionsForDay = competitions.filter(
-        (comp) => date >= comp.start_date && date <= comp.end_date
-      );
-
+      const normalizedDate = normalizeDate(date);
+      
+      // Filter to only show competitions on their start date
+      const competitionsForDay = competitions.filter(comp => {
+        const startDate = normalizeDate(comp.start_date);
+        return normalizedDate.getTime() === startDate.getTime();
+      });
+      
       days.push({
         date,
         isCurrentMonth: true,

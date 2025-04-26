@@ -131,7 +131,7 @@ const MentorNavbar = ({ children }) => {
 
               {/* Logo */}
               <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                MentorHub
+                StudentHub
               </Link>
             </div>
 
@@ -235,7 +235,7 @@ const MentorNavbar = ({ children }) => {
                       {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3 className="font-medium text-white">{user?.name || 'User'}</h3>
+                      <h3 className="font-medium text-white">{user?.username || 'User'}</h3>
                       <p className="text-sm text-[#94a3b8]">{user?.email || 'user@example.com'}</p>
                     </div>
                   </div>
@@ -280,17 +280,19 @@ const MentorNavbar = ({ children }) => {
 
       {/* Page Content */}
       <main 
-        ref={mainRef}
-        className={`flex-1 overflow-y-auto pt-16 md:pt-20 p-4 md:p-6 transition-all duration-300 ${rightSidebarOpen ? 'md:mr-64' : ''}`}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {children}
-        </motion.div>
-      </main>
+  ref={mainRef}
+  className={`flex-1 overflow-y-auto pt-16 md:pt-20 p-4 md:p-6 transition-all duration-300 ${rightSidebarOpen ? 'md:mr-64' : ''}`}
+>
+  {children && (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  )}
+</main>
     </div>
   );
 };

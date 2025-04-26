@@ -128,11 +128,13 @@ def create_user(request):
         }, status=201)
 
     except IntegrityError as e:
+        print(f"IntegrityError: {e}")
         if 'home_customuser.email' in str(e):
             return JsonResponse({'error': 'Email must be unique'}, status=400)
         return JsonResponse({'error': 'Integrity error: ' + str(e)}, status=400)
 
     except Exception as e:
+        print(f"Error in create_user: {e}")
         return JsonResponse({'error': str(e)}, status=400)
 
 @csrf_exempt
@@ -440,19 +442,50 @@ def mentor_detail(request, id):
 @csrf_exempt
 def create_or_update_profile(request):
     try:
-        data = json.loads(request.body)
+        print("Request content type:", request.content_type)
+        data = request.POST
+        files = request.FILES
         profile, created = MentorProfile.objects.get_or_create(user=request.user)
+        print("Profile created:", created)
+        print("data", data)
 
-        profile.bio = data.get('bio', profile.bio)
+        # List all fields you want to update
+        fields = [
+            'full_name', 'date_of_birth', 'gender', 'phone_number', 'address', 'country',
+            'state', 'city', 'postal_code', 'mentor_type', 'department', 'expertise',
+            'years_of_experience', 'current_company', 'current_position', 'linkedin',
+            'github', 'website', 'bio', 'certifications', 'achievements',
+            'languages_spoken', 'availability_status', 'available_days', 'available_times',
+            'max_teams', 'current_teams_count', 'past_mentorship_count', 'is_verified'
+        ]
+
+        for field in fields:
+            if field in data:
+                value = data.get(field)
+                # Convert boolean fields from string to bool
+                if field in ['is_verified']:
+                    if value in ['true', 'True', True]:
+                        value = True
+                    elif value in ['false', 'False', False]:
+                        value = False
+                    else:
+                        value = None
+                setattr(profile, field, value)
+
+        # Handle profile picture
+        if 'profile_picture' in files:
+            profile.profile_picture = files['profile_picture']
+
         profile.save()
 
+        # Handle many-to-many fields
         if 'skills' in data:
-            skill_names = data['skills']
+            skill_names = data.getlist('skills')
             skills = Skill.objects.filter(name__in=skill_names)
             profile.skills.set(skills)
 
         if 'competition_types' in data:
-            comp_names = data['competition_types']
+            comp_names = data.getlist('competition_types')
             comps = CompetitionType.objects.filter(name__in=comp_names)
             profile.competition_types.set(comps)
 
@@ -466,6 +499,7 @@ def create_or_update_profile(request):
         return JsonResponse(result, status=201 if created else 200)
 
     except Exception as e:
+        print(f"Error in create_or_update_profile: {e}")
         return JsonResponse({'error': str(e)}, status=400)
 
 @api_token_required

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate,Outlet } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import MentorProfileForm from "./components/Mentor/MentorProfileForm";
 import StudentProfileForm from "./components/Students/StudentProfileForm";
@@ -19,8 +19,6 @@ import StudentCompetitions from "./components/Students/StudentCompetitions";
 import StudentTeams from "./components/Students/StudentTeams";
 import HostCompetitions from "./components/Hosts/HostCompetitions";
 import StudentNavbar from "./components/Students/StudentNavbar";
-import StudentSidebar from "./components/Students/StudentSidebar";
-import Layout from "./components/Students/StudentNavbar";
 import Chat from "./components/Workspace/Chat";
 import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
 import Workspace from "./components/Workspace/Workspace";
@@ -38,102 +36,99 @@ import MentorNavbar from "./components/Mentor/MentorNavbar";
 import HostNavbar from "./components/Hosts/HostNavbar";
 import MentorLandingPage from "./components/Mentor/MentorLandingPage";
 
+function StudentLayout() {
+    return <StudentNavbar><Outlet /></StudentNavbar>;
+  }
+  function MentorLayout() {
+    return <MentorNavbar><Outlet /></MentorNavbar>;
+  }
+  function HostLayout() {
+    return <HostNavbar><Outlet /></HostNavbar>;
+  }
+  function DynamicLayout() {
+    const userRole = localStorage.getItem("role");
+    
+    if (userRole === "STUDENT") {
+      return <StudentNavbar><Outlet /></StudentNavbar>;
+    } else if (userRole === "MENTOR") {
+      return <MentorNavbar><Outlet /></MentorNavbar>;
+    } else if (userRole === "HOST") {
+      return <HostNavbar><Outlet /></HostNavbar>;
+    } else {
+  
+      return <LoginRegister />;
+    }
+  }
 function App() {
-    const userRole = localStorage.getItem("role"); 
-    const isLoggedIn = !!localStorage.getItem("authToken");
+  const userRole = localStorage.getItem("role"); 
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
-    const getNavbar = () => {
-        console.log("User Role:", userRole);
-        console.log("Is Logged In:", isLoggedIn);
-        if (!isLoggedIn) {
-            console.log("Rendering Guest Navbar");
-            return (
-                <div className="flex justify-end p-4">
-                    <button 
-                        onClick={() => window.location.href = '/login'} 
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                    >
-                        Sign Up
-                    </button>
-                </div>
-            );
-        }
-        if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <MentorNavbar />;
-        if (userRole === "HOST") return <HostNavbar />;
-        return null;
-    };
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route element={<DynamicLayout />}>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPageAliqyaan />} />
+          <Route path="/landing" element={<LandingPageAliqyaan />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/login" element={<LoginRegister />} />
 
-    return (
-        <>
-        <BrowserRouter>
-            <AuthProvider>
-                <Layout navbar={getNavbar()} >
-                    <Routes>
-                        <Route path="/mentor-navbar" element={<MentorNavbar />} />
-                        <Route path="/host-navbar" element={<HostNavbar />}/>
-                        {/* LANDING PAGE */}
-                        <Route path="/" element={<LandingPageAliqyaan />} />
-                        <Route path="/landing" element={<LandingPageAliqyaan />} />
-                        <Route path="/how-it-works" element={<HowItWorks/>}/>
+          {/* Student routes */}
+          {/* <Route element={<StudentLayout />}> */}
+            <Route path="/student-landing" element={<StudentLandingPage />} />
+            <Route path="/student-profile" element={<StudentProfileForm />} />
+            <Route path="/students" element={<RecommendedStudents />} />
+            <Route path="/students/:id" element={<StudentProfile />} />
+            <Route path="/student-teams" element={<StudentTeams />} />
+            <Route path="/student-competitions" element={<StudentCompetitions />} />
+            <Route path="/student-collaborators" element={<Collaborators />} />
+            <Route path="/student-notifications" element={<StudentNotifications />} />
+          {/* </Route> */}
 
+          {/* Mentor routes */}
+          {/* <Route element={<MentorLayout />}> */}
+            <Route path="/mentor-landing" element={<MentorLandingPage />} />
+            <Route path="/mentor-profile" element={<MentorProfileForm />} />
+            <Route path="/mentors" element={<AllMentors />} />
+            <Route path="/mentor/:id" element={<MentorProfile />} />
+            <Route path="/mentor-consultations" element={<MentorConsultations />} />
+            <Route path="/mentor-notifications" element={<MentorNotifications />} />
+          {/* </Route> */}
 
-                        {/* LOGIN/REGISTER */}
-                        <Route path="/login" element={<LoginRegister />} />
+          {/* Host routes */}
+          {/* <Route element={<HostLayout />}> */}
+            <Route path="/admin-landing" element={<AdminLandingPage />} />
+            <Route path="/admin-profile" element={<HostProfileForm />} />
+            <Route path="/admin-competitions" element={<HostCompetitions />} />
+            <Route path="/admin-competitions/:competitionId" element={<HostCompetitionDetails />} />
+            <Route path="/competition-create" element={<CreateCompetition />} />
+          {/* </Route> */}
 
-                        {/* STUDENTS */}
-                        <Route path="/student-landing" element={<StudentLandingPage />} />
+          {/* Shared routes - with role-specific navbar */}
+            <Route path="/competitions" element={<CompetitionsList />} />
+            <Route path="/competitions/:id" element={<CompetitionDetail />} />
+            <Route path="/team/:teamId" element={<TeamDetail />} />
+            <Route path="/chat/:teamId" element={<Chat />} />
+            <Route path="/workspace/:teamId" element={<Workspace />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+          </Route>
 
-                        <Route path="/student-profile" element={<StudentProfileForm/>} />
-                        <Route path="/students" element={<RecommendedStudents />} />
-                        <Route path="/students/:id" element={<StudentProfile />} />
-                        <Route path="/student-teams" element={<StudentTeams />} />
-                        <Route path="/student-competitions" element={<StudentCompetitions />} />
-                        <Route path="/student-collaborators" element={<Collaborators />} />
-                        <Route path="/student-notifications" element={<StudentNotifications />} />
-
-                        {/* MENTORS */}
-                        <Route path="/mentor-landing" element={<MentorLandingPage />} />
-                        <Route path="/mentor-profile" element={<MentorProfileForm/>} />
-                        <Route path="/mentors" element={<AllMentors />} />
-                        <Route path="/mentor/:id" element={<MentorProfile />} />
-                        <Route path="/mentor-consultations" element={<MentorConsultations />} />
-                        <Route path="/mentor-notifications" element={<MentorNotifications />} />
-
-                        {/* ADMIN */}
-                        <Route path="/admin-landing" element={<AdminLandingPage />} />
-                        <Route path="/admin-profile" element={<HostProfileForm/>} />
-                        <Route path="/admin-competitions" element={<HostCompetitions />} />
-                        <Route path="/admin-competitions/:competitionId" element={<HostCompetitionDetails />} />
-
-                        {/* COMPETITION/TEAM */}
-                        <Route path="/competition-create" element={<CreateCompetition />} />
-                        <Route path="/competitions" element={<CompetitionsList />} />
-                        <Route path="/competitions/:id" element={<CompetitionDetail />} />
-                        <Route path="/team/:teamId" element={<TeamDetail />} />
-                        <Route path="/chat/:teamId" element = {<Chat />} />
-                        <Route path="/workspace/:teamId" element = {<Workspace />} />
-                        
-                        {/* Analytics */}
-                        <Route path="/analytics" element={<AnalyticsPage />} />
-                        {/* CHATROOMS */}
-                        <Route path="/chat/:teamId" element={<Chat />} />
-                        <Route
-                            path="*"
-                            element={
-                                isLoggedIn && !userRole ? (
-                                    <Navigate to="/analytics" />
-                                ) : (
-                                    <Navigate to="/" />
-                                )
-                            }
-                        />
-                    </Routes>
-                </Layout>
-            </AuthProvider>
-        </BrowserRouter>
-        </>
-    );
+          {/* Fallback */}
+          <Route
+            path="*"
+            element={
+              isLoggedIn && userRole === "MANAGEMENT" ? (
+                <Navigate to="/analytics" />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;

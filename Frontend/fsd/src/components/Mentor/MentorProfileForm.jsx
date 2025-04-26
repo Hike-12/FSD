@@ -121,7 +121,7 @@ const MentorProfileForm = () => {
 
         // Fetch existing profile
         try {
-          const profileResponse = await fetch(`${DJANGO_BASE_URL}/api/mentor/profile/`, {
+          const profileResponse = await fetch(`${DJANGO_BASE_URL}/api/mentor-profiles/my_profile/`, {
             method: 'GET',
             headers: { 
               'Content-Type': 'application/json',
@@ -129,23 +129,32 @@ const MentorProfileForm = () => {
             },
             credentials: 'include',
           });
-          
+          console.log('Profile response:', profileResponse);
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
+            console.log('Existing profile data:', profileData);
             setExistingProfile(profileData);
             
             // Ensure skills and competitionTypes are loaded before setting form data
-            const currentSkills = skillsData.skills || skillsData || [];
-            const currentCompetitionTypes = competitionTypesData.competition_types || competitionTypesData || [];
-            
-            const prefilledData = {
-              ...profileData,
-              skill_ids: profileData.skills ? 
-                currentSkills.filter(skill => profileData.skills.includes(skill.name)).map(skill => skill.id) : [],
-              competition_type_ids: profileData.preferred_competition_types ? 
-                currentCompetitionTypes.filter(type => profileData.preferred_competition_types.includes(type.name)).map(type => type.id) : [],
-              profile_picture: null
-            };
+            // Replace lines 133-149 with this safer implementation
+
+const currentSkills = skillsData.skills || skillsData || [];
+const currentCompetitionTypes = competitionTypesData.competition_types || competitionTypesData || [];
+
+const prefilledData = {
+  ...profileData,
+  skill_ids: Array.isArray(profileData.skills) && profileData.skills.length > 0
+    ? currentSkills.filter(skill => 
+        skill && skill.name && profileData.skills.includes(skill.name)
+      ).map(skill => skill.id)
+    : [],
+  competition_type_ids: Array.isArray(profileData.preferred_competition_types) && profileData.preferred_competition_types.length > 0
+    ? currentCompetitionTypes.filter(type => 
+        type && type.name && profileData.preferred_competition_types.includes(type.name)
+      ).map(type => type.id)
+    : [],
+  profile_picture: null
+};
             
             setFormData(prefilledData);
           }
@@ -214,8 +223,7 @@ const MentorProfileForm = () => {
   
     try {
       const formDataToSend = new FormData();
-      
-      // Append all fields
+  
       Object.entries(formData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           value.forEach(v => formDataToSend.append(key, v));
@@ -223,23 +231,27 @@ const MentorProfileForm = () => {
           formDataToSend.append(key, value);
         }
       });
-      
+  
       if (formData.profile_picture) {
         formDataToSend.append('profile_picture', formData.profile_picture);
       }
-      
-      const endpoint = existingProfile 
-        ? `${DJANGO_BASE_URL}/api/mentor/profile/${existingProfile.id}/update/`
-        : `${DJANGO_BASE_URL}/api/mentor/profile/update/`;
-      
+  
+      // Print all FormData key-value pairs for debugging
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0]+ ':', pair[1]);
+      }
+  
+      const endpoint =`${DJANGO_BASE_URL}/api/mentor-profiles/create_or_update/`;
+  
       const response = await fetch(endpoint, {
-        method: existingProfile ? 'PUT' : 'POST',
+        method: 'POST',
         headers: {
           'Authorization': `Token ${localStorage.getItem('authToken')}`,
         },
         credentials: 'include',
         body: formDataToSend,
       });
+      
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

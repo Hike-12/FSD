@@ -126,7 +126,7 @@ const HostCompetitionDetails = () => {
   ) : (
     Object.entries(groupedSubmissions).map(([teamName, submissions]) => (
       <div key={teamName} className="mb-6">
-        <h3 className="text-lg font-bold mb-2">{teamName}</h3>
+        <h3 className="text-lg font-bold mb-2 text-gray-900">{teamName}</h3>
         <ul className="divide-y divide-gray-200">
           {submissions.map((submission) => (
             <li key={submission.id} className="py-4">
@@ -193,7 +193,7 @@ const HostCompetitionDetails = () => {
               <div className="space-y-6">
                 {Object.entries(teamsByName).map(([teamName, members]) => (
                   <div key={teamName} className="border rounded-lg overflow-hidden">
-                    <div className="bg-gray-100 px-4 py-2 font-medium flex justify-between items-center">
+                    <div className="bg-gray-100 px-4 py-2 font-medium flex justify-between items-center text-gray-900">
                       <span>{teamName}</span>
                       <span className="text-sm text-gray-500">{members.length} members</span>
                     </div>
@@ -202,12 +202,12 @@ const HostCompetitionDetails = () => {
                         <li key={member.member_id} className="p-3 hover:bg-gray-50">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 mr-3">
-                              <div className="bg-blue-100 text-blue-700 rounded-full w-10 h-10 flex items-center justify-center">
+                              <div className="bg-blue-100 text-gray-900 rounded-full w-10 h-10 flex items-center justify-center">
                                 {member.member_name.charAt(0).toUpperCase()}
                               </div>
                             </div>
                             <div>
-                              <p className="font-medium">{member.member_name}</p>
+                              <p className="font-medium text-gray-900">{member.member_name}</p>
                               <p className="text-sm text-gray-500">{member.member_email}</p>
                             </div>
                           </div>

@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('userId');
             localStorage.removeItem('authToken');
             localStorage.removeItem('role');
+            localStorage.removeItem('user');
         } catch (err) {
             console.error('Logout error:', err);
         } finally {

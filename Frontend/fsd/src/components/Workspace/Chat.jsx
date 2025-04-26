@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { Camera, Mic, MicOff, Monitor, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
 import { DJANGO_BASE_URL, NODE_BASE_URL } from "@/lib/utils";
-import { motion } from "framer-motion";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -61,24 +61,6 @@ const Chat = () => {
   const peerConnections = useRef({});
   const remoteVideoRefs = useRef({});
   const remoteUsers = useRef({});
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
-  };
 
   // Scroll to bottom on new messages
 //   useEffect(() => {
@@ -281,14 +263,22 @@ const Chat = () => {
 
   const handleAnswer = async ({ answer, from }) => {
     try {
-      if (peerConnections.current[from]) {
-        await peerConnections.current[from].setRemoteDescription(
-          new RTCSessionDescription(answer)
-        );
+      const peerConnection = peerConnections.current[from];
+      if (peerConnection) {
+        if (peerConnection.signalingState === "have-local-offer") {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+          console.log("Remote description set successfully for user:", from);
+        } else {
+          console.warn(
+            `Cannot set remote description for user ${from}. Current signaling state: ${peerConnection.signalingState}`
+          );
+        }
+      } else {
+        console.error(`Peer connection not found for user: ${from}`);
       }
     } catch (error) {
       console.error("Error handling answer:", error);
-      toast.error("Connection error");
+      toast.error("Connection error while handling answer");
     }
   };
 
@@ -460,12 +450,46 @@ const Chat = () => {
     }
   };
 
+  // Ensure messages are rendered correctly
+  const renderMessages = () => {
+    if (!messages || messages.length === 0) {
+      return (
+        <div className="h-full flex items-center justify-center text-blue-100/50">
+          No messages yet. Start the conversation!
+        </div>
+      );
+    }
+
+    return messages.map((msg, index) => (
+      <div
+        key={msg._id || `msg-${index}`}
+        className={`flex ${msg.sender === userId ? 'justify-end' : 'justify-start'}`}
+      >
+        <div
+          className={`max-w-[85%] p-3 rounded-xl shadow-md ${
+            msg.sender === userId
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+              : 'backdrop-blur-md bg-white/10 text-blue-100'
+          }`}
+        >
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-medium text-xs opacity-80">
+              {msg.userName || (msg.sender === userId ? 'You' : msg.sender)}
+            </span>
+            {msg.timestamp && (
+              <span className="text-xs opacity-60 ml-2">
+                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+          <div className="text-sm break-words">{msg.content}</div>
+        </div>
+      </div>
+    ));
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen flex flex-col"
-    >
+    <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen flex flex-col">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -480,71 +504,45 @@ const Chat = () => {
       />
       
       {/* Header */}
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        className="py-4 px-6 bg-[#030718]/90 backdrop-blur-lg shadow-lg"
-      >
+      <div className="py-4 px-6 bg-[#030718]/90 backdrop-blur-lg shadow-lg">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"
-            >
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
               <Video className="h-6 w-6 text-white" />
-            </motion.div>
+            </div>
             <h1 className="ml-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
               VideoPulse Chat
             </h1>
           </div>
-          <motion.div whileHover={{ scale: 1.05 }}>
+          <div>
             {!isVideoCallActive ? (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={startVideoCall}
                 className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg hover:shadow-green-500/30 transition-all duration-300 flex items-center"
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Start Video Call
-              </motion.button>
+              </button>
             ) : (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={endVideoCall}
                 className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg hover:shadow-red-500/30 transition-all duration-300 flex items-center"
               >
                 <PhoneOff className="w-4 h-4 mr-2" />
                 End Call
-              </motion.button>
+              </button>
             )}
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Video Call Area */}
       {isVideoCallActive && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-[#030718]/80 p-6 border-b border-blue-500/20"
-        >
+        <div className="bg-[#030718]/80 p-6 border-b border-blue-500/20">
           <div className="container mx-auto">
-            <motion.div 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="flex gap-4 flex-wrap justify-center"
-            >
+            <div className="flex gap-4 flex-wrap justify-center">
               {/* Local Video */}
-              <motion.div
-                variants={itemVariants}
-                className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300"
-                whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(59, 130, 246, 0.3)" }}
-              >
+              <div className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300">
                 <video 
                   ref={localVideoRef} 
                   autoPlay 
@@ -553,25 +551,18 @@ const Chat = () => {
                   className="w-full h-full object-cover"
                   onClick={() => handleVideoClick(localVideoRef.current)} 
                 />
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2"
-                >
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                   <span className="text-white text-sm font-medium">
                     You {isScreenSharing ? '(Screen)' : ''}
                   </span>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
 
               {/* Remote Videos */}
               {remoteUserIds.map((remoteUserId, index) => (
-                <motion.div 
+                <div 
                   key={remoteUserId}
-                  variants={itemVariants}
                   className="relative w-72 h-48 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl overflow-hidden hover:shadow-blue-500/20 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(59, 130, 246, 0.3)" }}
                 >
                   <video
                     ref={el => remoteVideoRefs.current[remoteUserId] = el}
@@ -580,19 +571,14 @@ const Chat = () => {
                     className="w-full h-full object-cover"
                     onClick={() => handleVideoClick(remoteVideoRefs.current[remoteUserId])}
                   />
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2"
-                  >
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                     <span className="text-white text-sm font-medium">
                       {remoteUserId}
                     </span>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               ))}
-            </motion.div>
+            </div>
             {isFullScreen && (
   <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
     {fullScreenVideoSrc instanceof MediaStream ? (
@@ -625,15 +611,8 @@ const Chat = () => {
   </div>
 )}
             {/* Video Controls */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex justify-center mt-4 space-x-3"
-            >
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+            <div className="flex justify-center mt-4 space-x-3">
+              <button
                 onClick={toggleCamera}
                 className={`p-3 rounded-full ${isCameraEnabled ? 'bg-blue-500/40' : 'bg-red-500/40'} hover:bg-blue-600/60 transition-colors`}
               >
@@ -642,10 +621,8 @@ const Chat = () => {
                 ) : (
                   <VideoOff className="h-5 w-5 text-white" />
                 )}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              </button>
+              <button
                 onClick={toggleMic}
                 className={`p-3 rounded-full ${isMicEnabled ? 'bg-blue-500/40' : 'bg-red-500/40'} hover:bg-blue-600/60 transition-colors`}
               >
@@ -654,53 +631,39 @@ const Chat = () => {
                 ) : (
                   <MicOff className="h-5 w-5 text-white" />
                 )}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              </button>
+              <button
                 onClick={toggleScreenShare}
                 className={`p-3 rounded-full ${isScreenSharing ? 'bg-green-500/40' : 'bg-blue-500/40'} hover:bg-green-600/60 transition-colors`}
               >
                 <Monitor className="h-5 w-5 text-white" />
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <div className="flex-1 container mx-auto p-6 flex flex-col">
       {/* Messages Container */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+      <div 
         className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-xl p-4 mb-4 overflow-y-auto max-h-[calc(100vh-300px)]"
       >
   {messages.length === 0 ? (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5 }}
+    <div 
       className="h-full flex items-center justify-center text-blue-100/50"
     >
       No messages yet. Start the conversation!
-    </motion.div>
+    </div>
   ) : (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+    <div
       className="flex flex-col space-y-4"
     >
       {messages.map((msg, index) => (
-        <motion.div
+        <div
           key={msg._id || index}
-          variants={itemVariants}
-          custom={index}
           className={`flex ${msg.sender === userId ? 'justify-end' : 'justify-start'}`}
         >
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
+          <div 
             className={`max-w-[85%] p-3 rounded-xl shadow-md ${
               msg.sender === userId
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
@@ -718,19 +681,16 @@ const Chat = () => {
               )}
             </div>
             <div className="text-sm break-words">{msg.content}</div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   )}
   <div ref={messagesEndRef} />
-</motion.div>
+</div>
 
         {/* Message Input */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+        <div 
           className="flex"
         >
           <input
@@ -740,17 +700,15 @@ const Chat = () => {
             placeholder="Type your message..."
             className="flex-1 backdrop-blur-md bg-white/5 border border-blue-500/20 rounded-l-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400"
           />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={sendMessage}
             className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-r-xl hover:opacity-90 transition-opacity"
           >
             Send
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
