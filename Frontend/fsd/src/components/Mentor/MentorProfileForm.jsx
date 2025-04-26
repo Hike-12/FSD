@@ -153,7 +153,8 @@ const prefilledData = {
         type && type.name && profileData.preferred_competition_types.includes(type.name)
       ).map(type => type.id)
     : [],
-  profile_picture: null
+  profile_picture: null,
+  available_days: profileData.available_days || [] // Ensure available_days is always an array
 };
             
             setFormData(prefilledData);
@@ -1724,8 +1725,8 @@ const prefilledData = {
                         gap: '0.5rem',
                         padding: '0.75rem',
                         borderRadius: '8px',
-                        backgroundColor: formData.available_days.includes(day) ? colors.accent : colors.backgroundLight,
-                        border: `1px solid ${formData.available_days.includes(day) ? colors.accent : colors.muted}`,
+                        backgroundColor: (formData.available_days || []).includes(day) ? colors.accent : colors.backgroundLight,
+                        border: `1px solid ${(formData.available_days || []).includes(day) ? colors.accent : colors.muted}`,
                         cursor: 'pointer',
                         transition: 'all 0.3s ease'
                       }}
@@ -1733,7 +1734,7 @@ const prefilledData = {
                       <input
                         type="checkbox"
                         name={day}
-                        checked={formData.available_days.includes(day)}
+                        checked={(formData.available_days || []).includes(day)}
                         onChange={handleCheckboxChange}
                         style={{
                           appearance: 'none',
@@ -1741,13 +1742,13 @@ const prefilledData = {
                           height: '16px',
                           border: `1px solid ${colors.text}`,
                           borderRadius: '4px',
-                          backgroundColor: formData.available_days.includes(day) ? colors.text : 'transparent',
+                          backgroundColor: (formData.available_days || []).includes(day) ? colors.text : 'transparent',
                           position: 'relative',
                           cursor: 'pointer'
                         }}
                       />
                       <span style={{ 
-                        color: formData.available_days.includes(day) ? colors.text : colors.muted,
+                        color: (formData.available_days || []).includes(day) ? colors.text : colors.muted,
                         fontSize: '0.9rem'
                       }}>
                         {day}

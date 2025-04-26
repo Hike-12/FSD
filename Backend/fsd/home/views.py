@@ -595,6 +595,7 @@ def list_skills(request):
     if request.method == 'GET':
         skills = Skill.objects.all()
         data = [{'id': skill.id, 'name': skill.name} for skill in skills]
+        print("Skills data:", data)
         return JsonResponse({'skills': data})
 
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
@@ -1106,6 +1107,7 @@ def list_competition_types(request):
     if request.method == 'GET':
         comps = CompetitionType.objects.all()
         data = [{'id': comp.id, 'name': comp.name} for comp in comps]
+        print("Competition types data:", data)  
         return JsonResponse({'competition_types': data}, status=200, safe=False)
 
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405, safe=False)

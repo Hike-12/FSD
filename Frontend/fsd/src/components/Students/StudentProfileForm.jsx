@@ -99,7 +99,23 @@ const StudentProfileForm = () => {
           credentials: 'include',
         });
         const skillsJson = await skillsResponse.json();
-        const skillsData = Array.isArray(skillsJson) ? skillsJson : [];
+        console.log('Raw skills response:', skillsJson);
+
+        // Handle different possible response formats
+        let skillsData = [];
+        if (Array.isArray(skillsJson)) {
+          skillsData = skillsJson;
+        } else if (skillsJson && typeof skillsJson === 'object') {
+          // Check if the response has a results/data/items field that contains the array
+          const possibleArrayFields = ['results', 'data', 'items', 'skills'];
+          for (const field of possibleArrayFields) {
+            if (Array.isArray(skillsJson[field])) {
+              skillsData = skillsJson[field];
+              break;
+            }
+          }
+        }
+        console.log('Processed skills data:', skillsData);
         setSkills(skillsData);
 
         // Fetch competition types
@@ -112,7 +128,23 @@ const StudentProfileForm = () => {
           credentials: 'include',
         });
         const competitionTypesJson = await competitionTypesResponse.json();
-        const competitionTypesData = Array.isArray(competitionTypesJson) ? competitionTypesJson : [];
+        console.log('Raw competition types response:', competitionTypesJson);
+
+        // Handle different possible response formats
+        let competitionTypesData = [];
+        if (Array.isArray(competitionTypesJson)) {
+          competitionTypesData = competitionTypesJson;
+        } else if (competitionTypesJson && typeof competitionTypesJson === 'object') {
+          // Check if the response has a results/data/items field that contains the array
+          const possibleArrayFields = ['results', 'data', 'items', 'types', 'competition_types'];
+          for (const field of possibleArrayFields) {
+            if (Array.isArray(competitionTypesJson[field])) {
+              competitionTypesData = competitionTypesJson[field];
+              break;
+            }
+          }
+        }
+        console.log('Processed competition types data:', competitionTypesData);
         setCompetitionTypes(competitionTypesData);
 
         // Fetch past competitions
