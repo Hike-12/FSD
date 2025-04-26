@@ -33,10 +33,11 @@ const HostCompetitions = () => {
             Authorization: `Token ${localStorage.getItem("authToken")}`,
           },
         });
-
+        console.log(response);
         if (!response.ok) throw new Error("Failed to fetch competitions");
 
         const data = await response.json();
+        console.log(data);
         const comps = data.competitions.map((comp) => ({
           ...comp,
           start_date: new Date(comp.start_date),

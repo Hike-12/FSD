@@ -91,6 +91,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
    }, []);
  
    return (
+    <>
      <div className="bg-gradient-to-br from-[#030718] via-[#0A1428] to-[#0F2E6B] min-h-screen">
        {/* Enhanced fixed header */}
        {/* <motion.header
@@ -114,14 +115,14 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
                </h1>
              </div>
              
-             <div className="hidden md:flex items-center space-x-8">
+             {/* <div className="hidden md:flex items-center space-x-8">
                <a href="/students" className="text-sm text-blue-100 hover:text-white transition-colors">Students</a>
                <a href="/mentors" className="text-sm text-blue-100 hover:text-white transition-colors">Mentors</a>
                <a href="/competitions" className="text-sm text-blue-100 hover:text-white transition-colors">Competitions</a>
                <button onClick={() => navigate('/contact')} className="text-sm text-blue-100 hover:text-white transition-colors">Contact</button>
-             </div>
+             </div> */}
              
-             <div className="flex items-center space-x-4">
+             {/* <div className="flex items-center space-x-4">
                <button onClick={() => navigate('/login')} className="hidden md:block px-4 py-2 text-sm text-blue-100 hover:text-white border border-blue-400/30 rounded-lg hover:border-blue-400/60 transition-all duration-300">
                  Sign In
                </button>
@@ -138,8 +139,9 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
              </div>
            </div>
          </div>
-       </motion.header> */}
- 
+      //  </motion.header> */}
+  
+
        {/* Hero section with globe */}
        <Dharti onCitySelect={handleCitySelect} />
  
@@ -432,6 +434,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
          `}</style>
        </footer>
      </div>
+     </>
    );
  };
  
