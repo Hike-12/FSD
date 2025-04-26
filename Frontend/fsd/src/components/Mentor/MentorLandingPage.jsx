@@ -12,26 +12,28 @@ import Dharti from '../LandingPage/Dharti';
 
 const features = [
   {
-    icon: <Trophy className="w-6 h-6" />,
-    title: "Manage Competitions",
-    description: "Create, update, and manage competitions for students and mentors.",
+    icon: <GlobeIcon className="w-6 h-6" />,
+    title: "Mentor Network",
+    description: "Connect with fellow mentors to share insights and strategies for effective mentoring.",
     color: 'from-indigo-500 to-purple-500'
   },
+ 
   {
     icon: <Users className="w-6 h-6" />,
-    title: "User Management",
-    description: "Oversee and manage user accounts, including students and mentors.",
+    title: "Collaboration Opportunities",
+    description: "Collaborate with other mentors on projects and initiatives.",
     color: 'from-emerald-500 to-teal-500'
   },
   {
     icon: <ChartBarIcon className="w-6 h-6" />,
-    title: "Analytics Dashboard",
-    description: "View detailed analytics and reports on platform usage and performance.",
+    title: "Connect and Mentor",
+    description: "Connect with students and mentor them to help shape their future.",
     color: 'from-purple-500 to-pink-500'
   }
+  
 ];
 
-const AdminLandingPage = () => {
+const MentorLandingPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
@@ -102,6 +104,7 @@ const AdminLandingPage = () => {
 
       {/* Header */}
      
+
       {/* Dharti (3D Globe) */}
       <Dharti />
 
@@ -109,9 +112,9 @@ const AdminLandingPage = () => {
       <div className="relative z-10 py-20 bg-gradient-to-br from-[#0a0a1a] via-[#111827] to-[#1e1b4b]">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Admin Features</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Mentor Features</h2>
             <p className="text-blue-100/80 max-w-2xl mx-auto">
-              Discover tools and resources designed to streamline your administrative tasks.
+              Discover tools and resources designed to enhance your mentoring experience.
             </p>
           </div>
 
@@ -147,7 +150,7 @@ const AdminLandingPage = () => {
                 <GlobeIcon className="h-5 w-5 text-white" />
               </div>
               <h1 className="ml-3 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-indigo-100">
-                AdminSphere
+                MentorSphere
               </h1>
             </div>
             
@@ -160,7 +163,7 @@ const AdminLandingPage = () => {
           
           <div className="mt-8 pt-8 border-t border-blue-900/20 text-center">
             <p className="text-sm text-blue-100/60">
-              &copy; {new Date().getFullYear()} AdminSphere. All rights reserved.
+              &copy; {new Date().getFullYear()} MentorSphere. All rights reserved.
             </p>
           </div>
         </div>
@@ -169,4 +172,4 @@ const AdminLandingPage = () => {
   );
 };
 
-export default AdminLandingPage;
+export default MentorLandingPage;

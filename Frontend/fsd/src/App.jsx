@@ -19,9 +19,7 @@ import StudentCompetitions from "./components/Students/StudentCompetitions";
 import StudentTeams from "./components/Students/StudentTeams";
 import HostCompetitions from "./components/Hosts/HostCompetitions";
 import StudentNavbar from "./components/Students/StudentNavbar";
-import HostNavbar from "./components/Hosts/HostNavbar";
 import StudentSidebar from "./components/Students/StudentSidebar";
-import HostSidebar from "./components/Hosts/HostSidebar";
 import Layout from "./components/Students/StudentNavbar";
 import Chat from "./components/Workspace/Chat";
 import HostCompetitionDetails from "./components/Hosts/HostCompetitionDetail";
@@ -37,37 +35,32 @@ import VoiceControl from './components/VoiceControl/VoiceControl';
 import AnalyticsPage from "./components/Analytics";
 import GuestNavbar from "./components/GuestNavbar/GuestNavbar";
 import MentorNavbar from "./components/Mentor/MentorNavbar";
+import HostNavbar from "./components/Hosts/HostNavbar";
+import MentorLandingPage from "./components/Mentor/MentorLandingPage";
 function App() {
     const userRole = localStorage.getItem("role"); 
 
     const getNavbar = () => {
+        if (!userRole) return <GuestNavbar />; // Show GuestNavbar when no user is logged in
         if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <StudentNavbar />;
-        if (userRole === "HOST") return <StudentNavbar />;
+        if (userRole === "MENTOR") return <MentorNavbar />;
+        if (userRole === "HOST") return <HostNavbar />;
         return null;
-      };
-    
-      const getSidebar = () => {
-        if (userRole === "STUDENT") return <StudentNavbar />;
-        if (userRole === "MENTOR") return <StudentNavbar />;
-        if (userRole === "HOST") return <StudentNavbar />;
-        return null;
-      };
-
- 
+    };
 
     return (
         <>
         <BrowserRouter>
             <AuthProvider>
-
-                <Layout navbar={getNavbar()} sidebar={getSidebar()}>
+                <Layout navbar={getNavbar()} >
                     <Routes>
                         <Route path="/mentor-navbar" element={<MentorNavbar />} />
+                        <Route path="/host-navbar" element={<HostNavbar />}/>
                         {/* LANDING PAGE */}
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/landing" element={<LandingPageAliqyaan />} />
                         <Route path="/how-it-works" element={<HowItWorks/>}/>
+
 
                         {/* LOGIN/REGISTER */}
                         <Route path="/login" element={<LoginRegister />} />
@@ -84,6 +77,7 @@ function App() {
                         <Route path="/student-notifications" element={<StudentNotifications />} />
 
                         {/* MENTORS */}
+                        <Route path="/mentor-landing" element={<MentorLandingPage />} />
                         <Route path="/mentor-profile" element={<MentorProfileForm/>} />
                         <Route path="/mentors" element={<AllMentors />} />
                         <Route path="/mentor/:id" element={<MentorProfile />} />
@@ -112,7 +106,6 @@ function App() {
                 </Layout>
             </AuthProvider>
         </BrowserRouter>
-     
         </>
     );
 }

@@ -58,7 +58,7 @@ const MentorProfileForm = () => {
     competition_type_ids: [],
     profile_picture: null
   });
-
+  const [isChecked, setIsChecked] = useState(false);  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -250,7 +250,7 @@ const MentorProfileForm = () => {
         ? 'Profile updated successfully!' 
         : 'Profile created successfully!');
       
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setTimeout(() => navigate('/mentor-landing'), 2000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ general: error.message || 'An error occurred. Please try again.' });
@@ -1942,67 +1942,68 @@ const MentorProfileForm = () => {
               </motion.div>
 
               <motion.div 
-                variants={itemVariants}
-                style={{ 
-                  backgroundColor: colors.backgroundLight,
-                  padding: isMobile ? '1rem' : '1.5rem',
-                  borderRadius: '12px',
-                  marginBottom: '2rem',
-                  border: `1px solid ${colors.muted}`
-                }}
-              >
-                <h3 style={{ 
-                  color: colors.text,
-                  fontSize: isMobile ? '1rem' : '1.1rem',
-                  fontWeight: '600',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill={colors.accent} viewBox="0 0 16 16">
-                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                  </svg>
-                  Review Your Information
-                </h3>
-                <p style={{ 
-                  color: colors.muted,
-                  fontSize: '0.95rem',
-                  lineHeight: '1.6',
-                  marginBottom: '1rem'
-                }}>
-                  Please review all the information you've entered before submitting. You can go back to previous steps to make changes if needed.
-                </p>
-                <div style={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <input
-                    type="checkbox"
-                    id="consent-checkbox"
-                    required
-                    style={{
-                      appearance: 'none',
-                      width: '18px',
-                      height: '18px',
-                      border: `1px solid ${colors.muted}`,
-                      borderRadius: '4px',
-                      backgroundColor: colors.backgroundLight,
-                      position: 'relative',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  <label htmlFor="consent-checkbox" style={{ 
-                    color: colors.text,
-                    fontSize: '0.9rem',
-                    cursor: 'pointer'
-                  }}>
-                    I confirm that all information provided is accurate and I agree to the terms of service.
-                  </label>
-                </div>
-              </motion.div>
-
+  variants={itemVariants}
+  style={{ 
+    backgroundColor: colors.backgroundLight,
+    padding: isMobile ? '1rem' : '1.5rem',
+    borderRadius: '12px',
+    marginBottom: '2rem',
+    border: `1px solid ${colors.muted}`
+  }}
+>
+  <h3 style={{ 
+    color: colors.text,
+    fontSize: isMobile ? '1rem' : '1.1rem',
+    fontWeight: '600',
+    marginBottom: '1rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
+  }}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill={colors.accent} viewBox="0 0 16 16">
+      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+    </svg>
+    Review Your Information
+  </h3>
+  <p style={{ 
+    color: colors.muted,
+    fontSize: '0.95rem',
+    lineHeight: '1.6',
+    marginBottom: '1rem'
+  }}>
+    Please review all the information you've entered before submitting. You can go back to previous steps to make changes if needed.
+  </p>
+  <div style={{ 
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
+  }}>
+    <input
+      type="checkbox"
+      id="consent-checkbox"
+      required
+      checked={isChecked} // Add this state
+      onChange={() => setIsChecked(!isChecked)} // Add this handler
+      style={{
+        width: '18px',
+        height: '18px',
+        border: `1px solid ${colors.muted}`,
+        borderRadius: '4px',
+        backgroundColor: isChecked ? colors.accent : colors.backgroundLight, // Change color when checked
+        cursor: 'pointer',
+        // Remove appearance: 'none' if you want default behavior
+      }}
+    />
+    <label htmlFor="consent-checkbox" style={{ 
+      color: colors.text,
+      fontSize: '0.9rem',
+      cursor: 'pointer',
+      userSelect: 'none' // Prevents text selection when clicking
+    }}>
+      I confirm that all information provided is accurate and I agree to the terms of service.
+    </label>
+  </div>
+</motion.div>
               <motion.div
                 variants={itemVariants}
                 style={{

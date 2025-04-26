@@ -206,7 +206,7 @@ const OverlayPanel = styled.div`
   text-align: center;
   color: white;
   padding: 2.5rem;
-  transition: transform 1s ease-in-out;
+  transition: transform 0.9s ease-in-out;
   ${props => props.right ? `
     right: 0;
     transform: ${props.active ? 'translateX(0)' : 'translateX(100%)'};

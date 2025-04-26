@@ -59,12 +59,10 @@ const StudentNavbar = ({ children }) => {
   ];
 
   const rightSidebarItems = [
-    { path: "my-mentors", icon: User, label: "My Mentors" },
-    { path: "my-team", icon: Users, label: "My Team" },
-    { path: "my-chat", icon: MessageSquare, label: "My Chat" },
-    { path: "student-teams", icon: Users, label: "Student Teams" },
-    { path: "student-competitions", icon: Trophy, label: "Student Competitions" },
-    { path: "student-collaborators", icon: Users, label: "Student Collaborators" },
+    { path: "mentor-consultations", icon: User, label: "My Mentors" },
+    { path: "student-teams", icon: Users, label: "My Team" },
+    { path: "student-competitions", icon: Trophy, label: "Competitions" },
+    { path: "student-collaborators", icon: Users, label: "Collaborators" },
     { path: "student-notifications", icon: Bell, label: "Notifications" },
   ];
 
