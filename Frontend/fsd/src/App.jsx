@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import MentorProfileForm from "./components/Mentor/MentorProfileForm";
 import StudentProfileForm from "./components/Students/StudentProfileForm";
@@ -37,11 +37,27 @@ import GuestNavbar from "./components/GuestNavbar/GuestNavbar";
 import MentorNavbar from "./components/Mentor/MentorNavbar";
 import HostNavbar from "./components/Hosts/HostNavbar";
 import MentorLandingPage from "./components/Mentor/MentorLandingPage";
+
 function App() {
     const userRole = localStorage.getItem("role"); 
+    const isLoggedIn = !!localStorage.getItem("authToken");
 
     const getNavbar = () => {
-        if (!userRole) return <GuestNavbar />; // Show GuestNavbar when no user is logged in
+        console.log("User Role:", userRole);
+        console.log("Is Logged In:", isLoggedIn);
+        if (!isLoggedIn) {
+            console.log("Rendering Guest Navbar");
+            return (
+                <div className="flex justify-end p-4">
+                    <button 
+                        onClick={() => window.location.href = '/login'} 
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    >
+                        Sign Up
+                    </button>
+                </div>
+            );
+        }
         if (userRole === "STUDENT") return <StudentNavbar />;
         if (userRole === "MENTOR") return <MentorNavbar />;
         if (userRole === "HOST") return <HostNavbar />;
@@ -57,7 +73,7 @@ function App() {
                         <Route path="/mentor-navbar" element={<MentorNavbar />} />
                         <Route path="/host-navbar" element={<HostNavbar />}/>
                         {/* LANDING PAGE */}
-                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/" element={<LandingPageAliqyaan />} />
                         <Route path="/landing" element={<LandingPageAliqyaan />} />
                         <Route path="/how-it-works" element={<HowItWorks/>}/>
 
@@ -102,6 +118,16 @@ function App() {
                         <Route path="/analytics" element={<AnalyticsPage />} />
                         {/* CHATROOMS */}
                         <Route path="/chat/:teamId" element={<Chat />} />
+                        <Route
+                            path="*"
+                            element={
+                                isLoggedIn && !userRole ? (
+                                    <Navigate to="/analytics" />
+                                ) : (
+                                    <Navigate to="/" />
+                                )
+                            }
+                        />
                     </Routes>
                 </Layout>
             </AuthProvider>

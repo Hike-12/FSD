@@ -11,9 +11,14 @@ const MentorNavbar = ({ children }) => {
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const mainRef = useRef(null);
-
+  let user = null;
+  try {
+    user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  } catch (error) {
+    console.error("Error parsing user data from localStorage:", error);
+  }
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;

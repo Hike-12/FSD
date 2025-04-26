@@ -162,6 +162,7 @@ def custom_login(request):
                 'role': user.role,
                 'username': user.username,
                 'token':token,
+                'email': user.email,    
             })
             print("Cookies being set:", response.cookies)
             return response

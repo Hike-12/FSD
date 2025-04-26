@@ -11,9 +11,15 @@ const StudentNavbar = ({ children }) => {
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const mainRef = useRef(null);
-
+  let user = null;
+  try {
+    user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  } catch (error) {
+    console.error("Error parsing user data from localStorage:", error);
+  }
+  console.log("User:", user);
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -233,7 +239,7 @@ const StudentNavbar = ({ children }) => {
                       {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3 className="font-medium text-white">{user?.name || 'User'}</h3>
+                      <h3 className="font-medium text-white">{user?.username || 'User'}</h3>
                       <p className="text-sm text-[#94a3b8]">{user?.email || 'user@example.com'}</p>
                     </div>
                   </div>

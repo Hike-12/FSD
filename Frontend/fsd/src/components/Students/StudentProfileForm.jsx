@@ -98,8 +98,9 @@ const StudentProfileForm = () => {
           },
           credentials: 'include',
         });
-        const skillsData = await skillsResponse.json();
-        setSkills(skillsData.skills || skillsData);
+        const skillsJson = await skillsResponse.json();
+        const skillsData = Array.isArray(skillsJson) ? skillsJson : [];
+        setSkills(skillsData);
 
         // Fetch competition types
         const competitionTypesResponse = await fetch(`${DJANGO_BASE_URL}/api/competition-types/`, {
@@ -110,8 +111,9 @@ const StudentProfileForm = () => {
           },
           credentials: 'include',
         });
-        const competitionTypesData = await competitionTypesResponse.json();
-        setCompetitionTypes(competitionTypesData.competition_types || competitionTypesData);
+        const competitionTypesJson = await competitionTypesResponse.json();
+        const competitionTypesData = Array.isArray(competitionTypesJson) ? competitionTypesJson : [];
+        setCompetitionTypes(competitionTypesData);
 
         // Fetch past competitions
         const pastCompetitionsResponse = await fetch(`${DJANGO_BASE_URL}/api/competitions/`, {
@@ -122,8 +124,9 @@ const StudentProfileForm = () => {
           },
           credentials: 'include',
         });
-        const pastCompetitionsData = await pastCompetitionsResponse.json();
-        setPastCompetitions(pastCompetitionsData.competitions || pastCompetitionsData);
+        const pastCompetitionsJson = await pastCompetitionsResponse.json();
+        const pastCompetitionsData = Array.isArray(pastCompetitionsJson) ? pastCompetitionsJson : [];
+        setPastCompetitions(pastCompetitionsData);
 
         // Fetch existing profile
         try {
