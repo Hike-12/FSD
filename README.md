@@ -12,7 +12,7 @@ Building a robust full-stack web application to manage **Connecting students wit
 
 ## 🎯 Objective
 
-FSD aims to provide users with an intuitive interface for **[key functionality, e.g., content management, e-commerce, dashboards]**, backed by a scalable RESTful API and a responsive frontend.
+FSD aims to provide users with an intuitive interface for ** Students,Mentors and Hosts of competitions, along with management**, backed by a scalable RESTful API and a responsive frontend.
 
 ---
 
@@ -46,7 +46,7 @@ FSD aims to provide users with an intuitive interface for **[key functionality, 
 - **Real-time Updates:** Live data sync with WebSockets  
 - **Role-based Access:** Admin vs. regular user permissions  
 - **Search & Filters:** Advanced querying in listings  
-
+- **UX features:** Voice control access to all pages, and increase in font size
 ---
 
 ## 📽️ Demo
