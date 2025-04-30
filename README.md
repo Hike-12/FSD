@@ -6,7 +6,7 @@
 
 ## 📌 Problem Statement
 
-Building a robust full-stack web application to manage **[brief description of functionality]**.
+Building a robust full-stack web application to manage **Connecting students with other students who have similar interests,give them mentorship and even the opportunity to participate in competitions**.
 
 ---
 
