@@ -1,6 +1,6 @@
 # 🚀 FSD
 
-> Full-Stack Development Project for [Course/Bootcamp Name]
+> Full-Stack Development Project for Sem 4
 
 ---
 
@@ -60,8 +60,17 @@ FSD aims to provide users with an intuitive interface for **[key functionality, 
 ## 📸 Screenshots
 
 <!-- Add your actual image paths/screenshots here -->
-![Dashboard](./images/image.png)
-![Feature 2](./screenshots/feature2.png)
+![img1](./image/img1.png)
+![img2](./image/img2.png)
+![img3](./image/img3.png)
+![img4](./image/img4.png)
+![img5](./image/img5.png)
+![img6](./image/img6.png)
+![img7](./image/img7.png)
+![img8](./image/img8.png)
+![img9](./image/img9.png)
+![img10](./image/img10.png)
+![img11](./image/img11.png)
 
 ---
 
