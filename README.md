@@ -60,7 +60,7 @@ FSD aims to provide users with an intuitive interface for **[key functionality, 
 ## 📸 Screenshots
 
 <!-- Add your actual image paths/screenshots here -->
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](./images/image.png)
 ![Feature 2](./screenshots/feature2.png)
 
 ---
