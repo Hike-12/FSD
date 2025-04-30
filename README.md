@@ -51,9 +51,7 @@ FSD aims to provide users with an intuitive interface for **[key functionality, 
 
 ## 📽️ Demo
 
-[![Demo Video Placeholder](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://youtu.be/VIDEO_ID)
-
-*Replace `VIDEO_ID` with your YouTube demo link.*
+https://drive.google.com/drive/folders/1ltRBKGFVGRhE8VNbpzjXDwGzN_Bv62Pv?usp=drive_link
 
 ---
 
