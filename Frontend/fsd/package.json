@@ -23,7 +23,7 @@
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/vite": "^4.0.14",
     "antd": "^5.24.5",
-    "axios": "^1.8.3",
+    "axios": "^1.13.5",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "dotted-map": "^2.2.3",
